@@ -1,47 +1,58 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+import Navigator from '@/components/navigator.vue'
+import { Button } from 'ant-design-vue'
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+  <!--  主题色-->
+  <a-config-provider
+    :theme="{
+      token: {
+        colorPrimary: '#6aaf49',
+      },
+    }"
+  >
+  </a-config-provider>
+  <div class="reports">
+    <div class="navigator">
+      <Navigator />
     </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
+    <div class="mainContent">
+      <Button> hellofasdfdsa</Button>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-header {
-  line-height: 1.5;
+html,
+body {
+  height: 100%;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
 }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
+li {
+  list-style: none;
+}
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
+.reports {
+  display: flex;
+  margin: 0 auto;
+  height: 100%;
+  width: 1920px;
+}
 
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+.navigator {
+  width: 256px;
+  height: 100%;
+}
+
+.mainContent {
+  width: 1720px;
+  height: 100%;
 }
 </style>
