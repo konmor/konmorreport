@@ -5,22 +5,70 @@ export default {
 </script>
 <template>
   <a-menu
-    id="dddddd"
+    id="mainMenu"
     v-model:openKeys="openKeys"
     v-model:selectedKeys="selectedKeys"
-    style="width: 256px"
+    :style="{ width: navigatorWidth }"
     mode="inline"
+    inlineIndent=10
     :items="items"
     @click="handleClick"
-  ></a-menu>
+  >
+    <a-menu-item key="2">
+      <desktop-outlined />
+      <span>Option 2</span>
+    </a-menu-item>
+
+    <a-menu-item key="2">
+      <desktop-outlined />
+      <span>Option 2</span>
+    </a-menu-item>
+
+
+  </a-menu>
 </template>
 <script lang="ts" setup>
-import { reactive, ref, watch, VueElement, h } from 'vue'
-import { MailOutlined, AppstoreOutlined, SettingOutlined } from '@ant-design/icons-vue'
+import { reactive, ref, watch, VueElement, h, onMounted } from 'vue'
 import type { MenuProps, ItemType } from 'ant-design-vue'
+import { MailOutlined } from '@ant-design/icons-vue'
 
 const selectedKeys = ref<string[]>(['1'])
 const openKeys = ref<string[]>(['sub1'])
+
+let { navigatorWidth } = defineProps(['navigatorWidth'])
+
+let items: ItemType[] = getItems()
+
+function getItems() {
+  let menus = reactive([
+    getItem('数据源', 'sub1', () => h(MailOutlined), [
+      getItem('xxxxMySql数据源', 'g1', null, [
+        getItem('查询xxx统计SQL1', '1'),
+        getItem('查询xxx统计SQL2', '2'),
+      ]),
+      getItem('xxxxMySql数据源2', 'g2', null, [
+        getItem('查询xxx统计SQL3', '3'),
+        getItem('查询xxx统计SQL14fdsafasdfsadfdas', '4'),
+      ]),
+    ]),
+
+    getItem('仪表版', 'sub2', () => h(MailOutlined), [
+      getItem('全国销量仪表版', 'g1', null),
+      getItem('全国主机负载仪表版', 'g2', null),
+    ]),
+  ])
+
+  for (let menusKey in menus) {
+    if (menus[menusKey]?.key === 'sub1') {
+      if ('children' in menus[menusKey] && menus[menusKey].children != undefined) {
+      } else if ('children' in menus[menusKey] && menus[menusKey].children == undefined) {
+      } else {
+      }
+    }
+  }
+
+  return menus
+}
 
 function getItem(
   label: VueElement | string,
@@ -37,30 +85,6 @@ function getItem(
     type,
   } as ItemType
 }
-
-const items: ItemType[] = reactive([
-  getItem('Navigation One', 'sub1', () => h(MailOutlined), [
-    getItem('Item 1', 'g1', null, [getItem('Option 1', '1'), getItem('Option 2', '2')], 'group'),
-    getItem('Item 2', 'g2', null, [getItem('Option 3', '3'), getItem('Option 4', '4')], 'group'),
-  ]),
-
-  getItem('Navigation Two', 'sub2', () => h(AppstoreOutlined), [
-    getItem('Option 5', '5'),
-    getItem('Option 6', '6'),
-    getItem('Submenu', 'sub3', null, [getItem('Option 7', '7'), getItem('Option 8', '8')]),
-  ]),
-
-  { type: 'divider' },
-
-  getItem('Navigation Three', 'sub4', () => h(SettingOutlined), [
-    getItem('Option 9', '9'),
-    getItem('Option 10', '10'),
-    getItem('Option 11', '11'),
-    getItem('Option 12', '12'),
-  ]),
-
-  getItem('Group', 'grp', null, [getItem('Option 13', '13'), getItem('Option 14', '14')], 'group'),
-])
 
 const handleClick: MenuProps['onClick'] = (e) => {
   console.log('click', e)
