@@ -6,14 +6,35 @@ export default {
 
 <script setup lang="ts">
 import type { TreeProps } from 'ant-design-vue'
-import { reactive, ref, watch } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import {
   FundViewOutlined,
   FieldTimeOutlined,
   FieldNumberOutlined,
   FieldStringOutlined,
   TableOutlined,
+  WindowsOutlined,
 } from '@ant-design/icons-vue'
+
+import { EditorView, basicSetup } from '@codemirror/basic-setup'
+import { EditorState } from '@codemirror/state'
+import { sql } from '@codemirror/lang-sql'
+
+let sqlEditor = ref()
+onMounted(() => {
+  const state = EditorState.create({
+    doc: 'SELECT * FROM table_name;', // 初始内容
+    extensions: [
+      basicSetup, // 基础功能（如行号、缩进等）
+      sql(), // SQL 语言支持
+    ],
+  })
+
+  new EditorView({
+    state,
+    parent: sqlEditor.value, // 挂载到 DOM 元素
+  })
+})
 
 type DataType = TreeProps & {
   dataType?: 'number' | 'string' | 'date'
@@ -166,6 +187,51 @@ watch(expandedKeys, () => {
   console.log('expandedKeys', expandedKeys)
 })
 let siderHeight = ref(800)
+
+let topHeight = ref(500)
+let bottomHeight = ref(260)
+let isDragging = ref(false)
+
+// let contentContainer = ref()
+
+function changeHeight(e: Event) {
+  let element = document.getElementById('_contentContainer')
+  isDragging.value = true
+
+  function move(event: any) {
+    if (isDragging) {
+      // 拿到容器相对于视窗的 位置信息
+      const containerRect = (element as Element).getBoundingClientRect()
+      // 新的上部分高度 这个35是调试出来的
+      let a = event.clientY - containerRect.top - 35
+      // let b = 760 - event.clientY;
+      let b = 760 - a
+
+      // a 最小为0 a 最大为760
+      if (a > 760) {
+        a = 760
+        b = 0
+      }
+      if (a < 0) {
+        a = 0
+        b = 760
+      }
+      topHeight.value = a
+
+      bottomHeight.value = b
+      console.log('move', a, b)
+    }
+  }
+
+  function up() {
+    isDragging.value = false
+    window.removeEventListener('mousemove', move)
+    window.removeEventListener('mouseup', up)
+  }
+
+  window.addEventListener('mousemove', move)
+  window.addEventListener('mouseup', up)
+}
 </script>
 
 <template>
@@ -218,7 +284,7 @@ let siderHeight = ref(800)
         <a-row gutter="24">
           <a-col :span="8">
             <span
-              >数据源：<a-select>
+              >数据源：<a-select style="width: 120px" allow-clear>
                 <a-select-option value="1fdsafasfasf">1fdsafasfasf</a-select-option>
                 <a-select-option value="2">2</a-select-option>
                 <a-select-option value="3">3</a-select-option>
@@ -227,9 +293,74 @@ let siderHeight = ref(800)
           </a-col>
         </a-row>
       </a-layout-header>
-      <a-layout-content>
-        <div>sql 编辑窗口 调试按钮 预览数据 查看执行计划按钮 是否存入缓存加速 保存</div>
-      </a-layout-content>
+
+      <a-layout id="_contentContainer">
+        <a-layout-content class="top" :style="{ height: topHeight + 'px' }">
+          <a-layout
+            :style="{
+              boxShadow: '5px 5px 10px rgba(0, 0, 0, 0.3)',
+              margin: '5px',
+              height: '38px',
+              lineHeight: '38px',
+            }"
+          >
+            <a-space size="large">
+              <a-button>
+                <windows-outlined></windows-outlined>
+                预览
+              </a-button>
+              <a-button>
+                <windows-outlined></windows-outlined>
+                查看执行计划
+              </a-button>
+              <a-checkbox>缓存加速</a-checkbox>
+              <a-button>
+                <windows-outlined></windows-outlined>
+                SQL美化
+              </a-button>
+              <a-button>
+                <windows-outlined></windows-outlined>
+                放大字体
+              </a-button>
+              <a-button>
+                <windows-outlined></windows-outlined>
+                缩小字体
+              </a-button>
+              <a-button type="primary">保存</a-button>
+            </a-space>
+          </a-layout>
+
+          <!--          sql 的编辑框-->
+          <a-layout>
+            <a-textarea
+              :auto-size="{ minRows: 21 }"
+              placeholder="在这个区域输入SQL"
+              :style="{
+                margin: '5px',
+                padding: '10px 0 0 10px',
+                fontFamily: `'Courier New' , Courier , monospace`,
+                fontSize: '14px',
+                lineHeight: 1.5,
+              }"
+              ref="sqlEditor"
+              class="sqlEditor"
+            ></a-textarea>
+          </a-layout>
+        </a-layout-content>
+        <a-divider
+          :style="{
+            height: '10px',
+            backgroundColor: 'black',
+            margin: '1px 0',
+            cursor: 'row-resize',
+          }"
+          @mousedown="changeHeight($event)"
+        ></a-divider>
+        <a-layout-content
+          class="bottom"
+          :style="{ height: bottomHeight + 'px' }"
+        ></a-layout-content>
+      </a-layout>
     </a-layout>
   </a-layout>
 </template>
@@ -241,5 +372,18 @@ let siderHeight = ref(800)
   overflow: hidden;
   text-overflow: ellipsis;
   display: inline-block;
+}
+
+.contentContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.contentContainer .top {
+  background-color: #1890ff;
+}
+
+.contentContainer .bottom {
+  background-color: #77ea4a;
 }
 </style>

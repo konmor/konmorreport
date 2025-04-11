@@ -7,6 +7,8 @@ import DataSource from '@/views/dataSource.vue'
 import App from '@/App.vue'
 import Home from '@/views/home.vue'
 import SQLCreator from '@/views/sqlCreator.vue'
+import a from '@/views/a.vue'
+import b from '@/views/b.vue'
 // 4. 创建路由
 let router = createRouter({
   // 4.1 路由工作模式
