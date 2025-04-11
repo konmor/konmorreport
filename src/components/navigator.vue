@@ -23,10 +23,7 @@ let { navigatorWidth } = defineProps(['navigatorWidth'])
 let router: Router = inject<Router>('router')
 
 let items: ItemType[] = reactive([
-  getItem('xxxxMySql数据源', 'g1', null, [
-    getItem('查询xxx统计SQL1', '1'),
-    getItem('查询xxx统计SQL2', '2'),
-  ]),
+  getItem('xxxxMySql数据源1fdsa', 'g1', null, [getItem('查询xxx统计SQL1', '1'), getItem('查询xxx统计SQL2', '2')]),
   getItem('xxxxMySql数据源2', 'g2', null, [
     getItem('查询xxx统计SQL3', '3'),
     getItem('查询xxx统计SQL4', '4'),
@@ -79,6 +76,23 @@ function addDataSource(event: Event) {
     name: 'jumpDataSource',
   })
 }
+
+function addSQL(event: Event) {
+  event.stopPropagation()
+  router.push({
+    name:'jumpSqlCreator'
+  })
+}
+
+function a() {
+  console.log('a')
+}
+
+function c() {
+  console.log('c')
+}
+
+const showButton = reactive(new Array<Boolean>(items.length))
 </script>
 <template>
   <a-menu
@@ -96,26 +110,40 @@ function addDataSource(event: Event) {
           <database-outlined />
           <span>数据源</span>
         </span>
-        <a-button
-          type="primary"
-          shape="round"
-          size="small"
-          style="margin-left: 40px"
-          @click="addDataSource"
-        >
-          <template #icon>
-            <plus-circle-outlined></plus-circle-outlined>
-          </template>
-        </a-button>
+        <a-tooltip title="创建数据源">
+          <a-button
+            type="primary"
+            shape="round"
+            size="small"
+            style="margin-left: 40px"
+            @click="addDataSource"
+          >
+            <template #icon>
+              <plus-circle-outlined></plus-circle-outlined>
+            </template>
+          </a-button>
+        </a-tooltip>
       </template>
 
-      <a-sub-menu v-for="myItem in items" :key="myItem?.key">
+      <a-sub-menu
+        v-for="(myItem, index) in items"
+        :key="myItem?.key"
+        @mouseenter="showButton[index] = true"
+        @mouseleave="showButton[index] = false"
+      >
         <template #title>
-          <span>
-            <!--            <team-outlined />-->
-            <span v-if="myItem !== null && 'label' in myItem">{{ myItem.label }}</span>
-            <!--            <StepBackwardOutlined />-->
-          </span>
+          <span v-if="myItem !== null && 'label' in myItem">{{ myItem.label }}</span>
+          <a-tooltip title="创建SQL" v-if="showButton[index]">
+            <a-button
+              size="small"
+              :style="{ position: 'absolute', right: '30px', top: '8px' }"
+              @click="addSQL"
+            >
+              <template #icon>
+                <plus-circle-outlined></plus-circle-outlined>
+              </template>
+            </a-button>
+          </a-tooltip>
         </template>
         <a-menu-item
           v-if="myItem !== null && 'children' in myItem"
@@ -136,3 +164,4 @@ function addDataSource(event: Event) {
     </a-sub-menu>
   </a-menu>
 </template>
+<style scoped></style>

@@ -20,8 +20,6 @@ import {
 const collapsed = ref<boolean>(false)
 
 let navigatorWidth = ref('200px')
-
-
 </script>
 
 <template>
@@ -79,8 +77,8 @@ let navigatorWidth = ref('200px')
           <RouterView></RouterView>
         </div>
       </a-layout-content>
-      <a-layout-footer :style="{ backgroundColor: '#534e4e', margin: '0 10px 0 10px' }"
-        >footer
+      <a-layout-footer :style="{ margin: '0 10px 0 10px', textAlign: 'center' }"
+        >EasyReports
       </a-layout-footer>
     </a-layout>
   </a-layout>

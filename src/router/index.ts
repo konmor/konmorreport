@@ -6,6 +6,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import DataSource from '@/views/dataSource.vue'
 import App from '@/App.vue'
 import Home from '@/views/home.vue'
+import SQLCreator from '@/views/sqlCreator.vue'
 // 4. 创建路由
 let router = createRouter({
   // 4.1 路由工作模式
@@ -16,7 +17,10 @@ let router = createRouter({
     {
       path: '/home',
       component: Home,
-      children: [{ path: 'data-source', component: DataSource, name: 'jumpDataSource' }],
+      children: [
+        { path: 'data-source', component: DataSource, name: 'jumpDataSource' },
+        { path: 'sql-creator', component: SQLCreator, name: 'jumpSqlCreator' }
+      ],
     },
   ],
 })
