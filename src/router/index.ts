@@ -9,6 +9,7 @@ import Home from '@/views/home.vue'
 import SQLCreator from '@/views/sqlCreator.vue'
 import a from '@/views/a.vue'
 import b from '@/views/b.vue'
+import c from '@/views/c.vue'
 // 4. 创建路由
 let router = createRouter({
   // 4.1 路由工作模式

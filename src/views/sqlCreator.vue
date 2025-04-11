@@ -16,12 +16,15 @@ import {
   WindowsOutlined,
 } from '@ant-design/icons-vue'
 
-import { EditorView, basicSetup } from '@codemirror/basic-setup'
-import { EditorState } from '@codemirror/state'
+import { EditorState, Extension, Compartment, StateEffect } from '@codemirror/state'
+import { EditorView } from '@codemirror/view'
+import { basicSetup } from 'codemirror'
 import { sql } from '@codemirror/lang-sql'
+import { format } from 'sql-formatter'
 
-let sqlEditor = ref()
+let editor = reactive<EditorView>({})
 onMounted(() => {
+  let sqlEditor = document.getElementById('_sqlEditor')
   const state = EditorState.create({
     doc: 'SELECT * FROM table_name;', // 初始内容
     extensions: [
@@ -30,11 +33,51 @@ onMounted(() => {
     ],
   })
 
-  new EditorView({
-    state,
-    parent: sqlEditor.value, // 挂载到 DOM 元素
-  })
+  if (sqlEditor != null) {
+    editor = new EditorView({
+      state: state,
+      parent: sqlEditor, // 挂载到 DOM 元素
+    })
+  }
 })
+
+let fontSize = 14
+
+const updateFontSize = (newSize: number) => {
+  fontSize = newSize
+
+  // 更新编辑器的样式
+  editor.dom.style.fontSize = `${fontSize}px`
+
+  // 可选：更新其他与字体相关的属性，如行高
+  editor.dom.style.lineHeight = '1.5'
+}
+
+//  todo 改成 数字输入框，点击升降方式调整大小
+const zoomIn = () => {
+  if (fontSize < 25) {
+    updateFontSize(fontSize + 1) // 字体放大
+  }
+}
+
+const zoomOut = () => {
+  if (fontSize > 8) {
+    // 设置最小字体限制
+    updateFontSize(fontSize - 1) // 字体缩小
+  }
+}
+const resetFontSize = () => {
+  updateFontSize(14) // 字体缩小
+}
+
+function formatSQL() {
+  if (editor != null) {
+    const formattedContent = format(editor.state.doc.toString())
+    editor.dispatch({
+      changes: { from: 0, to: editor.state.doc.length, insert: formattedContent },
+    })
+  }
+}
 
 type DataType = TreeProps & {
   dataType?: 'number' | 'string' | 'date'
@@ -314,17 +357,21 @@ function changeHeight(e: Event) {
                 查看执行计划
               </a-button>
               <a-checkbox>缓存加速</a-checkbox>
-              <a-button>
+              <a-button @click="formatSQL">
                 <windows-outlined></windows-outlined>
                 SQL美化
               </a-button>
-              <a-button>
+              <a-button @click="zoomIn">
                 <windows-outlined></windows-outlined>
                 放大字体
               </a-button>
-              <a-button>
+              <a-button @click="zoomOut">
                 <windows-outlined></windows-outlined>
                 缩小字体
+              </a-button>
+              <a-button @click="resetFontSize">
+                <windows-outlined></windows-outlined>
+                重置字体大小
               </a-button>
               <a-button type="primary">保存</a-button>
             </a-space>
@@ -332,19 +379,8 @@ function changeHeight(e: Event) {
 
           <!--          sql 的编辑框-->
           <a-layout>
-            <a-textarea
-              :auto-size="{ minRows: 21 }"
-              placeholder="在这个区域输入SQL"
-              :style="{
-                margin: '5px',
-                padding: '10px 0 0 10px',
-                fontFamily: `'Courier New' , Courier , monospace`,
-                fontSize: '14px',
-                lineHeight: 1.5,
-              }"
-              ref="sqlEditor"
-              class="sqlEditor"
-            ></a-textarea>
+            <!--            todo控制大小-->
+            <div ref="sqlEditor" id="_sqlEditor" style="height: 470px; overflow: auto"></div>
           </a-layout>
         </a-layout-content>
         <a-divider
