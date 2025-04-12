@@ -15,6 +15,7 @@ import {
   UserOutlined,
   VideoCameraOutlined,
 } from '@ant-design/icons-vue'
+import zhCN from 'ant-design-vue/es/locale/zh_CN'
 
 // 代码
 const collapsed = ref<boolean>(false)
@@ -30,6 +31,7 @@ let navigatorWidth = ref('200px')
         colorPrimary: '#6aaf49',
       },
     }"
+    :locale="zhCN"
   >
   </a-config-provider>
   <a-layout id="reports">

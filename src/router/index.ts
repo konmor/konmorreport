@@ -10,6 +10,7 @@ import SQLCreator from '@/views/sqlCreator.vue'
 import a from '@/views/a.vue'
 import b from '@/views/b.vue'
 import c from '@/views/c.vue'
+import SQLViewer from '@/views/sqlViewer.vue'
 // 4. 创建路由
 let router = createRouter({
   // 4.1 路由工作模式
@@ -22,7 +23,18 @@ let router = createRouter({
       component: Home,
       children: [
         { path: 'data-source', component: DataSource, name: 'jumpDataSource' },
-        { path: 'sql-creator', component: SQLCreator, name: 'jumpSqlCreator' }
+        {
+          path: 'sql-creator',
+          component: SQLCreator,
+          name: 'jumpSqlCreator',
+          children: [
+            {
+              path: 'sql-viewer',
+              component: SQLViewer,
+              name: 'jumpSqlViewer',
+            },
+          ],
+        },
       ],
     },
   ],

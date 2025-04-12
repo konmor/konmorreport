@@ -6,7 +6,7 @@ export default {
 
 <script setup lang="ts">
 import type { TreeProps } from 'ant-design-vue'
-import { onMounted, reactive, ref, watch } from 'vue'
+import { inject, onMounted, reactive, ref, watch } from 'vue'
 import {
   FundViewOutlined,
   FieldTimeOutlined,
@@ -16,17 +16,20 @@ import {
   WindowsOutlined,
 } from '@ant-design/icons-vue'
 
-import { EditorState, Extension, Compartment, StateEffect } from '@codemirror/state'
+import { EditorState } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
 import { basicSetup } from 'codemirror'
 import { sql } from '@codemirror/lang-sql'
 import { format } from 'sql-formatter'
+import type { Router } from 'vue-router'
+
+let router = inject<Router>('router')
 
 let editor = reactive<EditorView>({})
 onMounted(() => {
   let sqlEditor = document.getElementById('_sqlEditor')
   const state = EditorState.create({
-    doc: 'SELECT * FROM table_name;', // 初始内容
+    doc: 'SELECT\n' + '  *\n' + 'FROM\n' + '  table_name;', // 初始内容
     extensions: [
       basicSetup, // 基础功能（如行号、缩进等）
       sql(), // SQL 语言支持
@@ -75,6 +78,24 @@ function formatSQL() {
     const formattedContent = format(editor.state.doc.toString())
     editor.dispatch({
       changes: { from: 0, to: editor.state.doc.length, insert: formattedContent },
+    })
+  }
+}
+
+function sqlView(event: Event) {
+  event.stopPropagation()
+  if (router != undefined) {
+    router.push({
+      name: 'jumpSqlViewer',
+    })
+  }
+}
+
+function sqlExplain(event: Event) {
+  event.stopPropagation()
+  if (router != undefined) {
+    router.push({
+      name: 'jumpSqlViewer',
     })
   }
 }
@@ -348,11 +369,11 @@ function changeHeight(e: Event) {
             }"
           >
             <a-space size="large">
-              <a-button>
+              <a-button @click="sqlView($event)">
                 <windows-outlined></windows-outlined>
                 预览
               </a-button>
-              <a-button>
+              <a-button @click="sqlExplain($event)">
                 <windows-outlined></windows-outlined>
                 查看执行计划
               </a-button>
@@ -392,10 +413,9 @@ function changeHeight(e: Event) {
           }"
           @mousedown="changeHeight($event)"
         ></a-divider>
-        <a-layout-content
-          class="bottom"
-          :style="{ height: bottomHeight + 'px' }"
-        ></a-layout-content>
+        <a-layout-content class="bottom" :style="{ height: bottomHeight + 'px' }">
+          <router-view></router-view>
+        </a-layout-content>
       </a-layout>
     </a-layout>
   </a-layout>
