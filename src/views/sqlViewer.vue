@@ -33,6 +33,15 @@ type MyTableColumnsType = (ColumnGroupType<DefaultRecordType> | MyColumnType<Def
 // 必须使用 ref包裹 响应式时使用
 const columns = ref<MyTableColumnsType>([
   {
+    title: '序号',
+    fixed: 'left',
+    dataIndex: 'index',
+    key: 'index',
+    customRender: ({ index }) => {
+      return `${index + 1}`
+    },
+  },
+  {
     title: '名称',
     key: '1',
     dataIndex: 'name',
@@ -190,8 +199,9 @@ for (let i = 0; i < 100; i++) {
     <a-table
       :data-source="datas"
       :columns="columns"
-      :scroll="{ x: 600, y: 200 }"
+      :scroll="{ x: 3000, y: 200 }"
       @resizeColumn="handleResizeColumn"
+      bordered
     >
       <template #headerCell="{ column }">
         <template v-if="column.dataType === 'string'">
