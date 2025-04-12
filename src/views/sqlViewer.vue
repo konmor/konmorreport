@@ -14,7 +14,7 @@ import {
   TableOutlined,
   WindowsOutlined,
 } from '@ant-design/icons-vue'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import type { DefaultRecordType } from 'ant-design-vue/es/vc-table/interface'
 import type { ColumnGroupType, ColumnType } from 'ant-design-vue/es/table/interface'
 import type { ColumnsType } from 'ant-design-vue/lib/table'
@@ -176,6 +176,34 @@ function handleResizeColumn(w: number, col: any) {
   col.width = w
 }
 
+// 动态计算列宽  列宽的计算触发条件 加载完成后触发、使用watch监听 columns 和 datas的变化也可触发 还有 handleResizeColumn 函数触发
+let scrollX = ref(1600)
+
+const calculateScrollX = function () {
+  let totalWidth: number = 0
+  columns.value.forEach((column) => {
+    if (column.width) {
+      if (typeof column.width === 'number') {
+        totalWidth += column.width
+      } else {
+        totalWidth += parseInt(column.width)
+      }
+    } else {
+      // 如果没有设置宽度，可以默认一个值或者根据内容动态计算
+      // let title = column.title.toString().length *20;
+      if(column.title){
+        totalWidth += (column.title.toString().length *22) + 14
+      }else {
+        totalWidth += 120
+      }
+    }
+  })
+  scrollX.value = totalWidth;
+}
+onMounted(()=>{
+  calculateScrollX()
+})
+
 let datas: [{ name?: string; age?: number; sex?: string; address?: string }] = [{}]
 for (let i = 0; i < 100; i++) {
   let name = '张三' + i
@@ -199,7 +227,7 @@ for (let i = 0; i < 100; i++) {
     <a-table
       :data-source="datas"
       :columns="columns"
-      :scroll="{ x: 3000, y: 200 }"
+      :scroll="{ x: scrollX, y: 200 }"
       @resizeColumn="handleResizeColumn"
       bordered
     >
