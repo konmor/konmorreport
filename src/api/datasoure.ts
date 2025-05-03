@@ -1,0 +1,1 @@
+import service from './index.ts';
