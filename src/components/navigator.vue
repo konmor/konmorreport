@@ -90,7 +90,21 @@ function addDataSource(event: Event) {
    */
   router.push({
     name: 'jumpDataSource',
+
   })
+}
+
+function showDatasourceDetail(key:number, event: Event) {
+  event.stopPropagation();
+  console.log('showDatasourceDetail', key, event)
+  if (key != null && typeof key == 'number') {
+    router.push({
+      name: 'jumpDataSource',
+      query: {
+        key: key
+      }
+    })
+  }
 }
 
 function addSQL(event: Event) {
@@ -144,6 +158,7 @@ const showButton = reactive(new Array<Boolean>(items.length))
       <a-sub-menu
           v-for="(myItem, index) in items"
           :key="myItem?.key"
+          @click="showDatasourceDetail(myItem?.key,$event)"
           @mouseenter="showButton[index] = true"
           @mouseleave="showButton[index] = false"
       >

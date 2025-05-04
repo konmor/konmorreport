@@ -30,9 +30,9 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
     (response) => {
         const res = response.data
-        if (response.status !== 200) {
-            console.log('API Error:', res.message)
-            return Promise.reject(new Error(res.message || 'Error'))
+        if (response.status != 200 || res == undefined || res.code != 0 || res.data == null) {
+            console.log('API Error:')
+            return Promise.reject(new Error('Error'))
         } else {
             return res
         }

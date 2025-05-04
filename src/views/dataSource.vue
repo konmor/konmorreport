@@ -5,10 +5,17 @@ export default {
 </script>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
-import type { FormInstance } from 'ant-design-vue'
+import {computed, reactive, ref, toRefs, watch} from 'vue'
+import type {FormInstance} from 'ant-design-vue'
+import {getDatasourceDetail} from "@/api/datasoure.ts";
+import {useRoute} from "vue-router";
+
+var route = useRoute();
+console.log(route.query)
+let {key} = route.query;
 
 let dataSource = reactive({
+  id: "",
   name: 'localhost:3306-MySQL',
   type: 'MySQL',
   ip: 'localhost',
@@ -21,7 +28,49 @@ let dataSource = reactive({
   encode: 'UTF-8',
   timeZone: 'Asia/Shanghai',
   remark: '',
+  useSsl: false,
+  useSsh: false,
+  databaseVersion: "",
 })
+
+watch(() => route.query, (item) => {
+  let datasourceDetail = getDatasourceDetail(item.key);
+  /*
+  sourceId
+  dataSourceName
+  dataSourceType
+  description
+  host
+  port
+  databaseName
+  username
+  password
+  driverClass
+  charset
+  timezone
+  connectionUrl
+  useSsl
+  useSsh
+  databaseVersion
+  sshConfigDTO
+  sslConfigDTO
+   */
+  datasourceDetail.then(reponse => {
+    dataSource.name = reponse.data.dataSourceName;
+    dataSource.type = reponse.data.dataSourceType;
+    dataSource.ip = reponse.data.host;
+    dataSource.port = reponse.data.port;
+    dataSource.username = reponse.data.username;
+    dataSource.password = reponse.data.password;
+    dataSource.url = reponse.data.connectionUrl;
+    dataSource.database = reponse.data.databaseName;
+    dataSource.driver = reponse.data.driverClass;
+    dataSource.encode = reponse.data.charset;
+    dataSource.timeZone = reponse.data.timezone;
+    dataSource.remark = reponse.data.description;
+  })
+})
+
 
 const focus = () => {
   console.log('focus')
@@ -35,13 +84,13 @@ let formRef = ref<FormInstance>()
 const submitForm = () => {
   if (formRef.value != undefined) {
     formRef.value
-      .validate()
-      // .then(() => {
-      //   console.log('values', dynamicValidateForm.domains)
-      // })
-      .catch((error) => {
-        console.log('error', error)
-      })
+        .validate()
+        // .then(() => {
+        //   console.log('values', dynamicValidateForm.domains)
+        // })
+        .catch((error) => {
+          console.log('error', error)
+        })
   }
 }
 
@@ -60,14 +109,14 @@ const testConnection = () => {
   <a-layout style="background-color: #aaa2a2">
     <div class="dataSourceTitle"><span>新建数据源</span></div>
     <a-form
-      ref="formRef"
-      name="datasourceForm"
-      :model="dataSource"
-      :label-col="{ span: 8 }"
-      :wrapper-col="{ span: 20 }"
+        ref="formRef"
+        name="datasourceForm"
+        :model="dataSource"
+        :label-col="{ span: 8 }"
+        :wrapper-col="{ span: 20 }"
     >
       <div
-        :style="{
+          :style="{
           margin: '10px 0 0 20px',
           border: '1px solid black',
           height: '50px',
@@ -80,9 +129,9 @@ const testConnection = () => {
           <a-col :span="4">
             <a-form-item label="名称" required :style="{ lineHeight: '50px' }" name="name">
               <a-input
-                v-model:value="dataSource.name"
-                placeholder="请输入数据源名称"
-                allowClear
+                  v-model:value="dataSource.name"
+                  placeholder="请输入数据源名称"
+                  allowClear
               ></a-input>
             </a-form-item>
           </a-col>
@@ -90,11 +139,11 @@ const testConnection = () => {
           <a-col :span="4">
             <a-form-item label="数据源类型" required :style="{ lineHeight: '50px' }" name="type">
               <a-select
-                v-model:value="dataSource.type"
-                @focus="focus"
-                @change="handleChange"
-                placeholder="请选择数据源类型"
-                allowClear
+                  v-model:value="dataSource.type"
+                  @focus="focus"
+                  @change="handleChange"
+                  placeholder="请选择数据源类型"
+                  allowClear
               >
                 <a-select-option value="MySQL">MySQL</a-select-option>
                 <a-select-option value="PostgreSQL" disabled>PostgreSQL</a-select-option>
@@ -111,7 +160,7 @@ const testConnection = () => {
       </div>
 
       <div
-        :style="{
+          :style="{
           margin: '10px 0 0 20px',
           border: '1px solid black',
         }"
@@ -123,9 +172,9 @@ const testConnection = () => {
           <a-col :span="4">
             <a-form-item label="IP地址" required name="ip">
               <a-input
-                v-model:value="dataSource.ip"
-                placeholder="请输入ip地址"
-                allow-clear
+                  v-model:value="dataSource.ip"
+                  placeholder="请输入ip地址"
+                  allow-clear
               ></a-input>
             </a-form-item>
           </a-col>
@@ -133,18 +182,18 @@ const testConnection = () => {
           <a-col :span="4">
             <a-form-item label="端口号" required name="port">
               <a-input-number
-                v-model:value="dataSource.port"
-                placeholder="请输入端口号"
-                allow-clear
+                  v-model:value="dataSource.port"
+                  placeholder="请输入端口号"
+                  allow-clear
               ></a-input-number>
             </a-form-item>
           </a-col>
           <a-col :span="4">
             <a-form-item label="数据库名称" name="database">
               <a-input
-                v-model:value="dataSource.database"
-                placeholder="请输入数据库名称"
-                allow-clear
+                  v-model:value="dataSource.database"
+                  placeholder="请输入数据库名称"
+                  allow-clear
               ></a-input>
             </a-form-item>
           </a-col>
@@ -154,18 +203,18 @@ const testConnection = () => {
           <a-col :span="4">
             <a-form-item label="用户名" required name="username">
               <a-input
-                v-model:value="dataSource.username"
-                placeholder="请输入用户名"
-                allow-clear
+                  v-model:value="dataSource.username"
+                  placeholder="请输入用户名"
+                  allow-clear
               ></a-input>
             </a-form-item>
           </a-col>
           <a-col :span="4">
             <a-form-item label="密码" required name="password">
               <a-input-password
-                v-model:value="dataSource.password"
-                placeholder="请输入密码"
-                allow-clear
+                  v-model:value="dataSource.password"
+                  placeholder="请输入密码"
+                  allow-clear
               ></a-input-password>
             </a-form-item>
           </a-col>
@@ -229,7 +278,7 @@ const testConnection = () => {
       </div>
 
       <div
-        :style="{
+          :style="{
           margin: '10px 0 0 20px',
           border: '1px solid black',
           height: '200px',
@@ -244,7 +293,7 @@ const testConnection = () => {
           <a-form-item>
             <a-button type="primary" html-type="submit" @click="submitForm">提交</a-button>
             <a-button :style="{ marginLeft: '10px' }" @click="() => formRef.resetFields()"
-              >重置
+            >重置
             </a-button>
           </a-form-item>
         </a-col>
