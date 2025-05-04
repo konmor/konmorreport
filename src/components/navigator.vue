@@ -90,7 +90,9 @@ function addDataSource(event: Event) {
    */
   router.push({
     name: 'jumpDataSource',
-
+    query: {
+      key: null
+    }
   })
 }
 

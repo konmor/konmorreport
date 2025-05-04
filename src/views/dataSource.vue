@@ -14,7 +14,7 @@ var route = useRoute();
 console.log(route.query)
 let {key} = route.query;
 
-let dataSource = reactive({
+let templeate = {
   id: "",
   name: 'localhost:3306-MySQL',
   type: 'MySQL',
@@ -31,44 +31,63 @@ let dataSource = reactive({
   useSsl: false,
   useSsh: false,
   databaseVersion: "",
-})
+}
+type datasourceType = typeof templeate;
+let dataSource: datasourceType = reactive({
+  id: "",
+  name: 'localhost:3306-MySQL',
+  type: 'MySQL',
+  ip: 'localhost',
+  port: 3306,
+  username: 'root',
+  password: 'root',
+  url: 'jdbc:mysql://localhost:3306',
+  database: 'work',
+  driver: 'MySQL8.X',
+  encode: 'UTF-8',
+  timeZone: 'Asia/Shanghai',
+  remark: '',
+  useSsl: false,
+  useSsh: false,
+  databaseVersion: "",
+});
 
 watch(() => route.query, (item) => {
-  let datasourceDetail = getDatasourceDetail(item.key);
-  /*
-  sourceId
-  dataSourceName
-  dataSourceType
-  description
-  host
-  port
-  databaseName
-  username
-  password
-  driverClass
-  charset
-  timezone
-  connectionUrl
-  useSsl
-  useSsh
-  databaseVersion
-  sshConfigDTO
-  sslConfigDTO
-   */
-  datasourceDetail.then(reponse => {
-    dataSource.name = reponse.data.dataSourceName;
-    dataSource.type = reponse.data.dataSourceType;
-    dataSource.ip = reponse.data.host;
-    dataSource.port = reponse.data.port;
-    dataSource.username = reponse.data.username;
-    dataSource.password = reponse.data.password;
-    dataSource.url = reponse.data.connectionUrl;
-    dataSource.database = reponse.data.databaseName;
-    dataSource.driver = reponse.data.driverClass;
-    dataSource.encode = reponse.data.charset;
-    dataSource.timeZone = reponse.data.timezone;
-    dataSource.remark = reponse.data.description;
-  })
+  if (item.key != null) {
+    let datasourceDetail = getDatasourceDetail(item.key);
+    datasourceDetail.then(response => {
+      dataSource.id = response.data.sourceId;
+      dataSource.name = response.data.dataSourceName;
+      dataSource.type = response.data.dataSourceType;
+      dataSource.ip = response.data.host;
+      dataSource.port = response.data.port;
+      dataSource.username = response.data.username;
+      dataSource.password = response.data.password;
+      dataSource.url = response.data.connectionUrl;
+      dataSource.database = response.data.databaseName;
+      dataSource.driver = response.data.driverClass;
+      dataSource.encode = response.data.charset;
+      dataSource.timeZone = response.data.timezone;
+      dataSource.remark = response.data.description;
+    })
+  } else {
+    dataSource.id = templeate.id;
+    dataSource.name = templeate.name;
+    dataSource.type = templeate.type;
+    dataSource.ip = templeate.ip;
+    dataSource.port = templeate.port;
+    dataSource.username = templeate.username;
+    dataSource.password = templeate.password;
+    dataSource.url = templeate.url;
+    dataSource.database = templeate.database;
+    dataSource.driver = templeate.driver;
+    dataSource.encode = templeate.encode;
+    dataSource.timeZone = templeate.timeZone;
+    dataSource.remark = templeate.remark;
+  }
+
+  console.log('dataSource', dataSource)
+
 })
 
 
@@ -111,7 +130,7 @@ const testConnection = () => {
     <a-form
         ref="formRef"
         name="datasourceForm"
-        :model="dataSource"
+        v-model="dataSource"
         :label-col="{ span: 8 }"
         :wrapper-col="{ span: 20 }"
     >
