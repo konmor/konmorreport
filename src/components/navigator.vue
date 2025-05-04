@@ -14,8 +14,9 @@ import {
 import {reactive, ref, watch, VueElement, h, onMounted, inject} from 'vue'
 import type {MenuProps, ItemType} from 'ant-design-vue'
 import type {Router} from 'vue-router'
-import {getDatasourceList} from "@/api/datasoure.ts";
+import useNavigator from '@/hooks/useNavigator.ts'
 
+var { refreshDatasourceList,data } = useNavigator();
 
 // 默认选中哪些内容
 const selectedKeys = ref<string[]>(['1'])
@@ -23,50 +24,9 @@ const openKeys = ref<string[]>(['sub1'])
 
 let {navigatorWidth} = defineProps(['navigatorWidth'])
 let router: Router = inject<Router>('router')
+refreshDatasourceList();
+let items: ItemType[] = data;
 
-
-let m = getDatasourceList();
-let datasources: ItemType[] = reactive([]);
-m.then(a => {
-  if (a.data.length > 0) {
-    for (let i = 0; i < a.data.length; i++) {
-      var item = a.data[i];
-      if (item.sqlNameList != null) {
-        let subItemList: ItemType[] = [];
-        for (let j = 0; j < item.sqlNameList.length; j++) {
-          var subItem = item.sqlNameList[j];
-          subItemList[j] = getItem(subItem.sqlName, subItem.sqlId);
-        }
-        datasources[i] = getItem(item.sourceName, item.sourceId, null, subItemList);
-      } else {
-        datasources[i] = getItem(item.sourceName, item.sourceId);
-      }
-    }
-  }
-})
-
-let items: ItemType[] = datasources
-console.log(datasources, items);
-let items2: ItemType[] = reactive([
-  getItem('全国销量仪表版', 'g1', null),
-  getItem('全国主机负载仪表版', 'g2', null),
-])
-
-function getItem(
-    label: VueElement | string,
-    key: string,
-    icon?: any,
-    children?: ItemType[],
-    type?: 'group',
-): ItemType {
-  return {
-    key,
-    icon,
-    children,
-    label,
-    type,
-  } as ItemType
-}
 
 const handleClick: MenuProps['onClick'] = (e) => {
   console.log('click', e)
@@ -91,7 +51,7 @@ function addDataSource(event: Event) {
   router.push({
     name: 'jumpDataSource',
     query: {
-      key: null
+      key: ""
     }
   })
 }
