@@ -11,37 +11,53 @@ import {
   PlusCircleOutlined,
   DatabaseOutlined,
 } from '@ant-design/icons-vue'
-import { reactive, ref, watch, VueElement, h, onMounted, inject } from 'vue'
-import type { MenuProps, ItemType } from 'ant-design-vue'
-import type { Router } from 'vue-router'
+import {reactive, ref, watch, VueElement, h, onMounted, inject} from 'vue'
+import type {MenuProps, ItemType} from 'ant-design-vue'
+import type {Router} from 'vue-router'
+import {getDatasourceList} from "@/api/datasoure.ts";
+
 
 // 默认选中哪些内容
 const selectedKeys = ref<string[]>(['1'])
 const openKeys = ref<string[]>(['sub1'])
 
-let { navigatorWidth } = defineProps(['navigatorWidth'])
+let {navigatorWidth} = defineProps(['navigatorWidth'])
 let router: Router = inject<Router>('router')
 
-let items: ItemType[] = reactive([
-  getItem('xxxxMySql数据源1fdsa', 'g1', null, [getItem('查询xxx统计SQL1', '1'), getItem('查询xxx统计SQL2', '2')]),
-  getItem('xxxxMySql数据源2', 'g2', null, [
-    getItem('查询xxx统计SQL3', '3'),
-    getItem('查询xxx统计SQL4', '4'),
-  ]),
-  getItem('xxxxMySql数据源3', 'g3', null, []),
-])
 
+let m = getDatasourceList();
+let datasources: ItemType[] = reactive([]);
+m.then(a => {
+  if (a.data.length > 0) {
+    for (let i = 0; i < a.data.length; i++) {
+      var item = a.data[i];
+      if (item.sqlNameList != null) {
+        let subItemList: ItemType[] = [];
+        for (let j = 0; j < item.sqlNameList.length; j++) {
+          var subItem = item.sqlNameList[j];
+          subItemList[j] = getItem(subItem.sqlName, subItem.sqlId);
+        }
+        datasources[i] = getItem(item.sourceName, item.sourceId, null, subItemList);
+      } else {
+        datasources[i] = getItem(item.sourceName, item.sourceId);
+      }
+    }
+  }
+})
+
+let items: ItemType[] = datasources
+console.log(datasources, items);
 let items2: ItemType[] = reactive([
   getItem('全国销量仪表版', 'g1', null),
   getItem('全国主机负载仪表版', 'g2', null),
 ])
 
 function getItem(
-  label: VueElement | string,
-  key: string,
-  icon?: any,
-  children?: ItemType[],
-  type?: 'group',
+    label: VueElement | string,
+    key: string,
+    icon?: any,
+    children?: ItemType[],
+    type?: 'group',
 ): ItemType {
   return {
     key,
@@ -80,7 +96,7 @@ function addDataSource(event: Event) {
 function addSQL(event: Event) {
   event.stopPropagation()
   router.push({
-    name:'jumpSqlCreator'
+    name: 'jumpSqlCreator'
   })
 }
 
@@ -96,27 +112,27 @@ const showButton = reactive(new Array<Boolean>(items.length))
 </script>
 <template>
   <a-menu
-    id="mainMenu"
-    v-model:openKeys="openKeys"
-    v-model:selectedKeys="selectedKeys"
-    :style="{ width: navigatorWidth }"
-    mode="inline"
-    inlineIndent="10"
-    @click="handleClick"
+      id="mainMenu"
+      v-model:openKeys="openKeys"
+      v-model:selectedKeys="selectedKeys"
+      :style="{ width: navigatorWidth }"
+      mode="inline"
+      inlineIndent="10"
+      @click="handleClick"
   >
     <a-sub-menu key="sub1">
       <template #title>
         <span>
-          <database-outlined />
+          <database-outlined/>
           <span>数据源</span>
         </span>
         <a-tooltip title="创建数据源">
           <a-button
-            type="primary"
-            shape="round"
-            size="small"
-            style="margin-left: 40px"
-            @click="addDataSource"
+              type="primary"
+              shape="round"
+              size="small"
+              style="margin-left: 40px"
+              @click="addDataSource"
           >
             <template #icon>
               <plus-circle-outlined></plus-circle-outlined>
@@ -126,18 +142,18 @@ const showButton = reactive(new Array<Boolean>(items.length))
       </template>
 
       <a-sub-menu
-        v-for="(myItem, index) in items"
-        :key="myItem?.key"
-        @mouseenter="showButton[index] = true"
-        @mouseleave="showButton[index] = false"
+          v-for="(myItem, index) in items"
+          :key="myItem?.key"
+          @mouseenter="showButton[index] = true"
+          @mouseleave="showButton[index] = false"
       >
         <template #title>
           <span v-if="myItem !== null && 'label' in myItem">{{ myItem.label }}</span>
           <a-tooltip title="创建SQL" v-if="showButton[index]">
             <a-button
-              size="small"
-              :style="{ position: 'absolute', right: '30px', top: '8px' }"
-              @click="addSQL"
+                size="small"
+                :style="{ position: 'absolute', right: '30px', top: '8px' }"
+                @click="addSQL"
             >
               <template #icon>
                 <plus-circle-outlined></plus-circle-outlined>
@@ -146,9 +162,9 @@ const showButton = reactive(new Array<Boolean>(items.length))
           </a-tooltip>
         </template>
         <a-menu-item
-          v-if="myItem !== null && 'children' in myItem"
-          v-for="subItem in myItem.children"
-          :key="subItem?.key"
+            v-if="myItem !== null && 'children' in myItem"
+            v-for="subItem in myItem.children"
+            :key="subItem?.key"
         >
           <span v-if="subItem !== null && 'label' in subItem">{{ subItem.label }}</span>
         </a-menu-item>
@@ -157,7 +173,7 @@ const showButton = reactive(new Array<Boolean>(items.length))
     <a-sub-menu key="sub2">
       <template #title>
         <span>
-          <bar-chart-outlined />
+          <bar-chart-outlined/>
           <span>仪表板</span>
         </span>
       </template>
