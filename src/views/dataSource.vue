@@ -104,9 +104,9 @@ const submitForm = () => {
   if (formRef.value != undefined) {
     formRef.value
         .validate()
-        // .then(() => {
-        //   console.log('values', dynamicValidateForm.domains)
-        // })
+        .then((item) => {
+          console.log('values', item)
+        })
         .catch((error) => {
           console.log('error', error)
         })
@@ -130,7 +130,7 @@ const testConnection = () => {
     <a-form
         ref="formRef"
         name="datasourceForm"
-        v-model="dataSource"
+        :model="dataSource"
         :label-col="{ span: 8 }"
         :wrapper-col="{ span: 20 }"
     >

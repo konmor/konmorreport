@@ -28,3 +28,7 @@ export function getDatasourceList() {
 export function getDatasourceDetail(sourceId: string) {
     return instance.get(`datasource/datasources/datails?sourceId=${sourceId}`);
 }
+
+export function saveDatasource(datasource) {
+
+}
