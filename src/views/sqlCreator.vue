@@ -44,10 +44,10 @@ onMounted(() => {
   }
 })
 
-let fontSize = 14
+let fontSize = ref(14)
 
 const updateFontSize = (newSize: number) => {
-  fontSize = newSize
+  fontSize.value = newSize
 
   // 更新编辑器的样式
   editor.dom.style.fontSize = `${fontSize}px`
@@ -58,15 +58,15 @@ const updateFontSize = (newSize: number) => {
 
 //  todo 改成 数字输入框，点击升降方式调整大小
 const zoomIn = () => {
-  if (fontSize < 25) {
-    updateFontSize(fontSize + 1) // 字体放大
+  if (fontSize.value < 25) {
+    updateFontSize(fontSize.value + 1) // 字体放大
   }
 }
 
 const zoomOut = () => {
-  if (fontSize > 8) {
+  if (fontSize.value > 8) {
     // 设置最小字体限制
-    updateFontSize(fontSize - 1) // 字体缩小
+    updateFontSize(fontSize.value - 1) // 字体缩小
   }
 }
 const resetFontSize = () => {
@@ -296,6 +296,25 @@ function changeHeight(e: Event) {
   window.addEventListener('mousemove', move)
   window.addEventListener('mouseup', up)
 }
+
+function saveSQLConfig() {
+  /*sqlId
+  sourceId
+  dbId
+  schemaId
+  sqlName
+  sqlContent
+  fontSize
+  sqlParamList
+  paramId
+  sqlId
+  paramName
+  defaultValue*/
+
+  let sqlContent = format(editor.state.doc.toString());
+
+
+}
 </script>
 
 <template>
@@ -394,7 +413,7 @@ function changeHeight(e: Event) {
                 <windows-outlined></windows-outlined>
                 重置字体大小
               </a-button>
-              <a-button type="primary">保存</a-button>
+              <a-button type="primary" @click="saveSQLConfig">保存</a-button>
             </a-space>
           </a-layout>
 
