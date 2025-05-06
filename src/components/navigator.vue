@@ -30,8 +30,10 @@ let openKeys = ref<string[]>(['dataSourceConfigMenu']);
 onMounted(() => {
   setTimeout(() => {
     if (items != null && items.length > 0) {
+      // 设置选中
       let key = String(items[0].key);
       selectedKeys.value = [key];
+      // 跳转
       if (key != null) {
         router.push({
           name: 'jumpDataSource',
