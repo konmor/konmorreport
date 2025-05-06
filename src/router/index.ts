@@ -16,9 +16,9 @@ let router = createRouter({
   history: createWebHistory(),
   // 4.2 定义路由规则 路径 与 组件的关系
   routes: [
-    { path: '/', redirect: '/home' },
+    { path: '/', redirect: '/easy-report' },
     {
-      path: '/home',
+      path: '/easy-report',
       component: Home,
       children: [
         {

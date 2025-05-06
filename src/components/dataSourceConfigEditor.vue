@@ -13,11 +13,10 @@ import { saveDatasource } from '@/api/datasoure.ts'
 import type { DatasourceDetail } from '@/types/api.ts'
 import useNavigator from '@/hooks/useNavigator.ts'
 
-var { refreshDatasourceList, data } = useNavigator()
+let { refreshDatasourceList, data } = useNavigator()
 
-var route = useRoute()
+let route = useRoute()
 console.log(route.query)
-let { key } = route.query
 
 let templeate = {
   id: '',
@@ -37,7 +36,9 @@ let templeate = {
   useSsh: false,
   databaseVersion: '',
 }
+
 type datasourceType = typeof templeate
+
 let dataSource: datasourceType = reactive({
   id: '',
   name: 'localhost:3306-MySQL',
@@ -57,17 +58,7 @@ let dataSource: datasourceType = reactive({
   databaseVersion: '',
 })
 
-watch(
-  () => route.query,
-  (item) => {
-    if (item.key != null && typeof item.key == 'string') {
-      refreshDataSource(item.key)
-    }
-    console.log('dataSource', dataSource)
-  },
-)
-
-function refreshDataSource(key: string) {
+const refreshDataSource = (key?: string) => {
   if (key != null && key != '') {
     let datasourceDetail = getDatasourceDetail(key)
     datasourceDetail.then((response) => {
@@ -141,7 +132,7 @@ const submitForm = () => {
           if (response.code == 0) {
             window.alert('保存成功')
             // refreshDataSource(route.query.key);
-            refreshDatasourceList();
+            refreshDatasourceList()
           } else {
             window.alert('保存失败，请检查配置')
           }
@@ -162,6 +153,24 @@ const resetForm = () => {
 const testConnection = () => {
   console.log('datasource', dataSource)
 }
+
+watch(
+  () => route.query,
+  (item) => {
+    if (item.key != null && typeof item.key == 'string') {
+
+      if(item.key.startsWith("_datasourceKey")){
+        // 这里表明是新添加的数据，不需要添加新的内容
+        refreshDataSource()
+      }else {
+        refreshDataSource(item.key);
+      }
+      console.log('dataSource item.key != null', dataSource)
+    } else {
+      console.log('dataSource item.key == null', dataSource)
+    }
+  },
+)
 </script>
 
 <template>

@@ -28,6 +28,9 @@ let handleClick: MenuProps['onClick'] = (e) => {
 }
 
 let showButton = reactive(new Array<Boolean>(items.length))
+let newLabel = ref('数据源')
+let newKey = ref('_datasourceKey')
+let newFlag = ref(1)
 
 // 添加数据源
 function addDataSource(event: Event) {
@@ -42,10 +45,17 @@ function addDataSource(event: Event) {
    *
    * 高级 特性 连接内容 连接池大小 最大连接个数
    */
+  items.push({
+    label: newLabel.value + '(' + newFlag.value + ')',
+    key: newKey.value + newFlag.value,
+  })
+  selectedKeys.value = [newKey.value + newFlag.value]
+  newFlag.value += 1
+
   router.push({
     name: 'toDataSourceCreator',
     query: {
-      key: '',
+      key: newKey.value,
     },
   })
 }
@@ -109,7 +119,7 @@ onMounted(() => {
       // 跳转
       if (key != null) {
         router.push({
-          name: 'jumpDataSource',
+          name: 'toDataSourceCreator',
           query: {
             key: key,
           },
