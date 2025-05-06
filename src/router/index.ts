@@ -10,6 +10,7 @@ import SqlEditor from '@/components/sqlEditor.vue'
 import SQLDataViewer from '@/components/sqlDataViewer.vue'
 import editSQL from '@/views/editSQL.vue'
 import createSQL from '@/views/createSQL.vue'
+import editDatasourceConfig from '@/views/editDatasourceConfig.vue'
 // 4. 创建路由
 let router = createRouter({
   // 4.1 路由工作模式
@@ -31,8 +32,8 @@ let router = createRouter({
             },
             {
               path: 'edit',
-              component: createDataSourceConfig,
-              name: 'editDataSourceConfig',
+              component: editDatasourceConfig,
+              name: 'toEditDataSourceConfig',
             },
             {
               path: 'sql',

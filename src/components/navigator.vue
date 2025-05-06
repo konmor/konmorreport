@@ -64,7 +64,7 @@ function showDatasourceDetail(key: string, event: Event) {
   event.stopPropagation()
   if (key != null) {
     router.push({
-      name: 'toDataSourceCreator',
+      name: 'toEditDataSourceConfig',
       query: {
         key: key,
       },
