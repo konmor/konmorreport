@@ -1,20 +1,20 @@
 export interface DatasourceDetail {
-    sourceId: number
-    dataSourceName: string
-    dataSourceType: string
-    description: string
-    host: string
-    port: number
-    databaseName: string
-    username: string
-    password: string
-    driverClass: string
-    charset: string
-    timezone: string
-    connectionUrl: string
-    useSsl: boolean
-    useSsh: boolean
-    databaseVersion: string
+    sourceId?: number|string
+    dataSourceName?: string
+    dataSourceType?: string
+    description?: string
+    host?: string
+    port?: number
+    databaseName?: string
+    username?: string
+    password?: string
+    driverClass?: string
+    charset?: string
+    timezone?: string
+    connectionUrl?: string
+    useSsl?: boolean
+    useSsh?: boolean
+    databaseVersion?: string
     sshConfigDTO?: SSHConfig
     sslConfigDTO?: SSLConfig
 }

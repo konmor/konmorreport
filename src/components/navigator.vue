@@ -63,7 +63,7 @@ function addDataSource(event: Event) {
 function showDatasourceDetail(key: string, event: Event) {
   event.stopPropagation()
   if (key != null) {
-    router.push({
+    router.replace({
       name: 'toEditDataSourceConfig',
       query: {
         key: key,
@@ -71,7 +71,6 @@ function showDatasourceDetail(key: string, event: Event) {
     })
   }
   selectedKeys.value = [String(key)]
-  console.log('selectedKeys', selectedKeys)
 }
 
 function showSQLDetail(key: string, event: Event) {
@@ -85,7 +84,6 @@ function showSQLDetail(key: string, event: Event) {
     })
   }
   selectedKeys.value = [String(key)]
-  console.log('selectedKeys', selectedKeys)
 }
 
 function addSQL(key: string, event: Event) {
@@ -119,7 +117,7 @@ onMounted(() => {
       // 跳转
       if (key != null) {
         router.push({
-          name: 'toDataSourceCreator',
+          name: 'toEditDataSourceConfig',
           query: {
             key: key,
           },
