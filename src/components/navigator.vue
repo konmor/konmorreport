@@ -16,14 +16,14 @@ import type {MenuProps, ItemType} from 'ant-design-vue'
 import type {Router} from 'vue-router'
 import useNavigator from '@/hooks/useNavigator.ts'
 
-var { refreshDatasourceList,data } = useNavigator();
+var {refreshDatasourceList, data} = useNavigator();
 
 // 默认选中哪些内容
-const selectedKeys = ref<string[]>(['1'])
-const openKeys = ref<string[]>(['sub1'])
+const selectedKeys = ref<string[]>(['7'])
+const openKeys = ref<string[]>(['sub1','10001']);
 
 let {navigatorWidth} = defineProps(['navigatorWidth'])
-let router: Router = inject<Router>('router')
+let router: Router = inject<Router>('router');
 refreshDatasourceList();
 let items: ItemType[] = data;
 
@@ -56,10 +56,9 @@ function addDataSource(event: Event) {
   })
 }
 
-function showDatasourceDetail(key:number, event: Event) {
+function showDatasourceDetail(key: number, event: Event) {
   event.stopPropagation();
-  console.log('showDatasourceDetail', key, event)
-  if (key != null && typeof key == 'number') {
+  if (key != null) {
     router.push({
       name: 'jumpDataSource',
       query: {
@@ -67,6 +66,8 @@ function showDatasourceDetail(key:number, event: Event) {
       }
     })
   }
+  // selectedKeys.value=[String(key)]
+  console.log('selectedKeys',selectedKeys)
 }
 
 function addSQL(event: Event) {
@@ -108,8 +109,7 @@ const showButton = reactive(new Array<Boolean>(items.length))
               shape="round"
               size="small"
               style="margin-left: 40px"
-              @click="addDataSource"
-          >
+              @click="addDataSource">
             <template #icon>
               <plus-circle-outlined></plus-circle-outlined>
             </template>
@@ -121,17 +121,16 @@ const showButton = reactive(new Array<Boolean>(items.length))
           v-for="(myItem, index) in items"
           :key="myItem?.key"
           @click="showDatasourceDetail(myItem?.key,$event)"
+          itemtype='menuItemType'
           @mouseenter="showButton[index] = true"
-          @mouseleave="showButton[index] = false"
-      >
+          @mouseleave="showButton[index] = false">
         <template #title>
           <span v-if="myItem !== null && 'label' in myItem">{{ myItem.label }}</span>
           <a-tooltip title="创建SQL" v-if="showButton[index]">
             <a-button
                 size="small"
                 :style="{ position: 'absolute', right: '30px', top: '8px' }"
-                @click="addSQL"
-            >
+                @click="addSQL">
               <template #icon>
                 <plus-circle-outlined></plus-circle-outlined>
               </template>
@@ -141,8 +140,7 @@ const showButton = reactive(new Array<Boolean>(items.length))
         <a-menu-item
             v-if="myItem !== null && 'children' in myItem"
             v-for="subItem in myItem.children"
-            :key="subItem?.key"
-        >
+            :key="subItem?.key">
           <span v-if="subItem !== null && 'label' in subItem">{{ subItem.label }}</span>
         </a-menu-item>
       </a-sub-menu>

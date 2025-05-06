@@ -3,14 +3,14 @@
 // 2. 导入vue路由依赖 createRouter 。
 import { createRouter, createWebHistory } from 'vue-router'
 // 3. 引入要建立路由关系的组件
-import DataSource from '@/views/dataSource.vue'
+import dataSourceConfigEditor from '@/components/dataSourceConfigEditor.vue'
 import App from '@/App.vue'
-import Home from '@/views/home.vue'
-import SQLCreator from '@/views/sqlCreator.vue'
+import Home from '@/components/home.vue'
+import SqlEditor from '@/components/sqlEditor.vue'
 import a from '@/views/a.vue'
 import b from '@/views/b.vue'
 import c from '@/views/c.vue'
-import SQLViewer from '@/views/sqlViewer.vue'
+import SQLViewer from '@/components/sqlViewer.vue'
 // 4. 创建路由
 let router = createRouter({
   // 4.1 路由工作模式
@@ -22,10 +22,10 @@ let router = createRouter({
       path: '/home',
       component: Home,
       children: [
-        { path: 'data-source', component: DataSource, name: 'jumpDataSource' },
+        { path: 'data-source', component: dataSourceConfigEditor, name: 'jumpDataSource' },
         {
           path: 'sql-creator',
-          component: SQLCreator,
+          component: SqlEditor,
           name: 'jumpSqlCreator',
           children: [
             {

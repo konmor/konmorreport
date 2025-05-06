@@ -4,10 +4,10 @@ export default {
 }
 </script>
 <script setup lang="ts">
-// import
 import Navigator from '@/components/navigator.vue'
-
-import { type CSSProperties, ref } from 'vue'
+import zhCN from 'ant-design-vue/es/locale/zh_CN'
+import Product from "@/components/product.vue";
+import {type CSSProperties, ref} from 'vue'
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -15,39 +15,55 @@ import {
   UserOutlined,
   VideoCameraOutlined,
 } from '@ant-design/icons-vue'
-import zhCN from 'ant-design-vue/es/locale/zh_CN'
 
 // 代码
 const collapsed = ref<boolean>(false)
 
-let navigatorWidth = ref('200px')
+let navigatorWidth = ref('200px');
+
+let logo = ref(false);
+
+function openFolder() {
+  collapsed.value = !collapsed.value;
+  setTimeout(() => {
+    logo.value = false
+  }, 100);
+}
+
+function closeFolder() {
+  collapsed.value = !collapsed.value;
+  logo.value = true
+}
 </script>
 
 <template>
   <!--  主题色-->
   <a-config-provider
-    :theme="{
+      :theme="{
       token: {
         colorPrimary: '#6aaf49',
       },
     }"
-    :locale="zhCN"
+      :locale="zhCN"
   >
   </a-config-provider>
   <a-layout id="reports">
     <a-layout-sider
-      v-model:collapsed="collapsed"
-      theme="light"
-      :width="navigatorWidth"
-      :style="{ backgroundColor: '#85c647' }"
+        v-model:collapsed="collapsed"
+        theme="light"
+        :width="navigatorWidth"
+        :style="{ backgroundColor: '#85c647' }"
     >
-      <Navigator />
+      <!--      logo-->
+      <product :logo='logo'/>
+      <!--      导航栏-->
+      <Navigator/>
     </a-layout-sider>
 
     <a-layout>
       <a-layout-header
-        class="header"
-        :style="{
+          class="header"
+          :style="{
           lineHeight: '64px',
           height: 64,
           backgroundColor: '#fff',
@@ -55,14 +71,14 @@ let navigatorWidth = ref('200px')
         }"
       >
         <menu-unfold-outlined
-          v-if="collapsed"
-          class="trigger"
-          @click="() => (collapsed = !collapsed)"
+            v-if="collapsed"
+            class="trigger"
+            @click="openFolder"
         />
-        <menu-fold-outlined v-else class="trigger" @click="() => (collapsed = !collapsed)" />
+        <menu-fold-outlined v-else class="trigger" @click="closeFolder"/>
       </a-layout-header>
       <a-layout-content
-        :style="{
+          :style="{
           height: '860px',
           margin: '20px 10px 10px 10px',
         }"
@@ -80,7 +96,7 @@ let navigatorWidth = ref('200px')
         </div>
       </a-layout-content>
       <a-layout-footer :style="{ margin: '0 10px 0 10px', textAlign: 'center' }"
-        >EasyReports
+      >EasyReports
       </a-layout-footer>
     </a-layout>
   </a-layout>
