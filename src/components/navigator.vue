@@ -25,10 +25,23 @@ refreshDatasourceList();
 let items: ItemType[] = data;
 
 // 默认选中哪些内容
-let selectedKeys = ref<string[]>(['10001']);
+let selectedKeys = ref<string[]>([]);
 let openKeys = ref<string[]>(['dataSourceConfigMenu']);
-onMounted(()=>{
-  selectedKeys.value = [String(items[0].key)];
+onMounted(() => {
+  setTimeout(() => {
+    if (items != null && items.length > 0) {
+      let key = String(items[0].key);
+      selectedKeys.value = [key];
+      if (key != null) {
+        router.push({
+          name: 'jumpDataSource',
+          query: {
+            key: key
+          }
+        })
+      }
+    }
+  }, 300);
 })
 
 let handleClick: MenuProps['onClick'] = (e) => {
