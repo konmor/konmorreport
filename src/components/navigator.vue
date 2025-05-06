@@ -11,24 +11,27 @@ import {
   PlusCircleOutlined,
   DatabaseOutlined,
 } from '@ant-design/icons-vue'
-import {reactive, ref, watch, VueElement, h, onMounted, inject} from 'vue'
+import {reactive, ref, watch, h, onMounted, inject} from 'vue'
 import type {MenuProps, ItemType} from 'ant-design-vue'
 import type {Router} from 'vue-router'
 import useNavigator from '@/hooks/useNavigator.ts'
 
-var {refreshDatasourceList, data} = useNavigator();
-
-// 默认选中哪些内容
-const selectedKeys = ref<string[]>(['7'])
-const openKeys = ref<string[]>(['sub1', '10001']);
-
+let {refreshDatasourceList, data, sqlArray} = useNavigator();
+// 导航栏宽度 从home主页来
 let {navigatorWidth} = defineProps(['navigatorWidth'])
 let router: Router = inject<Router>('router');
+// 调用钩子拿到导航栏数据
 refreshDatasourceList();
 let items: ItemType[] = data;
 
+// 默认选中哪些内容
+let selectedKeys = ref<string[]>(['10001']);
+let openKeys = ref<string[]>(['dataSourceConfigMenu']);
+onMounted(()=>{
+  selectedKeys.value = [String(items[0].key)];
+})
 
-const handleClick: MenuProps['onClick'] = (e) => {
+let handleClick: MenuProps['onClick'] = (e) => {
   console.log('click', e)
 }
 
@@ -109,9 +112,10 @@ const showButton = reactive(new Array<Boolean>(items.length))
       :style="{ width: navigatorWidth }"
       mode="inline"
       :inlineIndent="10"
-      @click="handleClick"
-  >
-    <a-sub-menu key="sub1">
+      @click="handleClick">
+    <!--    数据源菜单-->
+    <a-sub-menu key="dataSourceConfigMenu">
+
       <template #title>
         <span>
           <database-outlined/>
@@ -131,57 +135,43 @@ const showButton = reactive(new Array<Boolean>(items.length))
         </a-tooltip>
       </template>
 
-      <!--      利用menu-item 代替菜单项目-->
-      <!--      <a-menu-item v-for="(myItem, index) in items"-->
-      <!--                   :key="myItem?.key"-->
-      <!--                   @click="showDatasourceDetail(myItem?.key,$event)"-->
-      <!--                   itemtype='menuItemType'-->
-      <!--                   @mouseenter="showButton[index] = true"-->
-      <!--                   @mouseleave="showButton[index] = false">-->
-      <!--        <template #title>-->
-      <!--          <span v-if="myItem !== null && 'label' in myItem">{{ myItem.label }}</span>-->
-      <!--          <a-tooltip title="创建SQL" v-if="showButton[index]">-->
-      <!--            <a-button-->
-      <!--                size="small"-->
-      <!--                :style="{ position: 'absolute', right: '30px', top: '8px' }"-->
-      <!--                @click="addSQL">-->
-      <!--              <template #icon>-->
-      <!--                <plus-circle-outlined></plus-circle-outlined>-->
-      <!--              </template>-->
-      <!--            </a-button>-->
-      <!--          </a-tooltip>-->
-      <!--        </template>-->
-
-      <!--      </a-menu-item>-->
-      <a-sub-menu
+      <a-menu-item
           v-for="(myItem, index) in items"
           :key="String(myItem?.key)"
           @click="showDatasourceDetail(myItem?.key,$event)"
           @mouseenter="showButton[index] = true"
           @mouseleave="showButton[index] = false">
-        <template #title>
-          <span v-if="myItem !== null && 'label' in myItem">{{ myItem.label }}</span>
-          <a-tooltip title="创建SQL" v-if="showButton[index]">
-            <a-button
-                size="small"
-                :style="{ position: 'absolute', right: '30px', top: '8px' }"
-                @click="addSQL">
-              <template #icon>
-                <plus-circle-outlined></plus-circle-outlined>
-              </template>
-            </a-button>
-          </a-tooltip>
-        </template>
-        <a-menu-item
-            v-if="myItem !== null && 'children' in myItem"
-            v-for="subItem in myItem.children"
-            @click="showSQLDetail(subItem?.key,$event)"
-            :key="String(subItem?.key)">
-          <span v-if="subItem !== null && 'label' in subItem">{{ subItem.label }}</span>
-        </a-menu-item>
-      </a-sub-menu>
+        <span v-if="myItem !== null && 'label' in myItem">{{ myItem.label }}</span>
+        <a-tooltip title="创建SQL" v-if="showButton[index]">
+          <a-button
+              size="small"
+              :style="{ position: 'absolute', right: '30px', top: '8px' }"
+              @click="addSQL">
+            <template #icon>
+              <plus-circle-outlined></plus-circle-outlined>
+            </template>
+          </a-button>
+        </a-tooltip>
+      </a-menu-item>
     </a-sub-menu>
-    <a-sub-menu key="sub2">
+
+    <a-sub-menu key="SQLMenu">
+      <template #title>
+        <span>
+          <bar-chart-outlined/>
+          <span>SQL</span>
+        </span>
+      </template>
+      <a-menu-item
+          v-if="sqlArray !== null && sqlArray.length>0"
+          v-for="subItem in sqlArray"
+          @click="showSQLDetail(subItem?.key,$event)"
+          :key="String(subItem?.key)">
+        <span v-if="subItem !== null && 'label' in subItem">{{ subItem.label }}</span>
+      </a-menu-item>
+    </a-sub-menu>
+
+    <a-sub-menu key="reportsMenu">
       <template #title>
         <span>
           <bar-chart-outlined/>

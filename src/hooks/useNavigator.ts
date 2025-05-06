@@ -1,47 +1,46 @@
-import type { ItemType } from 'ant-design-vue'
-import { h, reactive, VueElement } from 'vue'
-import { getDatasourceList } from '@/api/datasoure.ts'
+import type {ItemType} from 'ant-design-vue'
+import {h, reactive, VueElement} from 'vue'
+import {getDatasourceList} from '@/api/datasoure.ts'
 
 export default function () {
-  let data: ItemType[] = reactive([])
+    let dataSourceConfigArray: ItemType[] = reactive([])
+    let sqlArray: ItemType[] = reactive([])
 
-  function refreshDatasourceList() {
-    let m = getDatasourceList()
-    m.then((a) => {
-      if (a.data.length > 0) {
-        for (let i = 0; i < a.data.length; i++) {
-          var item = a.data[i]
-          if (item.sqlNameList != null) {
-            let subItemList: ItemType[] = []
-            for (let j = 0; j < item.sqlNameList.length; j++) {
-              var subItem = item.sqlNameList[j]
-              subItemList[j] = getItem(subItem.sqlName, subItem.sqlId)
+    function refreshDatasourceConfigList() {
+        let m = getDatasourceList()
+        m.then((result) => {
+            if (result.data.length > 0) {
+                let sqlCount = 0;
+                for (let i = 0; i < result.data.length; i++) {
+                    var item = result.data[i]
+                    if (item.sqlNameList != null) {
+                        for (let j = 0; j < item.sqlNameList.length; j++) {
+                            var subItem = item.sqlNameList[j]
+                            sqlArray[sqlCount++] = getItem(subItem.sqlName, subItem.sqlId);
+                        }
+                    }
+                    dataSourceConfigArray[i] = getItem(item.sourceName, item.sourceId)
+                }
             }
-            data[i] = getItem(item.sourceName, item.sourceId, null, subItemList)
-          } else {
-            data[i] = getItem(item.sourceName, item.sourceId)
-          }
-        }
-      }
-    })
-    return data
-  }
+        })
+        return dataSourceConfigArray
+    }
 
-  function getItem(
-    label: VueElement | string,
-    key: string,
-    icon?: any,
-    children?: ItemType[],
-    type?: 'group',
-  ): ItemType {
-    return {
-      key,
-      icon,
-      children,
-      label,
-      type,
-    } as ItemType
-  }
+    function getItem(
+        label: VueElement | string,
+        key: string,
+        icon?: any,
+        children?: ItemType[],
+        type?: 'group',
+    ): ItemType {
+        return {
+            key,
+            icon,
+            children,
+            label,
+            type,
+        } as ItemType
+    }
 
-  return { refreshDatasourceList, data }
+    return {refreshDatasourceList: refreshDatasourceConfigList, data: dataSourceConfigArray, sqlArray}
 }

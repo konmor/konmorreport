@@ -15,24 +15,25 @@ import {
   UserOutlined,
   VideoCameraOutlined,
 } from '@ant-design/icons-vue'
+import BreadcrumbNavigator from "@/components/breadcrumbNavigator.vue";
 
 // 代码
 const collapsed = ref<boolean>(false)
 
 let navigatorWidth = ref('200px');
 
-let logo = ref(false);
+let showLogo = ref(false);
 
 function openFolder() {
   collapsed.value = !collapsed.value;
   setTimeout(() => {
-    logo.value = false
+    showLogo.value = false
   }, 100);
 }
 
 function closeFolder() {
   collapsed.value = !collapsed.value;
-  logo.value = true
+  showLogo.value = true
 }
 </script>
 
@@ -52,15 +53,14 @@ function closeFolder() {
         v-model:collapsed="collapsed"
         theme="light"
         :width="navigatorWidth"
-        :style="{ backgroundColor: '#85c647' }"
-    >
+        :style="{ backgroundColor: '#85c647' }">
       <!--      logo-->
-      <product :logo='logo'/>
+      <product :logo='showLogo'/>
       <!--      导航栏-->
       <Navigator/>
     </a-layout-sider>
-
     <a-layout>
+      <!--主体上面-->
       <a-layout-header
           class="header"
           :style="{
@@ -68,29 +68,24 @@ function closeFolder() {
           height: 64,
           backgroundColor: '#fff',
           padding: 0,
-        }"
-      >
+          display:'flex',alignItems:'center', }">
+
+        <!--        折叠和展开的选项-->
         <menu-unfold-outlined
             v-if="collapsed"
             class="trigger"
             @click="openFolder"
-        />
+            flex="2"/>
         <menu-fold-outlined v-else class="trigger" @click="closeFolder"/>
+        <!--          面包屑 导航-->
+        <breadcrumb-navigator/>
       </a-layout-header>
+
       <a-layout-content
           :style="{
           height: '860px',
           margin: '20px 10px 10px 10px',
-        }"
-      >
-        <!--        todo -->
-        <a-breadcrumb :style="{ marginBottom: '5px' }">
-          <a-breadcrumb-item>Home</a-breadcrumb-item>
-          <a-breadcrumb-item><a href="">Application Center</a></a-breadcrumb-item>
-          <a-breadcrumb-item><a href="">Application List</a></a-breadcrumb-item>
-          <a-breadcrumb-item>An Application</a-breadcrumb-item>
-        </a-breadcrumb>
-
+        }">
         <div :style="{ height: '100%', backgroundColor: '#fff' }">
           <RouterView></RouterView>
         </div>
