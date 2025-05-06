@@ -20,7 +20,7 @@ var {refreshDatasourceList, data} = useNavigator();
 
 // 默认选中哪些内容
 const selectedKeys = ref<string[]>(['7'])
-const openKeys = ref<string[]>(['sub1','10001']);
+const openKeys = ref<string[]>(['sub1', '10001']);
 
 let {navigatorWidth} = defineProps(['navigatorWidth'])
 let router: Router = inject<Router>('router');
@@ -56,7 +56,7 @@ function addDataSource(event: Event) {
   })
 }
 
-function showDatasourceDetail(key: number, event: Event) {
+function showDatasourceDetail(key: string, event: Event) {
   event.stopPropagation();
   if (key != null) {
     router.push({
@@ -66,8 +66,22 @@ function showDatasourceDetail(key: number, event: Event) {
       }
     })
   }
-  // selectedKeys.value=[String(key)]
-  console.log('selectedKeys',selectedKeys)
+  selectedKeys.value = [String(key)];
+  console.log('selectedKeys', selectedKeys)
+}
+
+function showSQLDetail(key: string, event: Event) {
+  event.stopPropagation();
+  if (key != null) {
+    router.push({
+      name: 'jumpSqlCreator',
+      query: {
+        key: key
+      }
+    })
+  }
+  selectedKeys.value = [String(key)];
+  console.log('selectedKeys', selectedKeys)
 }
 
 function addSQL(event: Event) {
@@ -94,7 +108,7 @@ const showButton = reactive(new Array<Boolean>(items.length))
       v-model:selectedKeys="selectedKeys"
       :style="{ width: navigatorWidth }"
       mode="inline"
-      inlineIndent="10"
+      :inlineIndent="10"
       @click="handleClick"
   >
     <a-sub-menu key="sub1">
@@ -117,11 +131,32 @@ const showButton = reactive(new Array<Boolean>(items.length))
         </a-tooltip>
       </template>
 
+      <!--      利用menu-item 代替菜单项目-->
+      <!--      <a-menu-item v-for="(myItem, index) in items"-->
+      <!--                   :key="myItem?.key"-->
+      <!--                   @click="showDatasourceDetail(myItem?.key,$event)"-->
+      <!--                   itemtype='menuItemType'-->
+      <!--                   @mouseenter="showButton[index] = true"-->
+      <!--                   @mouseleave="showButton[index] = false">-->
+      <!--        <template #title>-->
+      <!--          <span v-if="myItem !== null && 'label' in myItem">{{ myItem.label }}</span>-->
+      <!--          <a-tooltip title="创建SQL" v-if="showButton[index]">-->
+      <!--            <a-button-->
+      <!--                size="small"-->
+      <!--                :style="{ position: 'absolute', right: '30px', top: '8px' }"-->
+      <!--                @click="addSQL">-->
+      <!--              <template #icon>-->
+      <!--                <plus-circle-outlined></plus-circle-outlined>-->
+      <!--              </template>-->
+      <!--            </a-button>-->
+      <!--          </a-tooltip>-->
+      <!--        </template>-->
+
+      <!--      </a-menu-item>-->
       <a-sub-menu
           v-for="(myItem, index) in items"
-          :key="myItem?.key"
+          :key="String(myItem?.key)"
           @click="showDatasourceDetail(myItem?.key,$event)"
-          itemtype='menuItemType'
           @mouseenter="showButton[index] = true"
           @mouseleave="showButton[index] = false">
         <template #title>
@@ -140,7 +175,8 @@ const showButton = reactive(new Array<Boolean>(items.length))
         <a-menu-item
             v-if="myItem !== null && 'children' in myItem"
             v-for="subItem in myItem.children"
-            :key="subItem?.key">
+            @click="showSQLDetail(subItem?.key,$event)"
+            :key="String(subItem?.key)">
           <span v-if="subItem !== null && 'label' in subItem">{{ subItem.label }}</span>
         </a-menu-item>
       </a-sub-menu>
