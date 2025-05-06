@@ -1,6 +1,6 @@
 <script lang="ts">
 export default {
-  name: 'SQLViewer',
+  name: 'SQLDataViewer',
 }
 </script>
 <script setup lang="ts">

@@ -1,22 +1,24 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from 'vue'
+
 interface Route {
-  path: string;
-  breadcrumbName: string;
+  path: string
+  breadcrumbName: string
   children?: Array<{
-    path: string;
-    breadcrumbName: string;
-  }>;
+    path: string
+    breadcrumbName: string
+  }>
 }
-const basePath = '/components/breadcrumb';
+
+const basePath = ''
 const routes = ref<Route[]>([
   {
     path: 'home',
-    breadcrumbName: 'home',
+    breadcrumbName: '主页',
   },
   {
     path: 'data-source',
-    breadcrumbName: 'first',
+    breadcrumbName: '数据源',
     children: [
       {
         path: '/general',
@@ -34,9 +36,9 @@ const routes = ref<Route[]>([
   },
   {
     path: 'sql-creator',
-    breadcrumbName: 'second',
+    breadcrumbName: '创建SQL',
   },
-]);
+])
 </script>
 
 <template>
@@ -54,6 +56,4 @@ const routes = ref<Route[]>([
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

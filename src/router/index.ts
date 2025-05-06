@@ -3,14 +3,13 @@
 // 2. 导入vue路由依赖 createRouter 。
 import { createRouter, createWebHistory } from 'vue-router'
 // 3. 引入要建立路由关系的组件
-import dataSourceConfigEditor from '@/components/dataSourceConfigEditor.vue'
 import App from '@/App.vue'
+import createDataSourceConfig from '@/views/createDataSourceConfig.vue'
 import Home from '@/components/home.vue'
 import SqlEditor from '@/components/sqlEditor.vue'
-import a from '@/views/a.vue'
-import b from '@/views/b.vue'
-import c from '@/views/c.vue'
-import SQLViewer from '@/components/sqlViewer.vue'
+import SQLDataViewer from '@/components/sqlDataViewer.vue'
+import editSQL from '@/views/editSQL.vue'
+import createSQL from '@/views/createSQL.vue'
 // 4. 创建路由
 let router = createRouter({
   // 4.1 路由工作模式
@@ -22,16 +21,38 @@ let router = createRouter({
       path: '/home',
       component: Home,
       children: [
-        { path: 'data-source', component: dataSourceConfigEditor, name: 'jumpDataSource' },
         {
-          path: 'sql-creator',
-          component: SqlEditor,
-          name: 'jumpSqlCreator',
+          path: 'datasource',
           children: [
             {
-              path: 'sql-viewer',
-              component: SQLViewer,
-              name: 'jumpSqlViewer',
+              path: 'create',
+              component: createDataSourceConfig,
+              name: 'toDataSourceCreator',
+            },
+            {
+              path: 'edit',
+              component: createDataSourceConfig,
+              name: 'editDataSourceConfig',
+            },
+            {
+              path: 'sql',
+              children: [
+                {
+                  path: 'sqlData',
+                  component: SQLDataViewer,
+                  name: 'toSQLData',
+                },
+                {
+                  path: 'create',
+                  component: createSQL,
+                  name: 'toCreateSQL',
+                },
+                {
+                  path: 'edit',
+                  component: editSQL,
+                  name: 'toEditSQL',
+                },
+              ],
             },
           ],
         },
