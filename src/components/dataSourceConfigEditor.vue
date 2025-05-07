@@ -60,18 +60,21 @@ let datasourceCheck: {
   version: string | undefined,
   alertType: 'success' | 'info' | 'warning' | 'error' | undefined,
   message: string | 'Succeeded' | undefined,
+  description: string | undefined,
   show: boolean,
-} = reactive({version: undefined, alertType: undefined, message: undefined, show: false})
+} = reactive({version: undefined, alertType: undefined, message: undefined, show: false, description: undefined})
 const testConnection = () => {
   checkConnection(datasourceDetail).then((response) => {
     if (response.code == 0) {
       datasourceCheck.version = datasourceDetail.dataSourceType + " " + response.data;
       datasourceCheck.alertType = 'success';
       datasourceCheck.message = 'Succeeded';
+      datasourceCheck.description = 'Test Success!';
     } else {
       datasourceCheck.version = undefined;
       datasourceCheck.alertType = 'error';
-      datasourceCheck.message = response.error;
+      datasourceCheck.message = 'Error';
+      datasourceCheck.description = response.error;
     }
     datasourceCheck.show = true;
   })
@@ -290,8 +293,10 @@ const checkSSL = (event: Event) => {
           <a-alert
               :message="datasourceCheck.message"
               :type="datasourceCheck.alertType"
+              :description="datasourceCheck.description"
               v-show="datasourceCheck.show"
               closable
+              show-icon
           />
         </a-row>
       </div>
