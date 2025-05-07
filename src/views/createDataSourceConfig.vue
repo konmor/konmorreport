@@ -6,13 +6,15 @@ export default {
 <script setup lang="ts">
 import DataSourceConfigEditor from '@/components/dataSourceConfigEditor.vue'
 import type { DatasourceDetail } from '@/types/api.ts'
-import { onMounted, reactive } from 'vue'
+import {onMounted, reactive, watch} from 'vue'
+import {useRoute} from "vue-router";
 
 let dataSourceDetail: DatasourceDetail = reactive({})
+let route = useRoute();
 
 let template: DatasourceDetail = {
   sourceId: '',
-  dataSourceName: 'localhost:3306-MySQL',
+  dataSourceName: '数据源(1)',
   dataSourceType: 'MYSQL',
   host: 'localhost',
   port: 3306,
@@ -28,8 +30,15 @@ let template: DatasourceDetail = {
   useSsh: false,
   databaseVersion: '',
 }
+// 添加监听器
+watch(() => route.query.label, (item) => {
+  if (dataSourceDetail != null) {
+    dataSourceDetail.dataSourceName = item as string;
+  }
+})
+
 onMounted(() => {
-  Object.assign(dataSourceDetail, template)
+  Object.assign(dataSourceDetail, template);
 })
 </script>
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import {ref} from 'vue'
+import {useRoute} from "vue-router";
 
 interface Route {
   path: string
@@ -10,35 +11,42 @@ interface Route {
   }>
 }
 
-const basePath = ''
+const basePath = '/easy-report'
 const routes = ref<Route[]>([
   {
-    path: 'home',
-    breadcrumbName: '主页',
+    path: '/',
+    breadcrumbName: 'Easy Report',
   },
   {
-    path: 'data-source',
+    path: '/datasource',
     breadcrumbName: '数据源',
     children: [
       {
-        path: '/general',
-        breadcrumbName: 'General',
+        path: '/datasource/create',
+        breadcrumbName: '新建数据源',
       },
       {
-        path: '/layout',
-        breadcrumbName: 'Layout',
+        path: '/datasource/edit',
+        breadcrumbName: '编辑数据源',
       },
-      {
-        path: '/navigation',
-        breadcrumbName: 'Navigation',
-      },
-    ],
+    ]
   },
   {
-    path: 'sql-creator',
-    breadcrumbName: '创建SQL',
+    path: '/sql',
+    breadcrumbName: 'SQL',
+    children: [
+      {
+        path: '/sql/create',
+        breadcrumbName: '新建SQL'
+      },
+      {
+        path: '/sql/edit',
+        breadcrumbName: '编辑SQL'
+      },
+    ]
   },
 ])
+console.log(useRoute().path);
 </script>
 
 <template>

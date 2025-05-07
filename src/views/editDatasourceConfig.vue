@@ -33,7 +33,6 @@ let datasourceTemplate: DatasourceDetail = {
 }
 
 onMounted(() => {
-  console.log('加载一一次')
   if (key != null && typeof key == 'string') {
     getDatasourceDetail(key).then((response) => {
       Object.assign(dataSourceDetail, response.data)
@@ -44,11 +43,14 @@ onMounted(() => {
       () => route.query.key,
       (item) => {
         if (item != null && typeof item == 'string') {
+          // 编辑
           if (!item.startsWith('_datasourceKey')) {
             getDatasourceDetail(item).then((response) => {
               Object.assign(dataSourceDetail, response.data)
             })
-          } else {
+          }
+          // 这时就不用去数据库查询数据
+          else {
             Object.assign(dataSourceDetail, datasourceTemplate);
             dataSourceDetail.dataSourceName = '数据源('+item.substring(14)+')';
           }

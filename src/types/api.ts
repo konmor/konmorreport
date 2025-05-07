@@ -1,5 +1,5 @@
 export interface DatasourceDetail {
-    sourceId?: number|string
+    sourceId?: number | string
     dataSourceName?: string
     dataSourceType?: string
     description?: string
