@@ -20,20 +20,20 @@ export interface DatasourceDetail {
 }
 
 export interface SSHConfig {
-    SSHId?: number
-    sourceId?: number
+    SSHId?: number|string
+    sourceId?: number|string
     sshHost?: string
     sshPort?: number
     sshUsername?: string
-    authType?: string
+    authType?: 'password'|'publicKey'
     password?: string
     publicKeyPath?: string
     passphrase?: string
 }
 
 export interface SSLConfig {
-    SSLId?: number
-    sourceId?: number
+    SSLId?: number|string
+    sourceId?: number|string
     caCertPath?: string
     clientKeyPath?: string
     clientCertPath?: string

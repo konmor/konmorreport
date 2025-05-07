@@ -58,8 +58,15 @@ const resetForm = () => {
 const testConnection = () => {
   console.log('datasource', datasourceDetail)
 }
-const resetConnectUrl = ()=>{
+const resetConnectUrl = () => {
 
+}
+const checkSSL = (event: Event) => {
+  event.stopPropagation();
+
+  if (event.target && 'checked' in event.target && event.target.checked) {
+
+  }
 }
 </script>
 
@@ -252,8 +259,23 @@ const resetConnectUrl = ()=>{
               <a-button type="default" shape="default" @click="resetConnectUrl"><span>重置</span></a-button>
             </a-tooltip>
           </a-col>
+        </a-row>
 
+        <a-row :gutter="24">
+          <a-col :span="24" :style="{textAlign:'left',marginLeft:'20px'}">
+            <a-form-item name="useSsl">
+              <a-checkbox v-model:checked="datasourceDetail.useSsl" @change="checkSSL">SSL</a-checkbox>
+            </a-form-item>
+          </a-col>
+        </a-row>
 
+        <a-row :gutter="24">
+          <a-col :span="6"  :style="{textAlign:'left',marginLeft:'20px'}">
+            <a-form-item label="CA证书" name="caCertPath">
+<!--              v-model:file-list="datasourceDetail.sslConfigDTO.caCertPath"-->
+              <a-upload :maxCount="1" accept=".crt,.pem" ></a-upload>
+            </a-form-item>
+          </a-col>
         </a-row>
       </div>
       <a-row :gutter="24">
@@ -270,22 +292,12 @@ const resetConnectUrl = ()=>{
         </a-col>
       </a-row>
 
-      <div
-          :style="{
-          margin: '10px 0 0 20px',
-          border: '1px solid black',
-          height: '200px',
-        }"
-      >
-        高级设置
-      </div>
-
       <a-row :gutter="24" :style="{ margin: '10px' }">
         <a-col :span="2"></a-col>
         <a-col :span="4">
           <a-form-item>
             <a-button type="primary" html-type="submit" @click="submitForm">提交</a-button>
-            <a-button :style="{ marginLeft: '10px' }" @click="() => formRef.resetFields()"
+            <a-button :style="{ marginLeft: '10px' }" @click="() => formRef?.resetFields()"
             >重置
             </a-button>
           </a-form-item>

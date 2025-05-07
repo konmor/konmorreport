@@ -29,6 +29,25 @@ let template: DatasourceDetail = {
   useSsl: false,
   useSsh: false,
   databaseVersion: '',
+  sslConfigDTO:{
+    SSLId:'',
+    sourceId:'',
+    caCertPath:'path/ca',
+    clientKeyPath:'path/cKey',
+    clientCertPath:'path/cCert',
+    verifyServerCert:false,
+  },
+  sshConfigDTO:{
+    SSHId:'',
+    sourceId:'',
+    sshHost:'192.168.172.1',
+    sshPort:20,
+    sshUsername:'root',
+    authType:'password',
+    password:'lalalala',
+    publicKeyPath:'path/publicKey',
+    passphrase:'lalalala',
+  },
 }
 // 添加监听器
 watch(() => route.query.label, (item) => {
