@@ -13,6 +13,24 @@ import type { DatasourceDetail } from '@/types/api.ts'
 let route = useRoute()
 let { key } = route.query
 let dataSourceDetail: DatasourceDetail = reactive({})
+let datasourceTemplate: DatasourceDetail = {
+  sourceId: '',
+  dataSourceName: 'localhost:3306-MySQL',
+  dataSourceType: 'MYSQL',
+  host: 'localhost',
+  port: 3306,
+  username: 'root',
+  password: 'root',
+  connectionUrl: 'jdbc:mysql://localhost:3306',
+  databaseName: 'work',
+  driverClass: 'com.mysql.cj.jdbc.Driver',
+  charset: 'UTF-8',
+  timezone: 'Asia/Shanghai',
+  description: '',
+  useSsl: false,
+  useSsh: false,
+  databaseVersion: '',
+}
 
 onMounted(() => {
   console.log('加载一一次')
@@ -23,16 +41,19 @@ onMounted(() => {
   }
   // 添加对路由的监听
   watch(
-    () => route.query.key,
-    (item) => {
-      if (item != null && typeof item == 'string' && !item.startsWith('_datasourceKey')) {
-        getDatasourceDetail(item).then((response) => {
-          Object.assign(dataSourceDetail, response.data)
-        })
-      } else {
-        console.log('数据为空白')
-      }
-    },
+      () => route.query.key,
+      (item) => {
+        if (item != null && typeof item == 'string') {
+          if (!item.startsWith('_datasourceKey')) {
+            getDatasourceDetail(item).then((response) => {
+              Object.assign(dataSourceDetail, response.data)
+            })
+          } else {
+            Object.assign(dataSourceDetail, datasourceTemplate);
+            dataSourceDetail.dataSourceName = '数据源('+item.substring(14)+')';
+          }
+        }
+      },
   )
 })
 </script>
