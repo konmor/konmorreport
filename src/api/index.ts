@@ -29,7 +29,8 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (response) => {
     const res = response.data
-    if (response.status != 200 || res == undefined || res.code != 0) {
+      // || res == undefined || res.code != 0
+    if (response.status != 200 ) {
       window.alert('处理失败')
       return Promise.reject(new Error('Error'))
     } else {

@@ -5,9 +5,9 @@ export default {
 </script>
 
 <script setup lang="ts">
-import {ref} from 'vue'
+import {reactive, ref} from 'vue'
 import type {FormInstance} from 'ant-design-vue'
-import {saveDatasource} from '@/api/datasoure.ts'
+import {saveDatasource, checkConnection} from '@/api/datasoure.ts'
 import type {DatasourceDetail} from '@/types/api.ts'
 import {DatabaseFilled} from "@ant-design/icons-vue";
 
@@ -55,8 +55,26 @@ const resetForm = () => {
     formRef.value.resetFields()
   }
 }
+
+let datasourceCheck: {
+  version: string | undefined,
+  alertType: 'success' | 'info' | 'warning' | 'error' | undefined,
+  message: string | 'Succeeded' | undefined,
+  show: boolean,
+} = reactive({version: undefined, alertType: undefined, message: undefined, show: false})
 const testConnection = () => {
-  console.log('datasource', datasourceDetail)
+  checkConnection(datasourceDetail).then((response) => {
+    if (response.code == 0) {
+      datasourceCheck.version = datasourceDetail.dataSourceType + " " + response.data;
+      datasourceCheck.alertType = 'success';
+      datasourceCheck.message = 'Succeeded';
+    } else {
+      datasourceCheck.version = undefined;
+      datasourceCheck.alertType = 'error';
+      datasourceCheck.message = response.error;
+    }
+    datasourceCheck.show = true;
+  })
 }
 const resetConnectUrl = () => {
 
@@ -261,36 +279,23 @@ const checkSSL = (event: Event) => {
           </a-col>
         </a-row>
 
-        <a-row :gutter="24">
-          <a-col :span="24" :style="{textAlign:'left',marginLeft:'20px'}">
-            <a-form-item name="useSsl">
-              <a-checkbox v-model:checked="datasourceDetail.useSsl" @change="checkSSL">SSL</a-checkbox>
-            </a-form-item>
-          </a-col>
-        </a-row>
+        <a-divider></a-divider>
 
-        <a-row :gutter="24">
-          <a-col :span="6"  :style="{textAlign:'left',marginLeft:'20px'}">
-            <a-form-item label="CA证书" name="caCertPath">
-<!--              v-model:file-list="datasourceDetail.sslConfigDTO.caCertPath"-->
-              <a-upload :maxCount="1" accept=".crt,.pem" ></a-upload>
-            </a-form-item>
-          </a-col>
+        <a-row>
+          <a-button @click="testConnection" type="default" :style="{margin:'10px 10px 10px 20px'}">测试连接</a-button>
+          <span
+              :style="{lineHeight:'52px',padding:'0px 2px 0 2px',marginRight:'10px'}">{{
+              datasourceCheck.version
+            }}</span>
+          <a-alert
+              :message="datasourceCheck.message"
+              :type="datasourceCheck.alertType"
+              v-show="datasourceCheck.show"
+              closable
+          />
         </a-row>
       </div>
-      <a-row :gutter="24">
-        <a-col :span="2"></a-col>
-        <a-col :span="8">
-          <a-form-item>
-            <a-tooltip></a-tooltip>
-          </a-form-item>
-        </a-col>
-        <a-col :span="4" style="text-align: right">
-          <a-form-item>
-            <a-button @click="testConnection" type="default">测试连接</a-button>
-          </a-form-item>
-        </a-col>
-      </a-row>
+
 
       <a-row :gutter="24" :style="{ margin: '10px' }">
         <a-col :span="2"></a-col>

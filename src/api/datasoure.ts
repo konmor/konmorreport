@@ -34,3 +34,7 @@ export function getDatasourceDetail(sourceId: string): Promise<Result<any>> {
 export function saveDatasource(datasource: DatasourceDetail): Promise<Result<any>> {
     return instance.post('datasource/datasource', datasource)
 }
+
+export function checkConnection(datasource: DatasourceDetail): Promise<Result<string>>{
+    return instance.post('datasource/datasource/connections', datasource)
+}
