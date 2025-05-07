@@ -58,6 +58,9 @@ const resetForm = () => {
 const testConnection = () => {
   console.log('datasource', datasourceDetail)
 }
+const resetConnectUrl = ()=>{
+
+}
 </script>
 
 <template>
@@ -67,7 +70,7 @@ const testConnection = () => {
         name="datasourceForm"
         :model="datasourceDetail"
         :label-col="{ span: 8 }"
-        :wrapper-col="{ span: 20 }"
+        :wrapper-col="{ span: 16 }"
     >
       <div
           :style="{
@@ -234,9 +237,9 @@ const testConnection = () => {
           </a-col>
         </a-row>
 
-        <a-row :gutter="24">
-          <a-col :span="24">
-            <a-form-item label="url" required name="connectionUrl" :labelCol="{style:{width:'110px'}}">
+        <a-row :gutter="24" :style="{position:'relative'}">
+          <a-col :span="23">
+            <a-form-item label="url" required name="connectionUrl" :labelCol="{span:2}" :wrapper-col="{span:12}">
               <a-input
                   v-model:value="datasourceDetail.connectionUrl"
                   placeholder="url"
@@ -244,6 +247,13 @@ const testConnection = () => {
               ></a-input>
             </a-form-item>
           </a-col>
+          <a-col :span="1" :style="{position:'relative',right:'40%'}">
+            <a-tooltip title="重置jdbc连接">
+              <a-button type="default" shape="default" @click="resetConnectUrl"><span>重置</span></a-button>
+            </a-tooltip>
+          </a-col>
+
+
         </a-row>
       </div>
       <a-row :gutter="24">
