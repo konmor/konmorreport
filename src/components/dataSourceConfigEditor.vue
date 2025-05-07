@@ -28,7 +28,8 @@ const submitForm = () => {
       .then((item) => {
         console.log('item', item)
         let saveDetail: DatasourceDetail = { ...(item as DatasourceDetail) }
-
+        saveDetail.useSsl =false;
+        saveDetail.useSsh =false;
         console.log('saveDetail', saveDetail)
         // 保存数据
         saveDatasource(saveDetail).then((response) => {
@@ -80,7 +81,7 @@ const testConnection = () => {
             <p :style="{ lineHeight: '50px', fontSize: '14px' }">基本信息：</p>
           </a-col>
           <a-col :span="4">
-            <a-form-item label="名称" required :style="{ lineHeight: '50px' }" name="name">
+            <a-form-item label="名称" required :style="{ lineHeight: '50px' }" name="dataSourceName">
               <a-input
                 v-model:value="datasourceDetail.dataSourceName"
                 placeholder="请输入数据源名称"
@@ -90,7 +91,7 @@ const testConnection = () => {
           </a-col>
 
           <a-col :span="4">
-            <a-form-item label="数据源类型" required :style="{ lineHeight: '50px' }" name="type">
+            <a-form-item label="数据源类型" required :style="{ lineHeight: '50px' }" name="dataSourceType">
               <a-select
                 v-model:value="datasourceDetail.dataSourceType"
                 @focus="focus"
@@ -105,7 +106,7 @@ const testConnection = () => {
             </a-form-item>
           </a-col>
           <a-col :span="4">
-            <a-form-item label="备注" :style="{ lineHeight: '50px' }" name="remark">
+            <a-form-item label="备注" :style="{ lineHeight: '50px' }" name="description">
               <a-input
                 v-model:value="datasourceDetail.description"
                 placeholder="备注"
@@ -125,12 +126,12 @@ const testConnection = () => {
         <a-row :gutter="24">
           <a-col :span="2">
             <p :style="{ lineHeight: '50px', fontSize: '14px', margin: 0 }">数据源配置：</p>
-            <a-form-item name="id" v-show="false">
+            <a-form-item name="sourceId" v-show="false">
               <a-input v-model:value="datasourceDetail.sourceId" v-show="false"></a-input>
             </a-form-item>
           </a-col>
           <a-col :span="4">
-            <a-form-item label="IP地址" required name="ip">
+            <a-form-item label="IP地址" required name="host">
               <a-input
                 v-model:value="datasourceDetail.host"
                 placeholder="请输入ip地址"
@@ -149,7 +150,7 @@ const testConnection = () => {
             </a-form-item>
           </a-col>
           <a-col :span="4">
-            <a-form-item label="数据库名称" name="database">
+            <a-form-item label="数据库名称" name="databaseName">
               <a-input
                 v-model:value="datasourceDetail.databaseName"
                 placeholder="请输入数据库名称"
@@ -182,7 +183,7 @@ const testConnection = () => {
         <a-row :gutter="24">
           <a-col :span="2"></a-col>
           <a-col :span="4">
-            <a-form-item label="驱动选择" required name="driver">
+            <a-form-item label="驱动选择" required name="driverClass">
               <a-select
                 v-model:value="datasourceDetail.driverClass"
                 placeholder="请选择驱动"
@@ -196,7 +197,7 @@ const testConnection = () => {
           </a-col>
 
           <a-col :span="4">
-            <a-form-item label="字符集" required name="encode">
+            <a-form-item label="字符集" required name="charset">
               <a-select
                 v-model:value="datasourceDetail.charset"
                 placeholder="请选择编码"
@@ -210,7 +211,7 @@ const testConnection = () => {
             </a-form-item>
           </a-col>
           <a-col :span="4">
-            <a-form-item label="时区" required name="timeZone">
+            <a-form-item label="时区" required name="timezone">
               <a-select
                 v-model:value="datasourceDetail.timezone"
                 placeholder="请选择时区"
@@ -227,7 +228,7 @@ const testConnection = () => {
         <a-row :gutter="24">
           <a-col :span="2"></a-col>
           <a-col :span="4">
-            <a-form-item label="url" required name="url">
+            <a-form-item label="url" required name="connectionUrl">
               <a-input
                 v-model:value="datasourceDetail.connectionUrl"
                 placeholder="url"

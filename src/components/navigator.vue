@@ -5,7 +5,15 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import {BarChartOutlined, PlusCircleOutlined, DatabaseOutlined} from '@ant-design/icons-vue'
+import {
+  BarChartOutlined,
+  PlusCircleOutlined,
+  PlusOutlined,
+  DatabaseOutlined,
+  DeleteOutlined,
+  TableOutlined,
+  EditOutlined
+} from '@ant-design/icons-vue'
 import {reactive, ref, watch, h, onMounted, inject} from 'vue'
 import type {MenuProps, ItemType} from 'ant-design-vue'
 import type {Router} from 'vue-router'
@@ -28,7 +36,8 @@ let handleClick: MenuProps['onClick'] = (e) => {
   console.log('click', e)
 }
 
-let showButton = reactive(new Array<Boolean>(items.length))
+let datasourceShowButton = reactive(new Array<Boolean>(items.length))
+let sqlShowButton = reactive(new Array<Boolean>(sqlArray.length))
 let newLabel = ref('数据源')
 let newKey = ref('_datasourceKey')
 let newFlag = ref(1)
@@ -113,6 +122,25 @@ function addSQL(key: string, event: Event) {
   }
 }
 
+function removeDatasource(key:string,event:Event){
+  event.stopPropagation();
+}
+function checkDatasourceConfig(key:string,event:Event){
+  event.stopPropagation();
+}
+function checkDatasourceData(key:string,event:Event){
+  event.stopPropagation();
+}
+function  removeSQL(key:string,event:Event){
+  event.stopPropagation();
+}
+function  checkSQLConfig(key:string,event:Event){
+  event.stopPropagation();
+}
+function  checkSQLData(key:string,event:Event){
+  event.stopPropagation();
+}
+
 function a() {
   console.log('a')
 }
@@ -152,8 +180,7 @@ onMounted(() => {
       :style="{ width: navigatorWidth }"
       mode="inline"
       :inlineIndent="10"
-      @click="handleClick"
-  >
+      @click="handleClick">
     <!--    数据源菜单-->
     <a-sub-menu key="dataSourceConfigMenu" class="datasourceClass">
       <template #title>
@@ -161,11 +188,10 @@ onMounted(() => {
           <database-outlined/>
           <span>数据源</span>
         </span>
-
-          <a-button type="default"
-                    class="buttonClass"
-                    @click="addDataSource"
-                    :style="{border:'0px',display:'hidden',height:0,width:0}">
+        <a-button type="default"
+                  class="buttonClass"
+                  @click="addDataSource"
+                  :style="{border:'0px',display:'inline',height:0,width:0}">
           <template #icon>
             <a-tooltip title="创建数据源">
             <span class="icon-wrapper">
@@ -173,27 +199,53 @@ onMounted(() => {
             </span>
             </a-tooltip>
           </template>
-          </a-button>
-
+        </a-button>
       </template>
 
       <a-menu-item
           v-for="(myItem, index) in items"
           :key="String(myItem?.key)"
           @click="showDatasourceDetail(myItem, $event)"
-          @mouseenter="showButton[index] = true"
-          @mouseleave="showButton[index] = false">
+          @mouseenter="datasourceShowButton[index] = true"
+          @mouseleave="datasourceShowButton[index] = false">
         <span v-if="myItem !== null && 'label' in myItem">{{ myItem.label }}</span>
-        <a-tooltip title="创建SQL" v-if="showButton[index]">
-          <a-button
-              size="small"
-              :style="{ position: 'absolute', right: '30px', top: '8px' }"
-              @click="addSQL(myItem?.key as string, $event)">
-            <template #icon>
-              <plus-circle-outlined></plus-circle-outlined>
-            </template>
-          </a-button>
-        </a-tooltip>
+        <a-button-group v-if="datasourceShowButton[index]"
+                        :style="{display:'inline-flex',justifyContent:'space-between',position:'absolute',right:'8px',top:'8px'}">
+          <a-tooltip title="创建SQL">
+            <a-button
+                size="small"
+                @click="addSQL(myItem?.key as string, $event)">
+              <template #icon><PlusOutlined /></template>
+            </a-button>
+          </a-tooltip>
+
+          <a-tooltip title="删除数据源">
+            <a-button size="small"
+                      @click="removeDatasource(myItem?.key as string, $event)">
+              <template #icon>
+                <DeleteOutlined/>
+              </template>
+            </a-button>
+          </a-tooltip>
+
+          <a-tooltip title="查看/编辑数据源配置">
+            <a-button size="small"
+                      @click="checkDatasourceConfig(myItem?.key as string, $event)">
+              <template #icon>
+                <EditOutlined/>
+              </template>
+            </a-button>
+          </a-tooltip>
+
+          <a-tooltip title="查看数据">
+            <a-button size="small"
+                      @click="checkDatasourceData(myItem?.key as string, $event)">
+              <template #icon>
+                <TableOutlined/>
+              </template>
+            </a-button>
+          </a-tooltip>
+        </a-button-group>
       </a-menu-item>
     </a-sub-menu>
 
@@ -206,11 +258,43 @@ onMounted(() => {
       </template>
       <a-menu-item
           v-if="sqlArray !== null && sqlArray.length > 0"
-          v-for="subItem in sqlArray"
+          v-for="(subItem ,index) in sqlArray"
           @click="showSQLDetail(subItem?.key as string, $event)"
           :key="String(subItem?.key)"
+          @mouseenter="sqlShowButton[index] = true"
+          @mouseleave="sqlShowButton[index] = false"
       >
         <span v-if="subItem !== null && 'label' in subItem">{{ subItem.label }}</span>
+
+        <a-button-group v-if="sqlShowButton[index]"
+                        :style="{display:'inline-flex',justifyContent:'space-between',position:'absolute',right:'8px',top:'8px'}">
+          <a-tooltip title="删除SQL">
+            <a-button size="small"
+                      @click="removeSQL(subItem?.key as string, $event)">
+              <template #icon>
+                <DeleteOutlined/>
+              </template>
+            </a-button>
+          </a-tooltip>
+
+          <a-tooltip title="查看/编辑SQL配置">
+            <a-button size="small"
+                      @click="checkSQLConfig(subItem?.key as string, $event)">
+              <template #icon>
+                <EditOutlined/>
+              </template>
+            </a-button>
+          </a-tooltip>
+
+          <a-tooltip title="查看SQL数据">
+            <a-button size="small"
+                      @click="checkSQLData(subItem?.key as string, $event)">
+              <template #icon>
+                <TableOutlined/>
+              </template>
+            </a-button>
+          </a-tooltip>
+        </a-button-group>
       </a-menu-item>
     </a-sub-menu>
 
@@ -226,7 +310,7 @@ onMounted(() => {
 </template>
 <style scoped>
 
-.datasourceClass:hover .buttonClass .icon-wrapper{
+.datasourceClass:hover .buttonClass .icon-wrapper {
   display: inline-flex;
 }
 
