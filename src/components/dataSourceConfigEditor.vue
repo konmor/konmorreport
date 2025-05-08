@@ -9,7 +9,12 @@ import {reactive, ref} from 'vue'
 import type {FormInstance} from 'ant-design-vue'
 import {saveDatasource, checkConnection} from '@/api/datasoure.ts'
 import type {DatasourceDetail} from '@/types/api.ts'
-import {DatabaseFilled} from "@ant-design/icons-vue";
+import {DatabaseFilled,
+  CheckCircleOutlined,
+  ExclamationOutlined,
+  LoadingOutlined,
+  CloseOutlined,
+} from "@ant-design/icons-vue";
 
 let {datasourceDetail} = defineProps(['datasourceDetail'])
 
@@ -58,13 +63,20 @@ const resetForm = () => {
 
 let datasourceCheck: {
   version: string | undefined,
-  alertType: 'success' | 'info' | 'warning' | 'error' | undefined,
+  alertType: 'success' | 'info' | 'warning' | 'error' |'loading'| undefined,
   message: string | 'Succeeded' | undefined,
   description: string | undefined,
   show: boolean,
 } = reactive({version: undefined, alertType: undefined, message: undefined, show: false, description: undefined})
 const testConnection = () => {
-  checkConnection(datasourceDetail).then((response) => {
+  datasourceCheck.alertType = 'loading';
+  datasourceCheck.show = false;
+
+  datasourceCheck.version = undefined;
+  datasourceCheck.message = undefined;
+  datasourceCheck.description = undefined;
+  setTimeout(()=>{
+    checkConnection(datasourceDetail).then((response) => {
     if (response.code == 0) {
       datasourceCheck.version = datasourceDetail.dataSourceType + " " + response.data;
       datasourceCheck.alertType = 'success';
@@ -77,7 +89,8 @@ const testConnection = () => {
       datasourceCheck.description = response.error;
     }
     datasourceCheck.show = true;
-  })
+  })},500);
+
 }
 const resetConnectUrl = () => {
 
@@ -285,19 +298,33 @@ const checkSSL = (event: Event) => {
         <a-divider></a-divider>
 
         <a-row>
-          <a-button @click="testConnection" type="default" :style="{margin:'10px 10px 10px 20px'}">测试连接</a-button>
+
+
+          <a-popover v-model:open="datasourceCheck.show" trigger="click">
+            <template #title>
+              <div :style="{display:'flex',justifyContent:'space-between'}">
+                <span v-show="datasourceCheck.alertType == 'success'" style="color: #6fd845">{{datasourceCheck.message}}</span>
+                <span v-show="datasourceCheck.alertType == 'error'" style="color: red">{{datasourceCheck.message}}</span>
+                <span v-show="datasourceCheck.alertType == 'loading'" style="color: #efb056">{{datasourceCheck.message}}</span>
+                <span><a @click="datasourceCheck.show = false" style="color: #6fd845"><CloseOutlined /></a></span>
+              </div>
+            </template>
+            <template #content>
+              {{datasourceCheck.description}}
+            </template>
+
+
+            <a-button @click="testConnection" type="default" :style="{margin:'10px 10px 10px 20px'}">测试连接</a-button>
+          </a-popover>
+
+          <CheckCircleOutlined v-show="datasourceCheck.alertType == 'success'" style="color: #6fd845"/>
+          <ExclamationOutlined  v-show="datasourceCheck.alertType == 'error'" style="color: red"/>
+          <LoadingOutlined  v-show="datasourceCheck.alertType == 'loading'" style="color: #efb056"/>
+
           <span
-              :style="{lineHeight:'52px',padding:'0px 2px 0 2px',marginRight:'10px'}">{{
+              :style="{lineHeight:'52px',padding:'0px 2px 0 2px',marginRight:'10px',marginLeft:'8px'}">{{
               datasourceCheck.version
             }}</span>
-          <a-alert
-              :message="datasourceCheck.message"
-              :type="datasourceCheck.alertType"
-              :description="datasourceCheck.description"
-              v-show="datasourceCheck.show"
-              closable
-              show-icon
-          />
         </a-row>
       </div>
 
