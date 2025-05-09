@@ -19,17 +19,22 @@ import {useRoute} from "vue-router";
 import {getDBObjectList} from "@/api/dbObject.ts";
 import type {DBInfo, DBObject, Routine, TableField} from "@/types/api.ts";
 
+// 路由
+let route = useRoute();
+// 数据库id
+let dbId = ref('');
+
 type DataType = TreeProps & {
   dataType?: 'number' | 'string' | 'date'
   type?: 'table' | 'view' | 'routine'
   schema?: true | false,
 }
 
-let siderHeight = ref(800)
-const treeData: DataType['treeData'] = reactive([]);
-const expandedKeys = ref<string[]>(['view', 'table'])
-let route = useRoute();
+// 树形结构的高度
+let siderHeight = ref(800);
 
+// 树形结构的数据
+const treeData: DataType['treeData'] = reactive([]);
 // 设置为默认数据
 const setDefaultData = () => {
   Object.assign(treeData, [
@@ -102,9 +107,7 @@ const setDefaultData = () => {
   ])
 }
 
-let dbId = ref('');
-const searchValue = ref<string>('');
-
+// 数据转换 数据库返回的是 String Number Time 转换为 'string' | 'number' | 'date'
 const convertFieldType = (dataType: string): 'string' | 'number' | 'date' | undefined => {
   if (dataType == 'String') {
     return 'string'
@@ -117,12 +120,16 @@ const convertFieldType = (dataType: string): 'string' | 'number' | 'date' | unde
   }
 }
 
+// 将数据库对象DBObject 转换为 树形结构要求的数据结构(ant-design-vue tree 组件要求的结构)
+// DBObject 返回的结构是接口的的字段和值，需要转换下
+const FIELD_PRE = '_field:';
+
 function convertToTableFields(dbObject: DBObject) {
   let tableChildren: DataType[] = [];
   if (Array.isArray(dbObject.value)) {
     for (let j = 0; j < dbObject.value.length; j++) {
       let item = dbObject.value[j] as TableField;
-      tableChildren[j] = buildTreeData('_field' + item.tableFieldId as string,
+      tableChildren[j] = buildTreeData(FIELD_PRE + item.tableFieldId as string,
           item.fieldName as string,
           undefined,
           convertFieldType(item.fieldType2 as string),
@@ -134,9 +141,64 @@ function convertToTableFields(dbObject: DBObject) {
   return tableChildren;
 }
 
+const DB_OBJECT_PRE = '_db_object:';
+
 /**
  * 从 dbInfo 中抽取他的schema数据
  * 一个db可能包含多个 schema ，默认 schemaIndex = 0,即取第一个
+ * 返回的结构是 [{key,title,type:'table'|'view'|'routine',
+ *                  children:[{key,title:'tableName or viewName or routineName',
+ *                                  children:[key,title : 'fieldName',dataType:'string'|'number'|'date'}
+ *                             ,...]}
+ *              ,...]
+ *
+ * 参考：
+ * <pre>
+ *
+ * [
+ *     {
+ *       title: '表格',
+ *       key: 'table',
+ *       type: 'table',
+ *
+ *       children: [
+ *         {
+ *           title: 'world',
+ *           key: 'world',
+ *           children: [
+ *             {
+ *               title: 'worldCode',
+ *               key: 'worldCode',
+ *               dataType: 'number',
+ *             },
+ *             {
+ *               title: 'worldName',
+ *               key: 'worldName',
+ *               dataType: 'string',
+ *             },
+ *             {
+ *               title: 'peopleCount',
+ *               key: 'peopleCount',
+ *               dataType: 'number',
+ *             }
+ *           ],
+ *         }
+ *       ],
+ *     },
+ *     {
+ *       title: '视图',
+ *       key: 'view',
+ *       type: 'view',
+ *
+ *       children: [
+ *         {
+ *           title: 'parent 1-1',
+ *           key: '0-0-1',
+ *         }
+ *         ]
+ *       }
+ *  ]
+ *  </pre>
  */
 function convertToTreeData(dbInfo: DBInfo, schemaIndex: number = 0): DataType[] {
   if (dbInfo.dbSchemaDTOList == undefined || null) {
@@ -158,7 +220,7 @@ function convertToTreeData(dbInfo: DBInfo, schemaIndex: number = 0): DataType[] 
         let tableChildren = convertToTableFields(dbObject);
 
         tableData[t++] = buildTreeData(
-            '_db_object' + dbObject.dbObjectId as string,
+            DB_OBJECT_PRE + dbObject.dbObjectId as string,
             dbObject.objectName as string,
             undefined,
             undefined,
@@ -169,7 +231,7 @@ function convertToTreeData(dbInfo: DBInfo, schemaIndex: number = 0): DataType[] 
         let viewChildren: DataType[] = convertToTableFields(dbObject);
 
         viewData[v++] = buildTreeData(
-            '_db_object' + dbObject.dbObjectId as string,
+            DB_OBJECT_PRE + dbObject.dbObjectId as string,
             dbObject.objectName as string,
             undefined,
             undefined,
@@ -180,7 +242,7 @@ function convertToTreeData(dbInfo: DBInfo, schemaIndex: number = 0): DataType[] 
         let item = dbObject.value as Routine;
         let routineBody = item.routineBody;
         routineData[r++] = buildTreeData(
-            '_db_object' + dbObject.dbObjectId as string,
+            DB_OBJECT_PRE + dbObject.dbObjectId as string,
             dbObject.objectName as string,
             undefined,
             undefined,
@@ -192,15 +254,15 @@ function convertToTreeData(dbInfo: DBInfo, schemaIndex: number = 0): DataType[] 
 
   let data: DataType[] = [];
   if (tableData.length > 0) {
-    data[0] = buildTreeData('table', 'Table', 'table', undefined, tableData, false);
+    data[0] = buildTreeData('table', '表', 'table', undefined, tableData, false);
   }
 
   if (viewData.length > 0) {
-    data[1] = buildTreeData('view', 'View', 'view', undefined, viewData, false);
+    data[1] = buildTreeData('view', '视图', 'view', undefined, viewData, false);
   }
 
   if (routineData.length > 0) {
-    data[2] = buildTreeData('routine', 'Routine', 'routine', undefined, routineData, false);
+    data[2] = buildTreeData('routine', '函数或存储过程', 'routine', undefined, routineData, false);
   }
   return data;
 }
@@ -274,6 +336,7 @@ const buildTreeData = function
 }
 
 const autoExpandParent = ref<boolean>(true);
+const expandedKeys = ref<string[]>(['view', 'table'])
 const onExpand = (keys: string[]) => {
   expandedKeys.value = keys;
   autoExpandParent.value = false;
@@ -297,6 +360,8 @@ watch(() => route.query.key, (sourceId) => {
   }
 });
 
+
+const searchValue = ref<string>('');
 // 监听搜索框的变化
 watch(searchValue, value => {
   if (value != null && value.length > 0) {
