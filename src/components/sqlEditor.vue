@@ -5,18 +5,22 @@ export default {
 </script>
 
 <script setup lang="ts">
-import { inject, onMounted, reactive, ref } from 'vue'
+import {inject, onMounted, reactive, ref} from 'vue'
 import {
   WindowsOutlined,
+  FormatPainterOutlined,
+  ZoomInOutlined,
+  ZoomOutOutlined,
 } from '@ant-design/icons-vue'
 
-import { EditorState } from '@codemirror/state'
-import { EditorView } from '@codemirror/view'
-import { basicSetup } from 'codemirror'
-import { sql } from '@codemirror/lang-sql'
-import { format } from 'sql-formatter'
-import type { Router } from 'vue-router'
+import {EditorState} from '@codemirror/state'
+import {EditorView} from '@codemirror/view'
+import {basicSetup} from 'codemirror'
+import {sql} from '@codemirror/lang-sql'
+import {format} from 'sql-formatter'
+import type {Router} from 'vue-router'
 import DbObject from "@/components/dbObject.vue";
+import {EyeOutlined} from "@ant-design/icons-vue";
 
 let router = inject<Router>('router')
 
@@ -72,7 +76,7 @@ function formatSQL() {
   if (editor != null) {
     const formattedContent = format(editor.state.doc.toString())
     editor.dispatch({
-      changes: { from: 0, to: editor.state.doc.length, insert: formattedContent },
+      changes: {from: 0, to: editor.state.doc.length, insert: formattedContent},
     })
   }
 }
@@ -161,66 +165,59 @@ function saveSQLConfig() {
 
 }
 
+let cache = ref(true);
+
 </script>
 
 <template>
   <a-layout>
     <db-object/>
     <a-layout>
-      <a-layout-header :style="{ backgroundColor: '#FFF', border: '1px solid black' }">
-        <a-row gutter=24>
-          <a-col :span="8">
-            <span
-              >数据源：<a-select style="width: 120px" allow-clear>
-                <a-select-option value="1fdsafasfasf">1fdsafasfasf</a-select-option>
-                <a-select-option value="2">2</a-select-option>
-                <a-select-option value="3">3</a-select-option>
-              </a-select></span
-            >
-          </a-col>
-        </a-row>
+      <a-layout-header :style="{
+                                  backgroundColor: '#FFF',
+                                  boxShadow: '2px 2px 5px rgba(0, 0, 0, 0.3)',
+                                  marginBottom:'10px'
+                                  }">
+        <a-space size="middle">
+          <a-select style="width: 180px" allow-clear placeholder="切换数据源">
+            <a-select-option value="1fdsafasfasf">1fdsafasfasf</a-select-option>
+            <a-select-option value="2">2</a-select-option>
+            <a-select-option value="3">3</a-select-option>
+          </a-select>
+          <a-input title="名称" label = "name" placehloder="placehloder"></a-input>
+
+          <a-button @click="sqlView($event)" :style="{color:'#f'}">
+            <EyeOutlined/>
+            预览
+          </a-button>
+          <a-button @click="sqlExplain($event)">
+            Explain
+          </a-button>
+          <a-checkbox :checked="cache">缓存加速</a-checkbox>
+
+          <a-button @click="formatSQL">
+            <FormatPainterOutlined/>
+            Format
+          </a-button>
+
+          <a-button-group>
+            <a-button @click="zoomIn">
+              <ZoomInOutlined/>
+            </a-button>
+            <a-button @click="zoomOut">
+              <ZoomOutOutlined/>
+            </a-button>
+            <a-button @click="resetFontSize">
+              Reset
+            </a-button>
+          </a-button-group>
+
+          <a-button type="primary" @click="saveSQLConfig">保存</a-button>
+        </a-space>
       </a-layout-header>
 
       <a-layout id="_contentContainer">
         <a-layout-content class="top" :style="{ height: topHeight + 'px' }">
-          <a-layout
-            :style="{
-              boxShadow: '5px 5px 10px rgba(0, 0, 0, 0.3)',
-              margin: '5px',
-              height: '38px',
-              lineHeight: '38px',
-            }"
-          >
-            <a-space size="large">
-              <a-button @click="sqlView($event)">
-                <windows-outlined></windows-outlined>
-                预览
-              </a-button>
-              <a-button @click="sqlExplain($event)">
-                <windows-outlined></windows-outlined>
-                查看执行计划
-              </a-button>
-              <a-checkbox>缓存加速</a-checkbox>
-              <a-button @click="formatSQL">
-                <windows-outlined></windows-outlined>
-                SQL美化
-              </a-button>
-              <a-button @click="zoomIn">
-                <windows-outlined></windows-outlined>
-                放大字体
-              </a-button>
-              <a-button @click="zoomOut">
-                <windows-outlined></windows-outlined>
-                缩小字体
-              </a-button>
-              <a-button @click="resetFontSize">
-                <windows-outlined></windows-outlined>
-                重置字体大小
-              </a-button>
-              <a-button type="primary" @click="saveSQLConfig">保存</a-button>
-            </a-space>
-          </a-layout>
-
           <!--          sql 的编辑框-->
           <a-layout>
             <!--            todo控制大小-->
@@ -228,13 +225,13 @@ function saveSQLConfig() {
           </a-layout>
         </a-layout-content>
         <a-divider
-          :style="{
+            :style="{
             height: '10px',
             backgroundColor: 'black',
             margin: '1px 0',
             cursor: 'row-resize',
           }"
-          @mousedown="changeHeight($event)"
+            @mousedown="changeHeight($event)"
         ></a-divider>
         <a-layout-content class="bottom" :style="{ height: bottomHeight + 'px' }">
           <router-view></router-view>
@@ -249,6 +246,7 @@ function saveSQLConfig() {
   display: flex;
   flex-direction: column;
 }
+
 .contentContainer .top {
   background-color: #1890ff;
 }
