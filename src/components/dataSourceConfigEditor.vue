@@ -119,7 +119,7 @@ const checkSSL = (event: Event) => {
           height: '50px',
         }"
       >
-        <a-row :gutter="24">
+        <a-row :gutter=24>
           <a-col :span="6">
             <a-form-item label="数据源类型" required :style="{ lineHeight: '50px' }" name="dataSourceType">
               <a-select
@@ -170,7 +170,7 @@ const checkSSL = (event: Event) => {
           padding:'10px',
         }"
       >
-        <a-row :gutter="24">
+        <a-row :gutter=24>
           <a-col :span="24">
             <div style="padding: 0 0 0 20px">
               <DatabaseFilled/>
@@ -183,7 +183,7 @@ const checkSSL = (event: Event) => {
         </a-row>
 
 
-        <a-row :gutter="24">
+        <a-row :gutter=24>
           <a-col :span="6">
             <a-form-item label="IP地址" required name="host">
               <a-input
@@ -203,7 +203,7 @@ const checkSSL = (event: Event) => {
             </a-form-item>
           </a-col>
         </a-row>
-        <a-row :gutter="24">
+        <a-row :gutter=24>
           <a-col :span="6">
             <a-form-item label="用户名" required name="username">
               <a-input
@@ -232,7 +232,7 @@ const checkSSL = (event: Event) => {
             </a-form-item>
           </a-col>
         </a-row>
-        <a-row :gutter="24">
+        <a-row :gutter=24>
           <a-col :span="6">
             <a-form-item label="驱动选择" required name="driverClass">
               <a-select
@@ -278,7 +278,7 @@ const checkSSL = (event: Event) => {
           </a-col>
         </a-row>
 
-        <a-row :gutter="24" :style="{position:'relative'}">
+        <a-row :gutter=24 :style="{position:'relative'}">
           <a-col :span="23">
             <a-form-item label="url" required name="connectionUrl" :labelCol="{span:2}" :wrapper-col="{span:12}">
               <a-input
@@ -329,7 +329,7 @@ const checkSSL = (event: Event) => {
       </div>
 
 
-      <a-row :gutter="24" :style="{ margin: '10px' }">
+      <a-row :gutter=24 :style="{ margin: '10px' }">
         <a-col :span="2"></a-col>
         <a-col :span="4">
           <a-form-item>

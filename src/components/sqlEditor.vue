@@ -168,7 +168,7 @@ function saveSQLConfig() {
     <db-object/>
     <a-layout>
       <a-layout-header :style="{ backgroundColor: '#FFF', border: '1px solid black' }">
-        <a-row gutter="24">
+        <a-row gutter=24>
           <a-col :span="8">
             <span
               >数据源：<a-select style="width: 120px" allow-clear>

@@ -64,3 +64,46 @@ export interface SQLParam {
     defaultValue: string,
 
 }
+
+export interface DBInfo {
+    dbId?: string | number,
+    sourceId?: string | number,
+    dbName?: string,
+    dbSchemaDTOList?: undefined | DBSchema[],
+}
+
+export interface DBSchema {
+    schemaId?: string | number,
+    sourceId?: string | number,
+    dbId?: string | number,
+    schemaName?: string,
+    schemaType?: string,
+    defaultFlag?: number,
+    owner?: string,
+    tablespace?: string,
+    dbObjectList?: DBObject[],
+}
+
+export interface DBObject {
+    dbObjectId?: string | number,
+    sourceId?: string | number,
+    dbId?: string | number,
+    schemaId?: string | number,
+    objectName?: string,
+    objectType?: string,
+    value?: TableField[] | Routine | undefined,
+}
+
+export interface TableField {
+    tableFieldId?: string | number,
+    objectId?: string | number,
+    fieldName?: string,
+    fieldType?: string,
+    fieldType2?: string,
+}
+
+export interface Routine {
+    routineId?: string | number,
+    objectId?: string | number,
+    routineBody?: string,
+}
