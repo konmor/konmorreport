@@ -10,6 +10,7 @@ import {
   FieldStringOutlined,
   FieldTimeOutlined,
   FundViewOutlined,
+  FunctionOutlined,
   TableOutlined
 } from "@ant-design/icons-vue";
 import {onMounted, reactive, ref, watch} from "vue";
@@ -27,9 +28,6 @@ type DataType = TreeProps & {
 let siderHeight = ref(800)
 const treeData: DataType['treeData'] = reactive([]);
 const expandedKeys = ref<string[]>(['view', 'table'])
-watch(expandedKeys, () => {
-  console.log('expandedKeys', expandedKeys)
-})
 let route = useRoute();
 
 // 设置为默认数据
@@ -207,23 +205,42 @@ function convertToTreeData(dbInfo: DBInfo, schemaIndex: number = 0): DataType[] 
   return data;
 }
 
-const setDBInfoData = (dbInfo: DBInfo) => {
-  dbId.value = dbInfo.dbId as string;
 
+// 将数据拍平后的 放入到 dataList 用于搜索
+const dataList: TreeProps['treeData'] = [];
+
+const generateList = (data: DataType[]) => {
+  for (let i = 0; i < data.length; i++) {
+    const node = data[i];
+    let key;
+    if ('key' in node) {
+      key = node.key;
+    }
+    let title;
+    if ('title' in node) {
+      title = node.title;
+    }
+    dataList.push({key: key as string, title: title});
+    if (node.children) {
+      generateList(node.children);
+    }
+  }
+};
+
+const setDBInfoData = function (dbInfo: DBInfo) {
+  dbId.value = dbInfo.dbId as string;
+  let schemaData: DataType[] = [];
   if (dbInfo.dbSchemaDTOList != null && dbInfo.dbSchemaDTOList.length > 0) {
     // schema 只有一个的情况
     if (dbInfo.dbSchemaDTOList.length == 1) {
-      let data = convertToTreeData(dbInfo);
-      // 将值赋给 树形结构数据
-      Object.assign(treeData, data);
+      schemaData = convertToTreeData(dbInfo);
     }
     // 有多个schema的情况
     else {
-      let allSchemaData: DataType[] = [];
       for (let i = 0; i < dbInfo.dbSchemaDTOList.length; i++) {
         let dbSchema = dbInfo.dbSchemaDTOList[i];
         let data: DataType[] = convertToTreeData(dbInfo, i);
-        allSchemaData[i] = buildTreeData(
+        schemaData[i] = buildTreeData(
             '_schema:' + dbSchema.schemaId,
             dbSchema.schemaName as string,
             undefined,
@@ -232,13 +249,16 @@ const setDBInfoData = (dbInfo: DBInfo) => {
             true
         )
       }
-      // 将值赋给 树形结构数据
-      Object.assign(treeData, allSchemaData);
     }
+    // 将值赋给 树形结构数据
+    Object.assign(treeData, schemaData);
+    // 将值平铺到datalist ,用于搜索框使用
+    generateList(schemaData);
   } else {
     setDefaultData();
   }
 };
+
 
 const buildTreeData = function
 (key: string | undefined, title: string, type?: 'table' | 'view' | 'routine' | undefined, dataType?: 'number' | 'string' | 'date',
@@ -253,6 +273,13 @@ const buildTreeData = function
   }
 }
 
+const autoExpandParent = ref<boolean>(true);
+const onExpand = (keys: string[]) => {
+  expandedKeys.value = keys;
+  autoExpandParent.value = false;
+};
+
+// 监听 路由变化 重新加载数据
 watch(() => route.query.key, (sourceId) => {
   if (sourceId != null && typeof sourceId === 'string' && sourceId.length > 0) {
     getDBObjectList(sourceId).then(reponse => {
@@ -270,6 +297,26 @@ watch(() => route.query.key, (sourceId) => {
   }
 });
 
+// 监听搜索框的变化
+watch(searchValue, value => {
+  if (value != null && value.length > 0) {
+    const expanded = dataList
+        .map((item) => {
+          if (value != null && value.length > 0 && item.title.indexOf(value) > -1) {
+            return item.key;
+          }
+          return null;
+        })
+        .filter((item, i, self) => item && self.indexOf(item) === i);
+    expandedKeys.value = expanded as string[];
+    searchValue.value = value;
+    autoExpandParent.value = true;
+  } else {
+    expandedKeys.value = ['view', 'table'];
+  }
+
+});
+
 onMounted(() => {
   // 初次加载
   if (route.query.key != null) {
@@ -285,7 +332,6 @@ onMounted(() => {
   }
 
 })
-
 </script>
 
 
@@ -301,32 +347,60 @@ onMounted(() => {
       <a-tree
           :tree-data="treeData"
           v-model:expandedKeys="expandedKeys"
+          @expand="onExpand"
+          :auto-expand-parent="autoExpandParent"
           :style="{ width: '100%' }"
           :height="siderHeight - 1"
       >
         <template #title="{ title, key, type, dataType }">
           <a-tooltip :title="title">
             <span v-if="type === 'view'">
-              <fund-view-outlined></fund-view-outlined>
+              <fund-view-outlined :style="{color:'#4285F4'}"></fund-view-outlined>
               {{ title }}
             </span>
             <span v-else-if="type === 'table'">
-              <table-outlined></table-outlined>
+              <table-outlined :style="{color:'#6aaf49'}"></table-outlined>
               {{ title }}
-          </span>
+            </span>
+            <span v-else-if="type === 'routine'">
+              <function-outlined :style="{color:'#f4b400'}"></function-outlined>
+               {{ title }}
+            </span>
             <span v-else-if="dataType === 'string'" class="fields">
               <field-string-outlined style="color: #efb056"></field-string-outlined>
-              {{ title }}</span>
+              <span v-if="title.indexOf(searchValue) > -1">
+                {{ title.substring(0, title.indexOf(searchValue)) }}
+                <span style="color: #f50">{{ searchValue }}</span>
+                {{ title.substring(title.indexOf(searchValue) + searchValue.length) }}
+              </span>
+              <span v-else>{{ title }}</span>
+            </span>
             <span v-else-if="dataType === 'number'" class="fields">
               <field-number-outlined style="color: #6fd845"></field-number-outlined>
-              {{ title }}</span>
+              <span v-if="title.indexOf(searchValue) > -1">
+                {{ title.substring(0, title.indexOf(searchValue)) }}
+                <span style="color: #f50">{{ searchValue }}</span>
+                {{ title.substring(title.indexOf(searchValue) + searchValue.length) }}
+              </span>
+              <span v-else>{{ title }}</span>
+            </span>
             <span v-else-if="dataType === 'date'" class="fields">
               <field-time-outlined style="color: #1890ff"></field-time-outlined>
-              {{ title }}</span>
-
-            <template v-else>
-              <span class="fields">{{ title }}</span>
-            </template>
+              <span v-if="title.indexOf(searchValue) > -1">
+                {{ title.substring(0, title.indexOf(searchValue)) }}
+                <span style="color: #f50">{{ searchValue }}</span>
+                {{ title.substring(title.indexOf(searchValue) + searchValue.length) }}
+              </span>
+              <span v-else>{{ title }}</span>
+            </span>
+            <span class="fields" v-else>
+               <span v-if="title.indexOf(searchValue) > -1">
+                {{ title.substring(0, title.indexOf(searchValue)) }}
+                <span style="color: #f50">{{ searchValue }}</span>
+                {{ title.substring(title.indexOf(searchValue) + searchValue.length) }}
+              </span>
+              <span v-else>{{ title }}</span>
+            </span>
           </a-tooltip>
         </template>
       </a-tree>
