@@ -342,21 +342,25 @@ const onExpand = (keys: string[]) => {
   autoExpandParent.value = false;
 };
 
+const emptyTree = ref(true);
 // 监听 路由变化 重新加载数据
 watch(() => route.query.key, (sourceId) => {
+  emptyTree.value = true;
   if (sourceId != null && typeof sourceId === 'string' && sourceId.length > 0) {
     getDBObjectList(sourceId).then(reponse => {
       if (reponse.code == 0) {
         // 转化为 treeData 能够接受的数据
         setDBInfoData(reponse.data);
       } else if (reponse.code == -1) {
-        // 发生报错
+        // 发生报错 使用默认数据
         setDefaultData()
       }
     })
+    emptyTree.value = false;
   } else {
-    // 使用空数据
-    setDefaultData()
+    // 使用默认数据
+    setDefaultData();
+    emptyTree.value = false;
   }
 });
 
@@ -383,6 +387,7 @@ watch(searchValue, value => {
 });
 
 onMounted(() => {
+  emptyTree.value = true;
   // 初次加载
   if (route.query.key != null) {
     getDBObjectList(route.query.key as string).then(reponse => {
@@ -393,6 +398,7 @@ onMounted(() => {
         // 发生报错
         setDefaultData()
       }
+      emptyTree.value = false;
     })
   }
 
@@ -409,6 +415,7 @@ onMounted(() => {
           height: `${siderHeight}+ px`,
         }"
     >
+      <a-empty v-if="emptyTree"/>
       <a-tree
           :tree-data="treeData"
           v-model:expandedKeys="expandedKeys"
@@ -416,6 +423,7 @@ onMounted(() => {
           :auto-expand-parent="autoExpandParent"
           :style="{ width: '100%' }"
           :height="siderHeight - 1"
+          v-if="!emptyTree"
       >
         <template #title="{ title, key, type, dataType }">
           <a-tooltip :title="title">

@@ -5,13 +5,13 @@ export default {
 </script>
 <script setup lang="ts">
 import DataSourceConfigEditor from '@/components/dataSourceConfigEditor.vue'
-import { useRoute } from 'vue-router'
-import { onMounted, reactive, toRef, watch } from 'vue'
-import { getDatasourceDetail } from '@/api/datasoure.ts'
-import type { DatasourceDetail } from '@/types/api.ts'
+import {useRoute} from 'vue-router'
+import {onMounted, reactive, toRef, watch} from 'vue'
+import {getDatasourceDetail} from '@/api/datasoure.ts'
+import type {DatasourceDetail} from '@/types/api.ts'
 
 let route = useRoute()
-let { key } = route.query
+let {key} = route.query
 let dataSourceDetail: DatasourceDetail = reactive({})
 let datasourceTemplate: DatasourceDetail = {
   sourceId: '',
@@ -38,30 +38,30 @@ onMounted(() => {
       Object.assign(dataSourceDetail, response.data)
     })
   }
-  // 添加对路由的监听
-  watch(
-      () => route.query.key,
-      (item) => {
-        if (item != null && typeof item == 'string') {
-          // 编辑
-          if (!item.startsWith('_datasourceKey')) {
-            getDatasourceDetail(item).then((response) => {
-              Object.assign(dataSourceDetail, response.data)
-            })
-          }
-          // 这时就不用去数据库查询数据
-          else {
-            Object.assign(dataSourceDetail, datasourceTemplate);
-            dataSourceDetail.dataSourceName = '数据源('+item.substring(14)+')';
-          }
-        }
-      },
-  )
 })
+// 添加对路由的监听
+watch(
+    () => route.query.key,
+    (item) => {
+      if (item != null && typeof item == 'string') {
+        // 编辑
+        if (!item.startsWith('_datasourceKey')) {
+          getDatasourceDetail(item).then((response) => {
+            Object.assign(dataSourceDetail, response.data)
+          })
+        }
+        // 这时就不用去数据库查询数据
+        else {
+          Object.assign(dataSourceDetail, datasourceTemplate);
+          dataSourceDetail.dataSourceName = '数据源(' + item.substring(14) + ')';
+        }
+      }
+    },
+)
 </script>
 
 <template>
-  <data-source-config-editor :datasource-detail="dataSourceDetail" />
+  <data-source-config-editor :datasource-detail="dataSourceDetail"/>
 </template>
 
 <style scoped></style>

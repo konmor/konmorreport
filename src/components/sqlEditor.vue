@@ -5,7 +5,7 @@ export default {
 </script>
 
 <script setup lang="ts">
-import {inject, onMounted, reactive, ref} from 'vue'
+import {inject, onMounted, reactive, ref, watch} from 'vue'
 import {
   WindowsOutlined,
   FormatPainterOutlined,
@@ -21,28 +21,10 @@ import {format} from 'sql-formatter'
 import type {Router} from 'vue-router'
 import DbObject from "@/components/dbObject.vue";
 import {EyeOutlined} from "@ant-design/icons-vue";
+import useNavigator from "@/hooks/useNavigator.ts";
+import type {ItemType, SelectProps} from "ant-design-vue";
 
 let router = inject<Router>('router')
-
-let editor = reactive<EditorView>({})
-onMounted(() => {
-  let sqlEditor = document.getElementById('_sqlEditor')
-  const state = EditorState.create({
-    doc: 'SELECT\n' + '  *\n' + 'FROM\n' + '  table_name;', // 初始内容
-    extensions: [
-      basicSetup, // 基础功能（如行号、缩进等）
-      sql(), // SQL 语言支持
-    ],
-  })
-
-  if (sqlEditor != null) {
-    editor = new EditorView({
-      state: state,
-      parent: sqlEditor, // 挂载到 DOM 元素
-    })
-  }
-})
-
 let fontSize = ref(14)
 
 const updateFontSize = (newSize: number) => {
@@ -107,6 +89,9 @@ let topHeight = ref(500)
 let bottomHeight = ref(260)
 let isDragging = ref(false)
 
+let cache = ref(true);
+
+
 function changeHeight(e: Event) {
   let element = document.getElementById('_contentContainer')
   isDragging.value = true
@@ -146,6 +131,8 @@ function changeHeight(e: Event) {
   window.addEventListener('mouseup', up)
 }
 
+let editor = reactive<EditorView>({})
+
 function saveSQLConfig() {
   /*sqlId
   sourceId
@@ -161,11 +148,72 @@ function saveSQLConfig() {
   defaultValue*/
 
   let sqlContent = format(editor.state.doc.toString());
-
-
 }
 
-let cache = ref(true);
+// 获取父组件传递过来的值，父组件中 sourceId 是 ref对象
+let {sourceId} = defineProps(['sourceId']);
+const dataSourceSelect = ref('');
+
+const handleChange = (value: string) => {
+  console.log(`selected ${value}`);
+};
+const handleBlur = () => {
+  console.log('blur');
+};
+const handleFocus = () => {
+  console.log('focus');
+};
+const filterOption = (input: string, option: any) => {
+  //
+  console.log(input, option);
+  return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+};
+
+
+let {data, refreshDatasourceList} = useNavigator();
+const options = ref<SelectProps['options']>([]);
+refreshDatasourceList();
+
+// 赋值数据源下拉选
+const DATASOURCE_SELECT_VALUE_PRE = '_sourceId:';
+watch(data, (value) => {
+  if (data != null && data.length > 0) {
+    // 数据源的下拉
+    for (let i = 0; i < data.length; i++) {
+      let item = data[i];
+      if (item != null && options.value != null && 'label' in item) {
+        options.value[i] = {value: DATASOURCE_SELECT_VALUE_PRE + item.key as string, label: item.label};
+      }
+    }
+  }
+})
+
+// 监听sourceId 的变化，同时赋值给 dataSourceSelect，便于切换值
+// 需要注意的是 这个值不是响应式的变量，但是可以通过 ()=> sourceId 方式监听
+watch(() => sourceId, (sourceId) => {
+  dataSourceSelect.value = DATASOURCE_SELECT_VALUE_PRE + sourceId;
+})
+
+onMounted(() => {
+  let sqlEditor = document.getElementById('_sqlEditor')
+  const state = EditorState.create({
+    doc: 'SELECT\n' + '  *\n' + 'FROM\n' + '  table_name;', // 初始内容
+    extensions: [
+      basicSetup, // 基础功能（如行号、缩进等）
+      sql(), // SQL 语言支持
+    ],
+  })
+
+  if (sqlEditor != null) {
+    editor = new EditorView({
+      state: state,
+      parent: sqlEditor, // 挂载到 DOM 元素
+    })
+  }
+
+  // 初始化加载 下拉菜单
+  dataSourceSelect.value = DATASOURCE_SELECT_VALUE_PRE + sourceId;
+})
 
 </script>
 
@@ -179,12 +227,19 @@ let cache = ref(true);
                                   marginBottom:'10px'
                                   }">
         <a-space size="middle">
-          <a-select style="width: 180px" allow-clear placeholder="切换数据源">
-            <a-select-option value="1fdsafasfasf">1fdsafasfasf</a-select-option>
-            <a-select-option value="2">2</a-select-option>
-            <a-select-option value="3">3</a-select-option>
+          <a-select
+              v-model:value="dataSourceSelect"
+              :options="options"
+              style="width: 180px"
+              placeholder="切换数据源"
+              show-search
+              :filter-option="filterOption"
+              @focus="handleFocus"
+              @blur="handleBlur"
+              @change="handleChange">
+
           </a-select>
-          <a-input title="名称" label = "name" placehloder="placehloder"></a-input>
+          <a-input placeholder="名称" show-count :maxlength="20" allow-clear></a-input>
 
           <a-button @click="sqlView($event)" :style="{color:'#f'}">
             <EyeOutlined/>
@@ -193,20 +248,24 @@ let cache = ref(true);
           <a-button @click="sqlExplain($event)">
             Explain
           </a-button>
-          <a-checkbox :checked="cache">缓存加速</a-checkbox>
-
+          <a-tooltip title="将数据存入数仓中，下次从数仓获取">
+            <a-checkbox :checked="cache">加速</a-checkbox>
+          </a-tooltip>
           <a-button @click="formatSQL">
             <FormatPainterOutlined/>
             Format
           </a-button>
 
           <a-button-group>
+            <!-- 放大字体-->
             <a-button @click="zoomIn">
               <ZoomInOutlined/>
             </a-button>
+            <!-- 缩小字体-->
             <a-button @click="zoomOut">
               <ZoomOutOutlined/>
             </a-button>
+            <!-- 重置字体大小-->
             <a-button @click="resetFontSize">
               Reset
             </a-button>
