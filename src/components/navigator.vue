@@ -14,11 +14,19 @@ import {
   TableOutlined,
   EditOutlined
 } from '@ant-design/icons-vue'
-import {reactive, ref, watch, h, onMounted, inject} from 'vue'
+import {reactive, ref, watch, h, onMounted, inject, onUnmounted} from 'vue'
 import {type MenuProps, type ItemType, Modal} from 'ant-design-vue'
-import type {Router} from 'vue-router'
+import {
+  type NavigationGuard, type NavigationGuardNext,
+  onBeforeRouteLeave,
+  type RouteLocationNormalized,
+  type RouteLocationNormalizedLoaded,
+  type Router
+} from 'vue-router'
 import useNavigator from '@/hooks/useNavigator.ts'
 import addDatasourceIcon from "@/components/button/addDatasource.vue";
+import {useCreateStore} from "@/stores/useCreateStore.ts";
+import {storeToRefs} from "pinia";
 
 let {refreshDatasourceList, data, sqlArray} = useNavigator()
 // 导航栏宽度 从home主页来
@@ -41,59 +49,19 @@ let sqlShowButton = reactive(new Array<Boolean>(sqlArray.length))
 let newLabel = ref('数据源')
 let newKey = ref('_datasourceKey')
 let newFlag = ref(1)
-let createDatasource = ref(false);
 
-// 展示告警模态框
-/**
- * 返回true 则跳转到其他页面
- * 返回false 则继续新增
- * 可以利用此返回值，当true时继续其他操作，当false时阻断当前操作。
- */
-function showAlterModal(confirm: Function) {
-  // 只有正在创建数据源才可显示模态框
-  if (createDatasource.value) {
-    Modal.warning({
-      title: '你确认放弃此次新增数据源吗？',
-      content: '点击确认将会放弃此次编辑内容，并跳转到其他页面。取消则返回继续新增数据源',
-      okText: '确认',
-      cancelText: '取消',
-      onOk: () => {
-        createDatasource.value = false;
-        confirm();
-      },
-      onCancel: () => {
-        createDatasource.value = true;
-      }
-    })
-  } else {
-    confirm();
-  }
-  console.log('showAlterModal', createDatasource.value)
+let createStore = useCreateStore();
+let {createDatasource} = storeToRefs(createStore);
 
-}
 
 // 添加数据源
 function addDataSource(event: Event) {
   event.stopPropagation();
-  showAlterModal(() => {
+  // 如果已经存在则不新增数据
+  if (!createDatasource.value) {
+    createDatasource.value = true;
     let label = newLabel.value + '(' + newFlag.value + ')';
     let key = newKey.value + newFlag.value;
-    /**
-     * 数据源头的名称
-     * 数据源的类型
-     * ip地址 端口号 账号密码
-     *
-     * 按钮 测试连接 返回连接状态，或者失败信息
-     *
-     * 高级 特性 连接内容 连接池大小 最大连接个数
-     */
-    items.push({
-      label: label,
-      key: key,
-    })
-    selectedKeys.value = [key]
-    newFlag.value += 1
-
     if (router != null) {
       router.push({
         name: 'toDataSourceCreator',
@@ -103,17 +71,41 @@ function addDataSource(event: Event) {
         },
       })
     }
-    createDatasource.value = true;
-  });
+    /**
+     * 数据源头的名称
+     * 数据源的类型
+     * ip地址 端口号 账号密码
+     * 按钮 测试连接 返回连接状态，或者失败信息
+     * 高级 特性 连接内容 连接池大小 最大连接个数
+     */
+    items.push({
+      label: label,
+      key: key,
+    })
+    selectedKeys.value = [key]
+    newFlag.value += 1
+  } else {
+    Modal.confirm({
+      title: '确认放弃新增数据源吗？',
+      content: '点击确认将会放弃此次编辑内容，并返回之前页面。取消则返回继续编辑数据源',
+      okText: '确认',
+      cancelText: '取消',
+      onOk: () => {
+        router?.back();
+        items.pop();
+        createDatasource.value = false;
+        newFlag.value -= 1;
+      },
+      onCancel: () => {
+        createDatasource.value = true;
+      }
+    })
+  }
+
 }
 
 function showDatasourceDetail(item: ItemType, event: Event) {
   event.stopPropagation();
-  let confirm = showAlterModal();
-  // 如果不通过则阻断下面的操作
-  if (!confirm) {
-    return;
-  }
   if (router != null && item != null) {
     // 有label值时传递到下级
     if ('label' in item) {
@@ -138,11 +130,6 @@ function showDatasourceDetail(item: ItemType, event: Event) {
 
 function showSQLDetail(key: string, event: Event) {
   event.stopPropagation();
-  let confirm = showAlterModal();
-  // 如果不通过则阻断下面的操作
-  if (!confirm) {
-    return;
-  }
   if (router != null && key != null) {
     router.push({
       name: 'jumpSqlCreator',
@@ -157,19 +144,43 @@ function showSQLDetail(key: string, event: Event) {
 function addSQL(key: string, event: Event) {
 
   event.stopPropagation();
-  let confirm = showAlterModal();
-  // 如果不通过则阻断下面的操作
-  if (!confirm) {
-    return;
-  }
-  if (router != null && key != null) {
-    router.push({
-      name: 'toCreateSQL',
-      query: {
-        key: key,
+  if (createDatasource.value) {
+    Modal.confirm({
+      title: '确认放弃新增数据源吗？',
+      content: '点击确认将会放弃此次编辑内容，并跳转至SQL创建页面。取消则返回继续编辑数据源',
+      okText: '确认',
+      cancelText: '取消',
+      onOk: () => {
+        // router?.back();
+        items.pop();
+        createDatasource.value = false;
+        newFlag.value -= 1;
+        if (router != null && key != null) {
+          console.log('从新建数据源跳转值sql创建!',key,router);
+          router.push({
+            name: 'toCreateSQL',
+            query: {
+              key: key,
+            },
+          })
+        }
       },
+      onCancel: () => {
+        createDatasource.value = true;
+      }
     })
+  } else {
+    if (router != null && key != null) {
+      console.log('跳转并新建SQL',key,router);
+      router.push({
+        name: 'toCreateSQL',
+        query: {
+          key: key,
+        },
+      })
+    }
   }
+
 }
 
 function removeDatasource(key: string, event: Event) {
@@ -178,20 +189,12 @@ function removeDatasource(key: string, event: Event) {
 
 function checkDatasourceConfig(key: string, event: Event) {
   event.stopPropagation();
-  let confirm = showAlterModal();
-  // 如果不通过则阻断下面的操作
-  if (!confirm) {
-    return;
-  }
+
 }
 
 function checkDatasourceData(key: string, event: Event) {
   event.stopPropagation();
-  let confirm = showAlterModal();
-  // 如果不通过则阻断下面的操作
-  if (!confirm) {
-    return;
-  }
+
 }
 
 function removeSQL(key: string, event: Event) {
@@ -200,20 +203,11 @@ function removeSQL(key: string, event: Event) {
 
 function checkSQLConfig(key: string, event: Event) {
   event.stopPropagation();
-  let confirm = showAlterModal();
-  // 如果不通过则阻断下面的操作
-  if (!confirm) {
-    return;
-  }
+
 }
 
 function checkSQLData(key: string, event: Event) {
   event.stopPropagation();
-  let confirm = showAlterModal();
-  // 如果不通过则阻断下面的操作
-  if (!confirm) {
-    return;
-  }
 }
 
 watch(openKeys, (val) => {
@@ -238,6 +232,10 @@ onMounted(() => {
     }
   }, 300)
 })
+
+onUnmounted(() => {
+  createDatasource.value = false;
+})
 </script>
 <template>
   <a-menu
@@ -255,6 +253,7 @@ onMounted(() => {
           <database-outlined/>
           <span>数据源</span>
         </span>
+
         <a-button type="default"
                   class="buttonClass"
                   @click="addDataSource"
