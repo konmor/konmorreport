@@ -202,7 +202,7 @@ function addSQL(key: string, event?: Event) {
         createDatasource.value = true;
       }
     })
-  } else if (!createSQLFlag.value) {
+  } else if (!createDatasource.value) {
     if (router != null && key != null) {
       console.log('跳转并新建SQL', key, router);
       router.push({
@@ -249,27 +249,57 @@ function checkSQLData(key: string, event: Event) {
   event.stopPropagation();
 }
 
-
+// 模态框控制，是否显示数据源选择的模态框
 let datasourceChoiceOpen = ref(false);
+// 模态框的确认提交按钮，显示正在加载中
 let loading = ref(false);
+// 模态框中选择的数据源
 let choiceDatasource = ref('');
+// 数据源的选择出错是否显示错误提示
 let choiceDatasourceShow = ref(false);
 let datasourceSelectOption = ref<SelectProps['options']>([]);
 
 function handleSQLOk() {
   loading.value = true;
-  if (choiceDatasource.value == null || choiceDatasource.value === '') {
-    addSQL(choiceDatasource.value);
+  // 没有选择数据，或者选的数据有误。不跳转，也不关闭模态框
+  if (choiceDatasource.value == null || choiceDatasource.value == '') {
     choiceDatasourceShow.value = true;
     loading.value = false;
+
   } else {
     setTimeout(() => {
+      addSQL(choiceDatasource.value);
       datasourceChoiceOpen.value = false;
       loading.value = false;
       choiceDatasourceShow.value = false;
     }, 1000);
   }
+  // 重置数据
   choiceDatasource.value = '';
+}
+function beforeAddSQL(event:Event){
+
+  event.stopPropagation();
+
+  if(!createSQL.value){
+    datasourceChoiceOpen.value = true;
+  }else {
+    Modal.confirm({
+      title: '确认放弃新增SQL吗？',
+      content: '点击确认将会放弃此次编辑内容，并返回之前页面。取消则返回继续编辑数据源',
+      okText: '确认',
+      cancelText: '取消',
+      onOk: () => {
+        router?.back();
+        sqlArray.pop();
+        createSQL.value = false;
+        createSQLFlag.value -= 1;
+      },
+      onCancel: () => {
+        createSQL.value = true;
+      }
+    })
+  }
 
 
 }
@@ -405,7 +435,7 @@ onUnmounted(() => {
             <span class="sqlCreateClass">
               <a-tooltip title="创建sql">
                 <a-button size="small"
-                          @click="datasourceChoiceOpen = true;"
+                          @click="beforeAddSQL"
                           :style="{height:'24px',width:'44px',fontSize:'10px',padding:'1px 1px 2px 1px'}">SQL +</a-button>
 
                    <a-modal v-model:open="datasourceChoiceOpen" title="选择数据源" @ok="handleSQLOk">
