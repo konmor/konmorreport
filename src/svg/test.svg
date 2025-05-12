@@ -1,28 +1,9 @@
-<svg width="120" height="40" viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg">
-    <!-- 定义 hover 样式 -->
-    <style>
-        .button {
-        transition: all 0.2s ease-in-out;
-        }
-        .button:hover {
-        transform: scale(1.05);
-        filter: brightness(90%);
-        }
-    </style>
+<svg width="80" height="40" viewBox="0 0 80 40" xmlns="http://www.w3.org/2000/svg">
+    <!-- 边框 + 背景矩形 -->
+    <rect x="0" y="0" width="80" height="40" rx="6" fill="#e8f5e9" stroke="#6aaf49" stroke-width="1.5"/>
 
-    <!-- 圆角矩形背景 -->
-    <rect class="button" x="0" y="0" width="120" height="40" rx="8" fill="#e8f5e9" stroke="#6aaf49" stroke-width="1.5"/>
-
-    <!-- 数据库抽象图标（左侧） -->
-    <g class="button" transform="translate(12, 10)" fill="#6aaf49">
-        <rect x="0" y="0" width="16" height="3" rx="1"/>
-        <rect x="0" y="7" width="20" height="3" rx="1"/>
-        <rect x="0" y="14" width="16" height="3" rx="1"/>
-    </g>
-
-    <!-- 加号图标（右侧） -->
-    <g class="button" transform="translate(85, 11)">
-        <line x1="9" y1="0" x2="9" y2="18" stroke="#6aaf49" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="0" y1="9" x2="18" y2="9" stroke="#6aaf49" stroke-width="2.5" stroke-linecap="round"/>
-    </g>
+    <!-- 文字内容 -->
+    <text x="40" y="25" font-family="Arial, sans-serif" font-size="14" fill="#333" text-anchor="middle" dominant-baseline="middle">
+        SQL
+    </text>
 </svg>

@@ -8,6 +8,8 @@ export default {
 import {
   BarChartOutlined,
   PlusCircleOutlined,
+  ExclamationCircleOutlined,
+  CloseCircleOutlined,
   PlusOutlined,
   DatabaseOutlined,
   DeleteOutlined,
@@ -15,7 +17,7 @@ import {
   EditOutlined
 } from '@ant-design/icons-vue'
 import {reactive, ref, watch, h, onMounted, inject, onUnmounted} from 'vue'
-import {type MenuProps, type ItemType, Modal} from 'ant-design-vue'
+import {type MenuProps, type ItemType, Modal, type SelectProps} from 'ant-design-vue'
 import {
   type NavigationGuard, type NavigationGuardNext,
   onBeforeRouteLeave,
@@ -154,10 +156,12 @@ function clearCreateDatasourceTreeItem() {
 
 let createSQLFlag = ref(1);
 
+const SQL_KEY = "_sqlKey:";
+
 function addSQLTreeItem() {
   createSQL.value = true;
   let label = '查询(' + createSQLFlag.value + ")";
-  let sqlKey = "_sqlKey:" + createSQLFlag.value;
+  let sqlKey = SQL_KEY + createSQLFlag.value;
   createSQLFlag.value += 1;
   // 添加下这个数据
   sqlArray.push({key: sqlKey, label: label});
@@ -165,9 +169,11 @@ function addSQLTreeItem() {
   openKeys.value = [SQL_MENU];
 }
 
-function addSQL(key: string, event: Event) {
 
-  event.stopPropagation();
+function addSQL(key: string, event?: Event) {
+  if (event != null) {
+    event.stopPropagation();
+  }
   if (createDatasource.value) {
     Modal.confirm({
       title: '确认放弃新增数据源吗？',
@@ -196,7 +202,7 @@ function addSQL(key: string, event: Event) {
         createDatasource.value = true;
       }
     })
-  } else {
+  } else if (!createSQLFlag.value) {
     if (router != null && key != null) {
       console.log('跳转并新建SQL', key, router);
       router.push({
@@ -208,6 +214,10 @@ function addSQL(key: string, event: Event) {
         addSQLTreeItem();
       })
     }
+  } else if (key == null) {
+    // 展示一个框，让其选择一个数据源进行数据的添加
+
+
   }
 
 }
@@ -239,6 +249,37 @@ function checkSQLData(key: string, event: Event) {
   event.stopPropagation();
 }
 
+
+let datasourceChoiceOpen = ref(false);
+let loading = ref(false);
+let choiceDatasource = ref('');
+let choiceDatasourceShow = ref(false);
+let datasourceSelectOption = ref<SelectProps['options']>([]);
+
+function handleSQLOk() {
+  loading.value = true;
+  if (choiceDatasource.value == null || choiceDatasource.value === '') {++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    addSQL(choiceDatasource.value);
+    choiceDatasourceShow.value = true;
+    loading.value = false;
+  } else {
+    setTimeout(() => {
+      datasourceChoiceOpen.value = false;
+      loading.value = false;
+      choiceDatasourceShow.value = false;
+    }, 1000);
+  }
+  choiceDatasource.value = '';
+
+
+}
+
+function handleCancel() {
+  datasourceChoiceOpen.value = false;
+  choiceDatasource.value = '';
+}
+
+
 watch(openKeys, (val) => {
   console.log('openKeys', val)
 })
@@ -258,6 +299,14 @@ onMounted(() => {
           },
         })
       }
+
+      for (let i = 0; i < items.length; i++) {
+        let item = items[i];
+        if (item != null && 'label' in item) {
+          datasourceSelectOption.value[i] = {value: '_sourceId:' + item.key, 'label': item.label};
+        }
+      }
+      console.log('datasourceSelectOption', datasourceSelectOption);
     }
   }, 300)
 })
@@ -281,20 +330,20 @@ onUnmounted(() => {
         <span>
           <database-outlined/>
           <span>数据源</span>
-        </span>
 
-        <a-button type="default"
-                  class="buttonClass"
-                  @click="addDataSource"
-                  :style="{border:'0px',display:'inline',height:0,width:0}">
-          <template #icon>
-            <a-tooltip title="创建数据源">
-            <span class="icon-wrapper">
-            <add-datasource-icon></add-datasource-icon>
-            </span>
-            </a-tooltip>
-          </template>
-        </a-button>
+          <a-button type="default"
+                    class="buttonClass"
+                    @click="addDataSource"
+                    :style="{border:'0px',display:'inline',height:0,width:0}">
+            <template #icon>
+              <a-tooltip title="创建数据源">
+              <span class="icon-wrapper">
+              <add-datasource-icon></add-datasource-icon>
+              </span>
+              </a-tooltip>
+            </template>
+          </a-button>
+        </span>
       </template>
 
       <a-menu-item
@@ -305,7 +354,7 @@ onUnmounted(() => {
           @mouseleave="datasourceShowButton[index] = false">
         <span v-if="myItem !== null && 'label' in myItem">{{ myItem.label }}</span>
         <a-button-group
-            v-if="datasourceShowButton[index] &&  myItem != null && !String(myItem.key).startsWith('_datasourceKey')"
+            v-if="datasourceShowButton[index] &&  myItem != null && !String(myItem.key).startsWith(DATASOURCE_KEY)"
             :style="{display:'inline-flex',justifyContent:'space-between',position:'absolute',right:'8px',top:'8px'}">
           <a-tooltip title="创建SQL">
             <a-button
@@ -347,11 +396,35 @@ onUnmounted(() => {
       </a-menu-item>
     </a-sub-menu>
 
-    <a-sub-menu :key="SQL_MENU">
+    <!--sql列表菜单-->
+    <a-sub-menu :key="SQL_MENU" class="SQLMenuClass">
       <template #title>
         <span>
           <bar-chart-outlined/>
           <span>SQL</span>
+            <span class="sqlCreateClass">
+              <a-tooltip title="创建sql">
+                <a-button size="small"
+                          @click="datasourceChoiceOpen = true;"
+                          :style="{height:'24px',width:'44px',fontSize:'10px',padding:'1px 1px 2px 1px'}">SQL +</a-button>
+
+                   <a-modal v-model:open="datasourceChoiceOpen" title="选择数据源" @ok="handleSQLOk">
+                    <template #footer>
+                      <a-button key="back" @click="handleCancel">返回</a-button>
+                      <a-button key="submit" type="primary" :loading="loading" @click="handleSQLOk">确认</a-button>
+                    </template>
+
+                     <p>
+                    <a-select :options="datasourceSelectOption" :style="{width:'300px'}"
+                              v-model:value="choiceDatasource" placeholder="选择数据源">
+                    </a-select>
+                     <span v-if="choiceDatasourceShow" :style="{marginLeft:'10px'}">
+                       <CloseCircleOutlined :style="{color:'red'}"/>
+                       请选择正确的数据源！</span>
+                     </p>
+                  </a-modal>
+              </a-tooltip>
+            </span>
         </span>
       </template>
       <a-menu-item
@@ -364,7 +437,7 @@ onUnmounted(() => {
       >
         <span v-if="subItem !== null && 'label' in subItem">{{ subItem.label }}</span>
 
-        <a-button-group v-if="sqlShowButton[index]"
+        <a-button-group v-if="sqlShowButton[index] &&  subItem != null && !String(subItem.key).startsWith(SQL_KEY)"
                         :style="{display:'inline-flex',justifyContent:'space-between',position:'absolute',right:'8px',top:'8px'}">
           <a-tooltip title="删除SQL">
             <a-button size="small"
@@ -412,6 +485,10 @@ onUnmounted(() => {
   display: inline-flex;
 }
 
+.SQLMenuClass:hover .sqlCreateClass {
+  display: inline-block;
+}
+
 .icon-wrapper {
   display: none;
   align-items: center;
@@ -421,5 +498,13 @@ onUnmounted(() => {
   position: relative;
   top: 15px;
   left: 30px;
+}
+
+.sqlCreateClass {
+  display: none;
+  width: 36px;
+  height: 100%;
+  position: relative;
+  left: 45px;
 }
 </style>
