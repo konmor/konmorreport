@@ -38,7 +38,10 @@ let items: ItemType[] = data
 
 // 默认选中哪些内容
 let selectedKeys = ref<string[]>([])
-let openKeys = ref<string[]>(['dataSourceConfigMenu'])
+const DATASOURCE_CONFIG_MENU = 'dataSourceConfigMenu';
+const SQL_MENU = 'sqlMenu';
+const REPORTS_MENU = 'reportsMenu';
+let openKeys = ref<string[]>([DATASOURCE_CONFIG_MENU]);
 
 let handleClick: MenuProps['onClick'] = (e) => {
   console.log('click', e)
@@ -47,11 +50,11 @@ let handleClick: MenuProps['onClick'] = (e) => {
 let datasourceShowButton = reactive(new Array<Boolean>(items.length))
 let sqlShowButton = reactive(new Array<Boolean>(sqlArray.length))
 let newLabel = ref('数据源')
-let newKey = ref('_datasourceKey')
-let newFlag = ref(1)
+const DATASOURCE_KEY = '_datasourceKey:';
+let createDatasourceFlag = ref(1)
 
 let createStore = useCreateStore();
-let {createDatasource} = storeToRefs(createStore);
+let {createDatasource, createSQL, createReports} = storeToRefs(createStore);
 
 
 // 添加数据源
@@ -60,8 +63,8 @@ function addDataSource(event: Event) {
   // 如果已经存在则不新增数据
   if (!createDatasource.value) {
     createDatasource.value = true;
-    let label = newLabel.value + '(' + newFlag.value + ')';
-    let key = newKey.value + newFlag.value;
+    let label = newLabel.value + '(' + createDatasourceFlag.value + ')';
+    let key = DATASOURCE_KEY + createDatasourceFlag.value;
     if (router != null) {
       router.push({
         name: 'toDataSourceCreator',
@@ -83,8 +86,8 @@ function addDataSource(event: Event) {
       key: key,
     })
     selectedKeys.value = [key]
-    newFlag.value += 1
-  } else {
+    createDatasourceFlag.value += 1
+  } else if (createDatasource.value) {
     Modal.confirm({
       title: '确认放弃新增数据源吗？',
       content: '点击确认将会放弃此次编辑内容，并返回之前页面。取消则返回继续编辑数据源',
@@ -94,12 +97,14 @@ function addDataSource(event: Event) {
         router?.back();
         items.pop();
         createDatasource.value = false;
-        newFlag.value -= 1;
+        createDatasourceFlag.value -= 1;
       },
       onCancel: () => {
         createDatasource.value = true;
       }
     })
+  } else if (createSQL.value) {
+    console.log(createSQL.value)
   }
 
 }
@@ -141,6 +146,25 @@ function showSQLDetail(key: string, event: Event) {
   selectedKeys.value = [String(key)]
 }
 
+function clearCreateDatasourceTreeItem() {
+  items.pop();
+  createDatasource.value = false;
+  createDatasourceFlag.value -= 1;
+}
+
+let createSQLFlag = ref(1);
+
+function addSQLTreeItem() {
+  createSQL.value = true;
+  let label = '查询(' + createSQLFlag.value + ")";
+  let sqlKey = "_sqlKey:" + createSQLFlag.value;
+  createSQLFlag.value += 1;
+  // 添加下这个数据
+  sqlArray.push({key: sqlKey, label: label});
+  selectedKeys.value = [sqlKey];
+  openKeys.value = [SQL_MENU];
+}
+
 function addSQL(key: string, event: Event) {
 
   event.stopPropagation();
@@ -152,16 +176,19 @@ function addSQL(key: string, event: Event) {
       cancelText: '取消',
       onOk: () => {
         // router?.back();
-        items.pop();
-        createDatasource.value = false;
-        newFlag.value -= 1;
+        // 清理掉之前创建的数据源数据
+        clearCreateDatasourceTreeItem();
+
         if (router != null && key != null) {
-          console.log('从新建数据源跳转值sql创建!',key,router);
+          console.log('从新建数据源跳转值sql创建!', key, router);
           router.push({
             name: 'toCreateSQL',
             query: {
               key: key,
             },
+          }).then(() => {
+            // 添加树形下拉数据 sql字段中
+            addSQLTreeItem();
           })
         }
       },
@@ -171,12 +198,14 @@ function addSQL(key: string, event: Event) {
     })
   } else {
     if (router != null && key != null) {
-      console.log('跳转并新建SQL',key,router);
+      console.log('跳转并新建SQL', key, router);
       router.push({
         name: 'toCreateSQL',
         query: {
           key: key,
-        },
+        }
+      }).then(() => {
+        addSQLTreeItem();
       })
     }
   }
@@ -247,7 +276,7 @@ onUnmounted(() => {
       :inlineIndent="10"
       @click="handleClick">
     <!--    数据源菜单-->
-    <a-sub-menu key="dataSourceConfigMenu" class="datasourceClass">
+    <a-sub-menu :key="DATASOURCE_CONFIG_MENU" class="datasourceClass">
       <template #title>
         <span>
           <database-outlined/>
@@ -318,7 +347,7 @@ onUnmounted(() => {
       </a-menu-item>
     </a-sub-menu>
 
-    <a-sub-menu key="SQLMenu">
+    <a-sub-menu :key="SQL_MENU">
       <template #title>
         <span>
           <bar-chart-outlined/>
@@ -367,7 +396,7 @@ onUnmounted(() => {
       </a-menu-item>
     </a-sub-menu>
 
-    <a-sub-menu key="reportsMenu">
+    <a-sub-menu :key="REPORTS_MENU">
       <template #title>
         <span>
           <bar-chart-outlined/>

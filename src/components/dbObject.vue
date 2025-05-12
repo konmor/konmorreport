@@ -290,6 +290,8 @@ const generateList = (data: DataType[]) => {
 };
 
 const setDBInfoData = function (dbInfo: DBInfo) {
+  // 清理数据
+  treeData.length = 0;
   dbId.value = dbInfo.dbId as string;
   let schemaData: DataType[] = [];
   if (dbInfo.dbSchemaDTOList != null && dbInfo.dbSchemaDTOList.length > 0) {

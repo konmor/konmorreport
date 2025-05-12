@@ -44,7 +44,6 @@ onBeforeRouteLeave((to: RouteLocationNormalized, from: RouteLocationNormalizedLo
   })
 })
 
-onBeforeRouteUpdate()
 </script>
 
 <template>
