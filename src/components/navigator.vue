@@ -258,7 +258,7 @@ let datasourceSelectOption = ref<SelectProps['options']>([]);
 
 function handleSQLOk() {
   loading.value = true;
-  if (choiceDatasource.value == null || choiceDatasource.value === '') {++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  if (choiceDatasource.value == null || choiceDatasource.value === '') {
     addSQL(choiceDatasource.value);
     choiceDatasourceShow.value = true;
     loading.value = false;
