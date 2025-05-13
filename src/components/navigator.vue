@@ -218,10 +218,12 @@ async function addSQL(key: string | undefined, event?: Event) {
 
   if (crtDataName != null || crtBehaviour != null) {
     let modalContent :any;
+    let modalWidth : string|undefined = undefined;
     if (key != undefined && key != '') {
       //
       modalContent = '点击确认将保存' + crtDataName + '数据.取消则返回继续' + crtBehaviour + crtDataName + '。'
     } else {
+      modalWidth = '600px';
       modalContent = ()=>
         <p>
           <a-select options={datasourceSelectOption.value} style={{width:'300px'}}
@@ -234,22 +236,11 @@ async function addSQL(key: string | undefined, event?: Event) {
     }
 
     // 无论是相同还是不同，都要弹框提醒，并执行保存前和保存函数
-    /**
-     * <p>
-     *           <a-select v-model:options="datasourceSelectOption" v-model:style="{width:'300px'}"
-     *                     v-model:value="choiceDatasource.value" placeholder="选择数据源">
-     *           </a-select>
-     *           <span v-if="choiceDatasourceShow.value" v-model:style="{marginLeft:'10px'}">
-     *             <CloseCircleOutlined v-model:style="{color:'red'}" />
-     *             请选择正确的数据源！
-     *           </span>
-     *         </p>
-     */
     Modal.confirm({
       title: '确认' + behaviour + dataName + '吗？',
       content: modalContent,
       okText: '确认',
-      width: '600px',
+      width: modalWidth,
       cancelText: '取消',
       onOk: async (reject) => {
         // key == null 表示没有选择数据源，需要选则数据源才可以
