@@ -25,11 +25,13 @@ import {
   type RouteLocationNormalizedLoaded,
   type Router
 } from 'vue-router'
-import useNavigator from '@/hooks/useNavigator.ts'
+import useNavigator from '@/composable/useNavigator.ts'
 import addDatasourceIcon from "@/components/button/addDatasource.vue";
 import {useCreateStore} from "@/stores/useCreateStore.ts";
 import {storeToRefs} from "pinia";
 import type {Result} from "@/types/api.ts";
+import emitter from "@/utils/EventBus.ts";
+import {request} from "@/utils/RequestBus.ts";
 
 let {refreshDatasourceList, data, sqlArray} = useNavigator()
 // 导航栏宽度 从home主页来
@@ -59,9 +61,14 @@ let createDatasourceFlag = ref(1)
 let createStore = useCreateStore();
 let {createDatasource, createSQL, createReports} = storeToRefs(createStore);
 
+// 当前的数据名称
+let currentDataName = ref<string | undefined>(undefined);
+// 当前的行为
+let currentBehaviour = ref<string | undefined>(undefined);
+
 
 // 添加数据源
-function addDataSource(event: Event) {
+async function addDataSource(event: Event) {
   event.stopPropagation();
   // 当前的数据名称
   let dataName = '数据源';
@@ -72,7 +79,7 @@ function addDataSource(event: Event) {
   let crtDataName = currentDataName.value;
   let crtBehaviour = currentBehaviour.value;
 
-  function afterSave() {
+  function jumpSavePage() {
     // 执行完 保存之前的函数 和 保存 之后再跳转页面
     let label = newLabel.value + '(' + createDatasourceFlag.value + ')';
     let key = DATASOURCE_KEY + createDatasourceFlag.value;
@@ -98,18 +105,24 @@ function addDataSource(event: Event) {
     createDatasourceFlag.value += 1
   }
 
-  if (crtDataName == null && crtBehaviour == null) {
+  if (crtDataName != null || crtBehaviour != null) {
     // 无论是相同还是不同，都要弹框提醒，并执行保存前和保存函数
     Modal.confirm({
       title: '确认' + behaviour + dataName + '吗？',
       content: '点击确认将保存' + crtDataName + '数据。取消则返回继续' + crtBehaviour + crtDataName + '。',
       okText: '确认',
       cancelText: '取消',
-      onOk: () => {
-        checkAndSaveData();
+      onOk: async (reject) => {
+        try {
+          await checkAndSaveData();
+        } catch (error) {
+          // 发生报错 调用 onOk的第一个参数，表示拒绝，可以关闭模态框
+          reject();
+          throw error;
+        }
         currentBehaviour.value = behaviour;
         currentDataName.value = dataName;
-        afterSave();
+        jumpSavePage();
       },
       onCancel: () => {
         currentBehaviour.value = crtBehaviour;
@@ -117,7 +130,9 @@ function addDataSource(event: Event) {
       }
     })
   } else {
-    afterSave();
+    jumpSavePage();
+    currentBehaviour.value = behaviour;
+    currentDataName.value = dataName;
   }
 }
 
@@ -158,78 +173,77 @@ function showSQLDetail(key: string, event: Event) {
   selectedKeys.value = [String(key)]
 }
 
-function clearCreateDatasourceTreeItem() {
-  items.pop();
-  createDatasource.value = false;
-  createDatasourceFlag.value -= 1;
-}
 
 let createSQLFlag = ref(1);
 
 const SQL_KEY = "_sqlKey:";
 
-function addSQLTreeItem() {
-  createSQL.value = true;
-  let label = '查询(' + createSQLFlag.value + ")";
-  let sqlKey = SQL_KEY + createSQLFlag.value;
-  createSQLFlag.value += 1;
-  // 添加下这个数据
-  sqlArray.push({key: sqlKey, label: label});
-  selectedKeys.value = [sqlKey];
-  openKeys.value = [SQL_MENU];
-}
-
-
-function addSQL(key: string, event?: Event) {
+async function addSQL(key: string, event?: Event) {
   if (event != null) {
     event.stopPropagation();
   }
-  if (createDatasource.value) {
-    Modal.confirm({
-      title: '确认放弃新增数据源吗？',
-      content: '点击确认将会放弃此次编辑内容，并跳转至SQL创建页面。取消则返回继续编辑数据源',
-      okText: '确认',
-      cancelText: '取消',
-      onOk: () => {
-        // router?.back();
-        // 清理掉之前创建的数据源数据
-        clearCreateDatasourceTreeItem();
 
-        if (router != null && key != null) {
-          console.log('从新建数据源跳转值sql创建!', key, router);
-          router.push({
-            name: 'toCreateSQL',
-            query: {
-              key: key,
-            },
-          }).then(() => {
-            // 添加树形下拉数据 sql字段中
-            addSQLTreeItem();
-          })
-        }
-      },
-      onCancel: () => {
-        createDatasource.value = true;
-      }
-    })
-  } else if (!createDatasource.value) {
+  // 当前的数据名称
+  let dataName = 'SQL';
+  // 当前的行为
+  let behaviour = '新增';
+
+  // 暂存一下，避免该值在下面函数执行中被修改
+  let crtDataName = currentDataName.value;
+  let crtBehaviour = currentBehaviour.value;
+
+  function jumpSavePage() {
+    // 执行完 保存之前的函数 和 保存 之后再跳转页面
+
     if (router != null && key != null) {
-      console.log('跳转并新建SQL', key, router);
       router.push({
         name: 'toCreateSQL',
         query: {
           key: key,
-        }
+        },
       }).then(() => {
-        addSQLTreeItem();
+        // 添加树形下拉数据 sql字段中
+        createSQL.value = true;
+        let label = '查询(' + createSQLFlag.value + ")";
+        let sqlKey = SQL_KEY + createSQLFlag.value;
+        createSQLFlag.value += 1;
+        // 添加下这个数据
+        sqlArray.push({key: sqlKey, label: label});
+        selectedKeys.value = [sqlKey];
+        openKeys.value = [SQL_MENU];
       })
     }
-  } else if (key == null) {
-    // 展示一个框，让其选择一个数据源进行数据的添加
-
-
   }
 
+  if (crtDataName != null || crtBehaviour != null) {
+    // 无论是相同还是不同，都要弹框提醒，并执行保存前和保存函数
+    Modal.confirm({
+      title: '确认' + behaviour + dataName + '吗？',
+      content: '点击确认将保存' + crtDataName + '数据。取消则返回继续' + crtBehaviour + crtDataName + '。',
+      okText: '确认',
+      cancelText: '取消',
+      onOk: async (reject) => {
+        try {
+          await checkAndSaveData();
+        } catch (error) {
+          // 发生报错 调用 onOk的第一个参数，表示拒绝，可以关闭模态框
+          reject();
+          throw error;
+        }
+        currentBehaviour.value = behaviour;
+        currentDataName.value = dataName;
+        jumpSavePage();
+      },
+      onCancel: () => {
+        currentBehaviour.value = crtBehaviour;
+        currentDataName.value = crtDataName;
+      }
+    })
+  } else {
+    jumpSavePage();
+    currentBehaviour.value = behaviour;
+    currentDataName.value = dataName;
+  }
 }
 
 function removeDatasource(key: string, event: Event) {
@@ -288,24 +302,18 @@ function handleSQLOk() {
   choiceDatasource.value = '';
 }
 
-// 当前的数据名称
-let currentDataName = ref('');
-// 当前的行为
-let currentBehaviour = ref('');
-
-
 let checkAndSaveFunctionArray = reactive<CheckAndSaveFunction<any>[]>([]);
 
 interface CheckAndSaveFunction<T> {
   name: string;
   behaviour: string;
   beforeSave: () => boolean;
-  save: () => Result<T>;
+  save: () => Promise<Result<T>>;
   isMe: (name: string, behaviour: string) => boolean;
 }
 
 // 暴露出去被别人调用的函数
-function checkAndSaveData(dataName?: string, behaviour?: string): void {
+async function checkAndSaveData(dataName?: string, behaviour?: string) {
 
   let crtDataName = dataName != null ? dataName : currentDataName.value
   let crtBehaviour = behaviour != null ? behaviour : currentBehaviour.value
@@ -313,13 +321,14 @@ function checkAndSaveData(dataName?: string, behaviour?: string): void {
   function findCheckAndSaveFun(): CheckAndSaveFunction<any> | undefined {
     for (let i = 0; i < checkAndSaveFunctionArray.length; i++) {
       let checkAndSaveFunction = checkAndSaveFunctionArray[i];
-      if (checkAndSaveFunction.isMe(crtDataName, crtBehaviour)) {
+      if (checkAndSaveFunction.isMe(crtDataName as string, crtBehaviour as string)) {
         return checkAndSaveFunction;
       }
     }
     return undefined;
   }
 
+  // 寻找到处理函数
   let checkAndSaveFun;
   let error;
   if ((checkAndSaveFun = findCheckAndSaveFun())) {
@@ -327,12 +336,17 @@ function checkAndSaveData(dataName?: string, behaviour?: string): void {
       // 保存前
       checkAndSaveFun.beforeSave();
       // 保存
-      let result = checkAndSaveFun.save();
-      if (result != null && result.code == 0) {
+      let res = await checkAndSaveFun.save();
+
+      if (res != null && res.code == 0) {
         // 执行成功
       } else {
         // 否则失败
-        error = result != null ? new Error(result.error) : new Error('发生错误，请联系管理员！');
+        if (res != null) {
+          error = new Error(res.error)
+        } else {
+          error = new Error('发生错误，请联系管理员！');
+        }
       }
     } catch (ex) {
       console.log(ex);
@@ -343,36 +357,46 @@ function checkAndSaveData(dataName?: string, behaviour?: string): void {
     // 未找到处理函数
     error = new Error('发生错误，请联系管理员！');
   }
-
   if (error) {
     throw error;
   }
-
 }
 
-function addCheckAndSaveFunction<T>(name: string, behaviour: string,
-                                    beforeSave: () => boolean,
-                                    save: () => Result<T>,
-                                    isMe: (name: string, behaviour: string) => boolean) {
-  let saveFunction: CheckAndSaveFunction<any> = {
-    name,
-    behaviour,
-    isMe,
-    save,
-    beforeSave,
-  };
-  checkAndSaveFunctionArray.push(saveFunction);
-}
 
 function initCheckAndSaveFunction() {
-  let datasourceSave = {
+
+  // 初始化 数据源保存事件
+  let datasourceSave: CheckAndSaveFunction<Promise<Result<any>>> = {
     name: '数据源',
     behaviour: '新增',
     beforeSave: () => true,
-    save: () => {},
-    isMe: (name: string, behaviour: string) => datasourceSave.name == name && datasourceSave.behaviour==behaviour,
+    save: () => {
+      // 触发 保存事件
+      return request<Result<any>>('datasource:save')
+    },
+    isMe: (name: string, behaviour: string) => {
+      return datasourceSave.name == name && datasourceSave.behaviour == behaviour;
+    }
   }
-  addCheckAndSaveFunction()
+  checkAndSaveFunctionArray.push(datasourceSave);
+
+
+  // 初始化 sql保存函数
+
+  let sqlSave: CheckAndSaveFunction<Promise<Result<any>>> = {
+    name: 'SQL',
+    behaviour: '新增',
+    beforeSave: () => true,
+    save: () => {
+      // 触发 保存事件
+      return request<Result<any>>('sql:save')
+    },
+    isMe: (name: string, behaviour: string) => {
+      return datasourceSave.name == name && datasourceSave.behaviour == behaviour;
+    }
+  }
+  checkAndSaveFunctionArray.push(sqlSave);
+
 }
 
 
@@ -438,10 +462,14 @@ onMounted(() => {
       console.log('datasourceSelectOption', datasourceSelectOption);
     }
   }, 300)
+
+  // 初始化
+  initCheckAndSaveFunction();
 })
 
 onUnmounted(() => {
   createDatasource.value = false;
+  checkAndSaveFunctionArray.length = 0
 })
 </script>
 <template>

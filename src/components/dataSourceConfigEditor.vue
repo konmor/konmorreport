@@ -8,13 +8,15 @@ export default {
 import {reactive, ref} from 'vue'
 import type {FormInstance} from 'ant-design-vue'
 import {saveDatasource, checkConnection} from '@/api/datasoure.ts'
-import type {DatasourceDetail} from '@/types/api.ts'
-import {DatabaseFilled,
+import type {DatasourceDetail, Result} from '@/types/api.ts'
+import {
+  DatabaseFilled,
   CheckCircleOutlined,
   ExclamationOutlined,
   LoadingOutlined,
   CloseOutlined,
 } from "@ant-design/icons-vue";
+import {onRequest} from "@/utils/RequestBus.ts";
 
 let {datasourceDetail} = defineProps(['datasourceDetail'])
 
@@ -27,32 +29,33 @@ const handleChange = (value: string) => {
 
 let formRef = ref<FormInstance>()
 
-const submitForm = () => {
-  if (formRef.value != undefined) {
-    formRef.value
-        .validate()
-        .then((item) => {
-          console.log('item', item)
-          let saveDetail: DatasourceDetail = {...(item as DatasourceDetail)}
-          saveDetail.useSsl = false;
-          saveDetail.useSsh = false;
-          console.log('saveDetail', saveDetail)
-          // 保存数据
-          saveDatasource(saveDetail).then((response) => {
-            if (response.code == 0) {
-              window.alert('保存成功')
-              // refreshDataSource(route.query.key);
-              // refreshDatasourceList()
-            } else {
-              window.alert('保存失败，请检查配置')
-            }
-          })
-        })
-        .catch((error) => {
-          console.log('error', error)
-        })
+async function save() {
+  let result: Result<any>;
+
+  if (!formRef.value) {
+    return {code: -1, data: null, error: '没有数据！'};
   }
+  let items = await formRef.value.validate();
+  let saveDetail: DatasourceDetail = {...(items as DatasourceDetail)}
+  saveDetail.useSsl = false;
+  saveDetail.useSsh = false;
+  // 保存数据
+  result = await saveDatasource(saveDetail);
+  return result;
 }
+
+const submitForm = () => {
+  save().then(response => {
+    if (response != null && response.code == 0) {
+      window.alert('保存成功')
+    } else {
+      window.alert('保存失败，请检查配置')
+    }
+  });
+}
+
+// 绑定事件
+onRequest('datasource:save', save);
 
 const resetForm = () => {
   console.log('待用', formRef)
@@ -63,7 +66,7 @@ const resetForm = () => {
 
 let datasourceCheck: {
   version: string | undefined,
-  alertType: 'success' | 'info' | 'warning' | 'error' |'loading'| undefined,
+  alertType: 'success' | 'info' | 'warning' | 'error' | 'loading' | undefined,
   message: string | 'Succeeded' | undefined,
   description: string | undefined,
   show: boolean,
@@ -75,21 +78,22 @@ const testConnection = () => {
   datasourceCheck.version = undefined;
   datasourceCheck.message = undefined;
   datasourceCheck.description = undefined;
-  setTimeout(()=>{
+  setTimeout(() => {
     checkConnection(datasourceDetail).then((response) => {
-    if (response.code == 0) {
-      datasourceCheck.version = datasourceDetail.dataSourceType + " " + response.data;
-      datasourceCheck.alertType = 'success';
-      datasourceCheck.message = 'Succeeded';
-      datasourceCheck.description = 'Test Success!';
-    } else {
-      datasourceCheck.version = undefined;
-      datasourceCheck.alertType = 'error';
-      datasourceCheck.message = 'Error';
-      datasourceCheck.description = response.error;
-    }
-    datasourceCheck.show = true;
-  })},500);
+      if (response.code == 0) {
+        datasourceCheck.version = datasourceDetail.dataSourceType + " " + response.data;
+        datasourceCheck.alertType = 'success';
+        datasourceCheck.message = 'Succeeded';
+        datasourceCheck.description = 'Test Success!';
+      } else {
+        datasourceCheck.version = undefined;
+        datasourceCheck.alertType = 'error';
+        datasourceCheck.message = 'Error';
+        datasourceCheck.description = response.error;
+      }
+      datasourceCheck.show = true;
+    })
+  }, 500);
 
 }
 const resetConnectUrl = () => {
@@ -303,14 +307,17 @@ const checkSSL = (event: Event) => {
           <a-popover v-model:open="datasourceCheck.show" trigger="click">
             <template #title>
               <div :style="{display:'flex',justifyContent:'space-between'}">
-                <span v-show="datasourceCheck.alertType == 'success'" style="color: #6fd845">{{datasourceCheck.message}}</span>
-                <span v-show="datasourceCheck.alertType == 'error'" style="color: red">{{datasourceCheck.message}}</span>
-                <span v-show="datasourceCheck.alertType == 'loading'" style="color: #efb056">{{datasourceCheck.message}}</span>
-                <span><a @click="datasourceCheck.show = false" style="color: #6fd845"><CloseOutlined /></a></span>
+                <span v-show="datasourceCheck.alertType == 'success'"
+                      style="color: #6fd845">{{ datasourceCheck.message }}</span>
+                <span v-show="datasourceCheck.alertType == 'error'"
+                      style="color: red">{{ datasourceCheck.message }}</span>
+                <span v-show="datasourceCheck.alertType == 'loading'"
+                      style="color: #efb056">{{ datasourceCheck.message }}</span>
+                <span><a @click="datasourceCheck.show = false" style="color: #6fd845"><CloseOutlined/></a></span>
               </div>
             </template>
             <template #content>
-              {{datasourceCheck.description}}
+              {{ datasourceCheck.description }}
             </template>
 
 
@@ -318,8 +325,8 @@ const checkSSL = (event: Event) => {
           </a-popover>
 
           <CheckCircleOutlined v-show="datasourceCheck.alertType == 'success'" style="color: #6fd845"/>
-          <ExclamationOutlined  v-show="datasourceCheck.alertType == 'error'" style="color: red"/>
-          <LoadingOutlined  v-show="datasourceCheck.alertType == 'loading'" style="color: #efb056"/>
+          <ExclamationOutlined v-show="datasourceCheck.alertType == 'error'" style="color: red"/>
+          <LoadingOutlined v-show="datasourceCheck.alertType == 'loading'" style="color: #efb056"/>
 
           <span
               :style="{lineHeight:'52px',padding:'0px 2px 0 2px',marginRight:'10px',marginLeft:'8px'}">{{

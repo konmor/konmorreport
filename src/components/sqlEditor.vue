@@ -21,8 +21,10 @@ import {format} from 'sql-formatter'
 import type {Router} from 'vue-router'
 import DbObject from "@/components/dbObject.vue";
 import {EyeOutlined} from "@ant-design/icons-vue";
-import useNavigator from "@/hooks/useNavigator.ts";
+import useNavigator from "@/composable/useNavigator.ts";
 import type {ItemType, SelectProps} from "ant-design-vue";
+import {onRequest} from "@/utils/RequestBus.ts";
+import type {Result} from "@/types/api.ts";
 
 let router = inject<Router>('router')
 let fontSize = ref(14)
@@ -133,7 +135,7 @@ function changeHeight(e: Event) {
 
 let editor = reactive<EditorView>({})
 
-function saveSQLConfig() {
+async function saveSQLConfig() {
   /*sqlId
   sourceId
   dbId
@@ -148,7 +150,11 @@ function saveSQLConfig() {
   defaultValue*/
 
   let sqlContent = format(editor.state.doc.toString());
+  let result: Result<any> = {data: null, error: '', code: 0}
+  return result;
 }
+
+onRequest<Result<any>>('sql:save', saveSQLConfig);
 
 // 获取父组件传递过来的值，父组件中 sourceId 是 ref对象
 let {sourceId} = defineProps(['sourceId']);
