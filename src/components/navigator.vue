@@ -1,10 +1,10 @@
-<script lang="ts">
+<script lang="tsx">
 export default {
   name: 'Navigator',
 }
 </script>
 
-<script lang="ts" setup>
+<script lang="tsx" setup>
 import {
   BarChartOutlined,
   PlusCircleOutlined,
@@ -16,7 +16,7 @@ import {
   TableOutlined,
   EditOutlined
 } from '@ant-design/icons-vue'
-import {reactive, ref, watch, h, onMounted, inject, onUnmounted} from 'vue'
+import { reactive, ref, watch, h, onMounted, inject, onUnmounted, VueElement } from 'vue'
 import {type MenuProps, type ItemType, Modal, type SelectProps} from 'ant-design-vue'
 import {
   type NavigationGuard, type NavigationGuardNext,
@@ -32,6 +32,7 @@ import {storeToRefs} from "pinia";
 import type {Result} from "@/types/api.ts";
 import emitter from "@/utils/EventBus.ts";
 import {request} from "@/utils/RequestBus.ts";
+import type { VueNode } from 'ant-design-vue/es/_util/type'
 
 let {refreshDatasourceList, data, sqlArray} = useNavigator()
 // 导航栏宽度 从home主页来
@@ -178,7 +179,7 @@ let createSQLFlag = ref(1);
 
 const SQL_KEY = "_sqlKey:";
 
-async function addSQL(key: string, event?: Event) {
+async function addSQL(key: string | undefined, event?: Event) {
   if (event != null) {
     event.stopPropagation();
   }
@@ -195,7 +196,7 @@ async function addSQL(key: string, event?: Event) {
   function jumpSavePage() {
     // 执行完 保存之前的函数 和 保存 之后再跳转页面
 
-    if (router != null && key != null) {
+    if (router != null && key != undefined) {
       router.push({
         name: 'toCreateSQL',
         query: {
@@ -216,13 +217,57 @@ async function addSQL(key: string, event?: Event) {
   }
 
   if (crtDataName != null || crtBehaviour != null) {
+    let modalContent :any;
+    if (key != undefined && key != '') {
+      //
+      modalContent = '点击确认将保存' + crtDataName + '数据.取消则返回继续' + crtBehaviour + crtDataName + '。'
+    } else {
+      modalContent = ()=>
+        <p>
+          <a-select options={datasourceSelectOption.value} style={{width:'300px'}}
+                    v-model = {[choiceDatasource.value,'value']} placeholder="选择数据源">
+          </a-select>
+          { choiceDatasourceShow.value ? <span style={{marginLeft:'10px'}}> <CloseCircleOutlined style={{color:'red'}} />请选择正确的数据源！</span> : <span></span> }
+        </p>
+      ;
+
+    }
+
     // 无论是相同还是不同，都要弹框提醒，并执行保存前和保存函数
+    /**
+     * <p>
+     *           <a-select v-model:options="datasourceSelectOption" v-model:style="{width:'300px'}"
+     *                     v-model:value="choiceDatasource.value" placeholder="选择数据源">
+     *           </a-select>
+     *           <span v-if="choiceDatasourceShow.value" v-model:style="{marginLeft:'10px'}">
+     *             <CloseCircleOutlined v-model:style="{color:'red'}" />
+     *             请选择正确的数据源！
+     *           </span>
+     *         </p>
+     */
     Modal.confirm({
       title: '确认' + behaviour + dataName + '吗？',
-      content: '点击确认将保存' + crtDataName + '数据。取消则返回继续' + crtBehaviour + crtDataName + '。',
+      content: modalContent,
       okText: '确认',
+      width: '600px',
       cancelText: '取消',
       onOk: async (reject) => {
+        // key == null 表示没有选择数据源，需要选则数据源才可以
+        if(key == undefined || key == '') {
+          // 数据源是否选择的处理
+          if (!choiceDatasource.value || choiceDatasource.value.length === 0) {
+            choiceDatasourceShow.value = true;
+            // 阻断后续操作
+            throw new Error('没有选择数据源，或者选择了错误的数据源');
+          } else {
+            // 这时候给 key赋值即可
+            key = choiceDatasource.value;
+            choiceDatasourceShow.value = false;
+          }
+        }
+
+
+
         try {
           await checkAndSaveData();
         } catch (error) {
@@ -272,36 +317,11 @@ function checkSQLConfig(key: string, event: Event) {
 function checkSQLData(key: string, event: Event) {
   event.stopPropagation();
 }
-
-// 模态框控制，是否显示数据源选择的模态框
-let datasourceChoiceOpen = ref(false);
-// 模态框的确认提交按钮，显示正在加载中
-let loading = ref(false);
 // 模态框中选择的数据源
 let choiceDatasource = ref('');
 // 数据源的选择出错是否显示错误提示
 let choiceDatasourceShow = ref(false);
 let datasourceSelectOption = ref<SelectProps['options']>([]);
-
-function handleSQLOk() {
-  loading.value = true;
-  // 没有选择数据，或者选的数据有误。不跳转，也不关闭模态框
-  if (choiceDatasource.value == null || choiceDatasource.value == '') {
-    choiceDatasourceShow.value = true;
-    loading.value = false;
-
-  } else {
-    setTimeout(() => {
-      addSQL(choiceDatasource.value);
-      datasourceChoiceOpen.value = false;
-      loading.value = false;
-      choiceDatasourceShow.value = false;
-    }, 1000);
-  }
-  // 重置数据
-  choiceDatasource.value = '';
-}
-
 let checkAndSaveFunctionArray = reactive<CheckAndSaveFunction<any>[]>([]);
 
 interface CheckAndSaveFunction<T> {
@@ -398,40 +418,6 @@ function initCheckAndSaveFunction() {
   checkAndSaveFunctionArray.push(sqlSave);
 
 }
-
-
-function beforeAddSQL(event: Event) {
-
-  event.stopPropagation();
-
-  if (!createSQL.value) {
-    datasourceChoiceOpen.value = true;
-  } else {
-    Modal.confirm({
-      title: '确认放弃新增SQL吗？',
-      content: '点击确认将会放弃此次编辑内容，并返回之前页面。取消则返回继续编辑数据源',
-      okText: '确认',
-      cancelText: '取消',
-      onOk: () => {
-        router?.back();
-        sqlArray.pop();
-        createSQL.value = false;
-        createSQLFlag.value -= 1;
-      },
-      onCancel: () => {
-        createSQL.value = true;
-      }
-    })
-  }
-
-
-}
-
-function handleCancel() {
-  datasourceChoiceOpen.value = false;
-  choiceDatasource.value = '';
-}
-
 
 watch(openKeys, (val) => {
   console.log('openKeys', val)
@@ -562,24 +548,8 @@ onUnmounted(() => {
             <span class="sqlCreateClass">
               <a-tooltip title="创建sql">
                 <a-button size="small"
-                          @click="beforeAddSQL"
+                          @click="addSQL(undefined,$event)"
                           :style="{height:'24px',width:'44px',fontSize:'10px',padding:'1px 1px 2px 1px'}">SQL +</a-button>
-
-                   <a-modal v-model:open="datasourceChoiceOpen" title="选择数据源" @ok="handleSQLOk">
-                    <template #footer>
-                      <a-button key="back" @click="handleCancel">返回</a-button>
-                      <a-button key="submit" type="primary" :loading="loading" @click="handleSQLOk">确认</a-button>
-                    </template>
-
-                     <p>
-                    <a-select :options="datasourceSelectOption" :style="{width:'300px'}"
-                              v-model:value="choiceDatasource" placeholder="选择数据源">
-                    </a-select>
-                     <span v-if="choiceDatasourceShow" :style="{marginLeft:'10px'}">
-                       <CloseCircleOutlined :style="{color:'red'}"/>
-                       请选择正确的数据源！</span>
-                     </p>
-                  </a-modal>
               </a-tooltip>
             </span>
         </span>
