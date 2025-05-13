@@ -29,6 +29,7 @@ import useNavigator from '@/hooks/useNavigator.ts'
 import addDatasourceIcon from "@/components/button/addDatasource.vue";
 import {useCreateStore} from "@/stores/useCreateStore.ts";
 import {storeToRefs} from "pinia";
+import type {Result} from "@/types/api.ts";
 
 let {refreshDatasourceList, data, sqlArray} = useNavigator()
 // 导航栏宽度 从home主页来
@@ -62,9 +63,17 @@ let {createDatasource, createSQL, createReports} = storeToRefs(createStore);
 // 添加数据源
 function addDataSource(event: Event) {
   event.stopPropagation();
-  // 如果已经存在则不新增数据
-  if (!createDatasource.value) {
-    createDatasource.value = true;
+  // 当前的数据名称
+  let dataName = '数据源';
+  // 当前的行为
+  let behaviour = '新增';
+
+  // 暂存一下，避免该值在下面函数执行中被修改
+  let crtDataName = currentDataName.value;
+  let crtBehaviour = currentBehaviour.value;
+
+  function afterSave() {
+    // 执行完 保存之前的函数 和 保存 之后再跳转页面
     let label = newLabel.value + '(' + createDatasourceFlag.value + ')';
     let key = DATASOURCE_KEY + createDatasourceFlag.value;
     if (router != null) {
@@ -76,39 +85,40 @@ function addDataSource(event: Event) {
         },
       })
     }
-    /**
-     * 数据源头的名称
-     * 数据源的类型
-     * ip地址 端口号 账号密码
-     * 按钮 测试连接 返回连接状态，或者失败信息
-     * 高级 特性 连接内容 连接池大小 最大连接个数
-     */
+    // 导航菜单中添加内容
     items.push({
       label: label,
       key: key,
     })
+    // 调整命中项
     selectedKeys.value = [key]
+    // 调整open的导航栏
+    openKeys.value = [DATASOURCE_CONFIG_MENU]
+    // 调整数据源新增的flag
     createDatasourceFlag.value += 1
-  } else if (createDatasource.value) {
+  }
+
+  if (crtDataName == null && crtBehaviour == null) {
+    // 无论是相同还是不同，都要弹框提醒，并执行保存前和保存函数
     Modal.confirm({
-      title: '确认放弃新增数据源吗？',
-      content: '点击确认将会放弃此次编辑内容，并返回之前页面。取消则返回继续编辑数据源',
+      title: '确认' + behaviour + dataName + '吗？',
+      content: '点击确认将保存' + crtDataName + '数据。取消则返回继续' + crtBehaviour + crtDataName + '。',
       okText: '确认',
       cancelText: '取消',
       onOk: () => {
-        router?.back();
-        items.pop();
-        createDatasource.value = false;
-        createDatasourceFlag.value -= 1;
+        checkAndSaveData();
+        currentBehaviour.value = behaviour;
+        currentDataName.value = dataName;
+        afterSave();
       },
       onCancel: () => {
-        createDatasource.value = true;
+        currentBehaviour.value = crtBehaviour;
+        currentDataName.value = crtDataName;
       }
     })
-  } else if (createSQL.value) {
-    console.log(createSQL.value)
+  } else {
+    afterSave();
   }
-
 }
 
 function showDatasourceDetail(item: ItemType, event: Event) {
@@ -277,13 +287,102 @@ function handleSQLOk() {
   // 重置数据
   choiceDatasource.value = '';
 }
-function beforeAddSQL(event:Event){
+
+// 当前的数据名称
+let currentDataName = ref('');
+// 当前的行为
+let currentBehaviour = ref('');
+
+
+let checkAndSaveFunctionArray = reactive<CheckAndSaveFunction<any>[]>([]);
+
+interface CheckAndSaveFunction<T> {
+  name: string;
+  behaviour: string;
+  beforeSave: () => boolean;
+  save: () => Result<T>;
+  isMe: (name: string, behaviour: string) => boolean;
+}
+
+// 暴露出去被别人调用的函数
+function checkAndSaveData(dataName?: string, behaviour?: string): void {
+
+  let crtDataName = dataName != null ? dataName : currentDataName.value
+  let crtBehaviour = behaviour != null ? behaviour : currentBehaviour.value
+
+  function findCheckAndSaveFun(): CheckAndSaveFunction<any> | undefined {
+    for (let i = 0; i < checkAndSaveFunctionArray.length; i++) {
+      let checkAndSaveFunction = checkAndSaveFunctionArray[i];
+      if (checkAndSaveFunction.isMe(crtDataName, crtBehaviour)) {
+        return checkAndSaveFunction;
+      }
+    }
+    return undefined;
+  }
+
+  let checkAndSaveFun;
+  let error;
+  if ((checkAndSaveFun = findCheckAndSaveFun())) {
+    try {
+      // 保存前
+      checkAndSaveFun.beforeSave();
+      // 保存
+      let result = checkAndSaveFun.save();
+      if (result != null && result.code == 0) {
+        // 执行成功
+      } else {
+        // 否则失败
+        error = result != null ? new Error(result.error) : new Error('发生错误，请联系管理员！');
+      }
+    } catch (ex) {
+      console.log(ex);
+      error = new Error('发生错误，请联系管理员！');
+    }
+  } else {
+    console.log('未找到保存前检查函数和保存函数');
+    // 未找到处理函数
+    error = new Error('发生错误，请联系管理员！');
+  }
+
+  if (error) {
+    throw error;
+  }
+
+}
+
+function addCheckAndSaveFunction<T>(name: string, behaviour: string,
+                                    beforeSave: () => boolean,
+                                    save: () => Result<T>,
+                                    isMe: (name: string, behaviour: string) => boolean) {
+  let saveFunction: CheckAndSaveFunction<any> = {
+    name,
+    behaviour,
+    isMe,
+    save,
+    beforeSave,
+  };
+  checkAndSaveFunctionArray.push(saveFunction);
+}
+
+function initCheckAndSaveFunction() {
+  let datasourceSave = {
+    name: '数据源',
+    behaviour: '新增',
+    beforeSave: () => true,
+    save: () => {},
+    isMe: (name: string, behaviour: string) => datasourceSave.name == name && datasourceSave.behaviour==behaviour,
+  }
+  addCheckAndSaveFunction()
+}
+
+
+function beforeAddSQL(event: Event) {
 
   event.stopPropagation();
 
-  if(!createSQL.value){
+  if (!createSQL.value) {
     datasourceChoiceOpen.value = true;
-  }else {
+  } else {
     Modal.confirm({
       title: '确认放弃新增SQL吗？',
       content: '点击确认将会放弃此次编辑内容，并返回之前页面。取消则返回继续编辑数据源',
@@ -332,7 +431,7 @@ onMounted(() => {
 
       for (let i = 0; i < items.length; i++) {
         let item = items[i];
-        if (item != null && 'label' in item) {
+        if (datasourceSelectOption.value != null && item != null && 'label' in item) {
           datasourceSelectOption.value[i] = {value: '_sourceId:' + item.key, 'label': item.label};
         }
       }
