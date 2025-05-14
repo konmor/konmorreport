@@ -57,7 +57,6 @@ const submitForm = () => {
 
 const changDatasourceName = (change: string) => {
   emitter.emit('Datasource:sourceName:change', datasourceDetail.dataSourceName);
-  console.log('Datasource:sourceName:change', datasourceDetail.dataSourceName);
 }
 
 const resetForm = () => {

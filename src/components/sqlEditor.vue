@@ -195,7 +195,7 @@ watch(data, (value) => {
     for (let i = 0; i < data.length; i++) {
       let item = data[i];
       if (item != null && options.value != null && 'label' in item) {
-        options.value[i] = {value: SOURCE_ID_PREFIX + item.key as string, label: item.label};
+        options.value[i] = {value: item.key as string, label: item.label};
       }
     }
   }

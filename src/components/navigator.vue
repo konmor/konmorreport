@@ -499,6 +499,8 @@ onMounted(() => {
 onUnmounted(() => {
   createDatasource.value = false;
   checkAndSaveFunctionArray.length = 0
+  emitter.off('Datasource:sourceName:change')
+  emitter.off('SQL:sqlName:change')
 })
 </script>
 <template>
