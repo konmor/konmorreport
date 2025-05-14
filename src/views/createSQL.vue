@@ -16,17 +16,19 @@ import {Modal} from "ant-design-vue";
 let route = useRoute()
 
 let sourceId = ref<string>('');
-
+let sqlName = ref<string>('');
 // 添加对路由的监听
 watch(
     () => route.query.key,
     (item) => {
+      sqlName.value = route.query.sqlName;
       sourceId.value = item as string;
     }
 )
 
 onMounted(() => {
   sourceId.value = route.query.key as string;
+  sqlName.value = route.query.sqlName as string;
 })
 
 // onBeforeRouteLeave((to: RouteLocationNormalized, from: RouteLocationNormalizedLoaded, next: NavigationGuardNext) => {
@@ -47,7 +49,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <sql-editor :sourceId="sourceId"></sql-editor>
+  <sql-editor :sourceId="sourceId" :sqlName="sqlName"></sql-editor>
 </template>
 
 <style scoped></style>

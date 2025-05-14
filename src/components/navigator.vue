@@ -194,18 +194,18 @@ async function addSQL(key: string | undefined, event?: Event) {
 
   function jumpSavePage() {
     // 执行完 保存之前的函数 和 保存 之后再跳转页面
-
+    let label = '查询(' + createSQLFlag.value + ")";
+    let sqlKey = SQL_KEY + createSQLFlag.value;
     if (router != null && key != undefined) {
       router.push({
         name: 'toCreateSQL',
         query: {
           key: key,
+          sqlName:label,
         },
       }).then(() => {
         // 添加树形下拉数据 sql字段中
         createSQL.value = true;
-        let label = '查询(' + createSQLFlag.value + ")";
-        let sqlKey = SQL_KEY + createSQLFlag.value;
         createSQLFlag.value += 1;
         // 添加下这个数据
         sqlArray.push({key: sqlKey, label: label});
@@ -431,9 +431,21 @@ function initCheckAndSaveFunction() {
 
 }
 
+// 事件绑定
+const changeNavigatorSQLName = (value: string) => {
+  for (let i = 0; i < sqlArray.length; i++) {
+    let sqlArrayElement = sqlArray[i];
+    // selectedKeys
+  }
+}
+emitter.on('SQL:sqlName:change',changeNavigatorSQLName)
+
+
 watch(openKeys, (val) => {
   console.log('openKeys', val)
 })
+
+const SOURCE_ID = '_sourceId:'
 
 onMounted(() => {
   setTimeout(() => {
@@ -454,7 +466,7 @@ onMounted(() => {
       for (let i = 0; i < items.length; i++) {
         let item = items[i];
         if (datasourceSelectOption.value != null && item != null && 'label' in item) {
-          datasourceSelectOption.value[i] = {value: '_sourceId:' + item.key, 'label': item.label};
+          datasourceSelectOption.value[i] = {value: SOURCE_ID + item.key, 'label': item.label};
         }
       }
       console.log('datasourceSelectOption', datasourceSelectOption);
@@ -503,7 +515,7 @@ onUnmounted(() => {
 
       <a-menu-item
           v-for="(myItem, index) in items"
-          :key="String(myItem?.key)"
+          :key="String(SOURCE_ID+myItem?.key)"
           @click="showDatasourceDetail(myItem, $event)"
           @mouseenter="datasourceShowButton[index] = true"
           @mouseleave="datasourceShowButton[index] = false">
@@ -514,7 +526,7 @@ onUnmounted(() => {
           <a-tooltip title="创建SQL">
             <a-button
                 size="small"
-                @click="addSQL(myItem?.key as string, $event)">
+                @click="addSQL(SOURCE_ID+myItem?.key as string, $event)">
               <template #icon>
                 <PlusOutlined/>
               </template>

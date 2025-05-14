@@ -25,10 +25,13 @@ import useNavigator from "@/composable/useNavigator.ts";
 import type {ItemType, SelectProps} from "ant-design-vue";
 import {onRequest} from "@/utils/RequestBus.ts";
 import type {Result} from "@/types/api.ts";
+import type { SQLConfig } from '@/types/api.ts'
+import emitter from '@/utils/EventBus.ts'
 
 let router = inject<Router>('router')
 let fontSize = ref(14)
 
+let sqlConfig = reactive<SQLConfig>({});
 const updateFontSize = (newSize: number) => {
   fontSize.value = newSize
 
@@ -158,7 +161,6 @@ onRequest<Result<any>>('sql:save', saveSQLConfig);
 
 // 获取父组件传递过来的值，父组件中 sourceId 是 ref对象
 let {sourceId} = defineProps(['sourceId']);
-const dataSourceSelect = ref('');
 
 const handleChange = (value: string) => {
   console.log(`selected ${value}`);
@@ -180,6 +182,12 @@ let {data, refreshDatasourceList} = useNavigator();
 const options = ref<SelectProps['options']>([]);
 refreshDatasourceList();
 
+const changeSQLName = (change) => {
+  console.log(change);
+  // 触发sqlName变更事件
+  emitter.emit('SQL:sqlName:change',sqlConfig.sqlName);
+}
+
 // 赋值数据源下拉选
 const DATASOURCE_SELECT_VALUE_PRE = '_sourceId:';
 watch(data, (value) => {
@@ -194,10 +202,15 @@ watch(data, (value) => {
   }
 })
 
-// 监听sourceId 的变化，同时赋值给 dataSourceSelect，便于切换值
+// 监听sourceId 的变化，同时赋值给 sqlConfig.sourceId，便于切换值
 // 需要注意的是 这个值不是响应式的变量，但是可以通过 ()=> sourceId 方式监听
 watch(() => sourceId, (sourceId) => {
-  dataSourceSelect.value = DATASOURCE_SELECT_VALUE_PRE + sourceId;
+  let start = sourceId.indexOf('_sourceId:')
+  if(start>-1){
+    sqlConfig.sourceId = sourceId;
+  }else {
+    sqlConfig.sourceId = DATASOURCE_SELECT_VALUE_PRE + sourceId;
+  }
 })
 
 onMounted(() => {
@@ -218,7 +231,12 @@ onMounted(() => {
   }
 
   // 初始化加载 下拉菜单
-  dataSourceSelect.value = DATASOURCE_SELECT_VALUE_PRE + sourceId;
+  let start = sourceId.indexOf('_sourceId:')
+  if(start>-1){
+    sqlConfig.sourceId = sourceId;
+  }else {
+    sqlConfig.sourceId = DATASOURCE_SELECT_VALUE_PRE + sourceId;
+  }
 })
 
 </script>
@@ -235,7 +253,7 @@ onMounted(() => {
                                   }">
         <a-space size="middle">
           <a-select
-              v-model:value="dataSourceSelect"
+              v-model:value="sqlConfig.sourceId"
               :options="options"
               style="width: 180px"
               placeholder="切换数据源"
@@ -246,7 +264,7 @@ onMounted(() => {
               @change="handleChange">
 
           </a-select>
-          <a-input placeholder="名称" show-count :maxlength="20" allow-clear></a-input>
+          <a-input placeholder="名称" show-count :maxlength="20" allow-clear @change="changeSQLName" :value="sqlConfig.sqlName"></a-input>
 
           <a-button @click="sqlView($event)" :style="{color:'#f'}">
             <EyeOutlined/>

@@ -347,6 +347,11 @@ const onExpand = (keys: string[]) => {
 const emptyTree = ref(true);
 // 监听 路由变化 重新加载数据
 watch(() => route.query.key, (sourceId) => {
+  // 可能会有前缀
+  let start = sourceId.indexOf('_sourceId:')
+  if(start>-1){
+    sourceId = sourceId.substring(10)
+  }
   emptyTree.value = true;
   if (sourceId != null && typeof sourceId === 'string' && sourceId.length > 0) {
     getDBObjectList(sourceId).then(reponse => {
@@ -392,7 +397,13 @@ onMounted(() => {
   emptyTree.value = true;
   // 初次加载
   if (route.query.key != null) {
-    getDBObjectList(route.query.key as string).then(reponse => {
+    let sourceId = route.query.key as string;
+    // 可能会有前缀
+    let start = sourceId.indexOf('_sourceId:')
+    if(start>-1){
+      sourceId = sourceId.substring(10)
+    }
+    getDBObjectList(sourceId).then(reponse => {
       if (reponse.code == 0) {
         // 转化为 treeData 能够接受的数据
         setDBInfoData(reponse.data);
