@@ -5,7 +5,7 @@ export default {
 </script>
 
 <script setup lang="ts">
-import {inject, onMounted, reactive, ref, watch} from 'vue'
+import {inject, onMounted, onUnmounted, reactive, ref, toRef, watch} from 'vue'
 import {
   WindowsOutlined,
   FormatPainterOutlined,
@@ -23,15 +23,17 @@ import DbObject from "@/components/dbObject.vue";
 import {EyeOutlined} from "@ant-design/icons-vue";
 import useNavigator from "@/composable/useNavigator.ts";
 import type {ItemType, SelectProps} from "ant-design-vue";
-import {onRequest} from "@/utils/RequestBus.ts";
+import {onRequest, removeRequestHandler} from "@/utils/RequestBus.ts";
 import type {Result} from "@/types/api.ts";
-import type { SQLConfig } from '@/types/api.ts'
+import type {SQLConfig} from '@/types/api.ts'
 import emitter from '@/utils/EventBus.ts'
+import {SOURCE_ID_PREFIX} from "@/composable/useNavigator.ts";
 
 let router = inject<Router>('router')
 let fontSize = ref(14)
 
 let sqlConfig = reactive<SQLConfig>({});
+
 const updateFontSize = (newSize: number) => {
   fontSize.value = newSize
 
@@ -157,10 +159,8 @@ async function saveSQLConfig() {
   return result;
 }
 
-onRequest<Result<any>>('sql:save', saveSQLConfig);
-
 // 获取父组件传递过来的值，父组件中 sourceId 是 ref对象
-let {sourceId} = defineProps(['sourceId']);
+let {sourceId: _sourceId, sqlName: _sqlName} = defineProps(['sourceId', 'sqlName']);
 
 const handleChange = (value: string) => {
   console.log(`selected ${value}`);
@@ -182,21 +182,20 @@ let {data, refreshDatasourceList} = useNavigator();
 const options = ref<SelectProps['options']>([]);
 refreshDatasourceList();
 
-const changeSQLName = (change) => {
-  console.log(change);
+let sqlNameRef = toRef(sqlConfig, 'sqlName');
+const changeSQLName = (change: string) => {
   // 触发sqlName变更事件
-  emitter.emit('SQL:sqlName:change',sqlConfig.sqlName);
+  emitter.emit('SQL:sqlName:change', sqlNameRef.value as string);
 }
 
 // 赋值数据源下拉选
-const DATASOURCE_SELECT_VALUE_PRE = '_sourceId:';
 watch(data, (value) => {
   if (data != null && data.length > 0) {
     // 数据源的下拉
     for (let i = 0; i < data.length; i++) {
       let item = data[i];
       if (item != null && options.value != null && 'label' in item) {
-        options.value[i] = {value: DATASOURCE_SELECT_VALUE_PRE + item.key as string, label: item.label};
+        options.value[i] = {value: SOURCE_ID_PREFIX + item.key as string, label: item.label};
       }
     }
   }
@@ -204,13 +203,14 @@ watch(data, (value) => {
 
 // 监听sourceId 的变化，同时赋值给 sqlConfig.sourceId，便于切换值
 // 需要注意的是 这个值不是响应式的变量，但是可以通过 ()=> sourceId 方式监听
-watch(() => sourceId, (sourceId) => {
-  let start = sourceId.indexOf('_sourceId:')
-  if(start>-1){
+watch(() => _sourceId, (sourceId) => {
+  let start = sourceId.indexOf(SOURCE_ID_PREFIX)
+  if (start > -1) {
     sqlConfig.sourceId = sourceId;
-  }else {
-    sqlConfig.sourceId = DATASOURCE_SELECT_VALUE_PRE + sourceId;
+  } else {
+    sqlConfig.sourceId = SOURCE_ID_PREFIX + sourceId;
   }
+  sqlConfig.sqlName = _sqlName;
 })
 
 onMounted(() => {
@@ -231,14 +231,19 @@ onMounted(() => {
   }
 
   // 初始化加载 下拉菜单
-  let start = sourceId.indexOf('_sourceId:')
-  if(start>-1){
-    sqlConfig.sourceId = sourceId;
-  }else {
-    sqlConfig.sourceId = DATASOURCE_SELECT_VALUE_PRE + sourceId;
+  let start = _sourceId.indexOf(SOURCE_ID_PREFIX)
+  if (start > -1) {
+    sqlConfig.sourceId = _sourceId;
+  } else {
+    sqlConfig.sourceId = SOURCE_ID_PREFIX + _sourceId;
   }
+  // 绑定事件
+  onRequest<Result<any>>('sql:save', saveSQLConfig);
 })
 
+onUnmounted(() => {
+  removeRequestHandler('sql:save');
+})
 </script>
 
 <template>
@@ -257,6 +262,7 @@ onMounted(() => {
               :options="options"
               style="width: 180px"
               placeholder="切换数据源"
+              disabled
               show-search
               :filter-option="filterOption"
               @focus="handleFocus"
@@ -264,7 +270,8 @@ onMounted(() => {
               @change="handleChange">
 
           </a-select>
-          <a-input placeholder="名称" show-count :maxlength="20" allow-clear @change="changeSQLName" :value="sqlConfig.sqlName"></a-input>
+          <a-input placeholder="名称" show-count :maxlength="20" allow-clear @change="changeSQLName"
+                   v-model:value="sqlConfig.sqlName"></a-input>
 
           <a-button @click="sqlView($event)" :style="{color:'#f'}">
             <EyeOutlined/>

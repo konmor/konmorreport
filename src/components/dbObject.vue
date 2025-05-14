@@ -18,6 +18,7 @@ import type {TreeProps} from "ant-design-vue";
 import {useRoute} from "vue-router";
 import {getDBObjectList} from "@/api/dbObject.ts";
 import type {DBInfo, DBObject, Routine, TableField} from "@/types/api.ts";
+import {SOURCE_ID_PREFIX} from "@/composable/useNavigator.ts";
 
 // 路由
 let route = useRoute();
@@ -348,9 +349,9 @@ const emptyTree = ref(true);
 // 监听 路由变化 重新加载数据
 watch(() => route.query.key, (sourceId) => {
   // 可能会有前缀
-  let start = sourceId.indexOf('_sourceId:')
-  if(start>-1){
-    sourceId = sourceId.substring(10)
+  let start = sourceId?.indexOf(SOURCE_ID_PREFIX)
+  if (start && start > -1) {
+    sourceId = sourceId?.substring(10)
   }
   emptyTree.value = true;
   if (sourceId != null && typeof sourceId === 'string' && sourceId.length > 0) {
@@ -399,8 +400,8 @@ onMounted(() => {
   if (route.query.key != null) {
     let sourceId = route.query.key as string;
     // 可能会有前缀
-    let start = sourceId.indexOf('_sourceId:')
-    if(start>-1){
+    let start = sourceId.indexOf(SOURCE_ID_PREFIX)
+    if (start > -1) {
       sourceId = sourceId.substring(10)
     }
     getDBObjectList(sourceId).then(reponse => {

@@ -9,6 +9,7 @@ import {useRoute} from 'vue-router'
 import {onMounted, reactive, toRef, watch} from 'vue'
 import {getDatasourceDetail} from '@/api/datasoure.ts'
 import type {DatasourceDetail} from '@/types/api.ts'
+import {SOURCE_EMPTY_ID_PREFIX} from "@/composable/useNavigator.ts";
 
 let route = useRoute()
 let {key} = route.query
@@ -39,13 +40,14 @@ onMounted(() => {
     })
   }
 })
+
 // 添加对路由的监听
 watch(
     () => route.query.key,
     (item) => {
       if (item != null && typeof item == 'string') {
         // 编辑
-        if (!item.startsWith('_datasourceKey')) {
+        if (!item.startsWith(SOURCE_EMPTY_ID_PREFIX)) {
           getDatasourceDetail(item).then((response) => {
             Object.assign(dataSourceDetail, response.data)
           })

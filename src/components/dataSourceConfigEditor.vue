@@ -5,7 +5,7 @@ export default {
 </script>
 
 <script setup lang="ts">
-import {reactive, ref} from 'vue'
+import {onMounted, onUnmounted, reactive, ref} from 'vue'
 import type {FormInstance} from 'ant-design-vue'
 import {saveDatasource, checkConnection} from '@/api/datasoure.ts'
 import type {DatasourceDetail, Result} from '@/types/api.ts'
@@ -16,7 +16,8 @@ import {
   LoadingOutlined,
   CloseOutlined,
 } from "@ant-design/icons-vue";
-import {onRequest} from "@/utils/RequestBus.ts";
+import {onRequest, removeRequestHandler} from "@/utils/RequestBus.ts";
+import emitter from "@/utils/EventBus.ts";
 
 let {datasourceDetail} = defineProps(['datasourceDetail'])
 
@@ -54,8 +55,10 @@ const submitForm = () => {
   });
 }
 
-// 绑定事件
-onRequest('datasource:save', save);
+const changDatasourceName = (change: string) => {
+  emitter.emit('Datasource:sourceName:change', datasourceDetail.dataSourceName);
+  console.log('Datasource:sourceName:change', datasourceDetail.dataSourceName);
+}
 
 const resetForm = () => {
   console.log('待用', formRef)
@@ -106,6 +109,15 @@ const checkSSL = (event: Event) => {
 
   }
 }
+
+onUnmounted(() => {
+  removeRequestHandler('datasource:save');
+})
+
+onMounted(() => {
+  // 绑定事件
+  onRequest('datasource:save', save);
+})
 </script>
 
 <template>
@@ -146,6 +158,7 @@ const checkSSL = (event: Event) => {
                   v-model:value="datasourceDetail.dataSourceName"
                   placeholder="请输入数据源名称"
                   allowClear
+                  @change="changDatasourceName"
               ></a-input>
             </a-form-item>
           </a-col>

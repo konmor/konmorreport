@@ -2,6 +2,12 @@ import type {ItemType} from 'ant-design-vue'
 import {h, reactive, VueElement} from 'vue'
 import {getDatasourceList} from '@/api/datasoure.ts'
 
+export const SOURCE_ID_PREFIX = '_sourceId:';
+export const SQL_ID_PREFIX = '_sqlId:';
+
+export const SOURCE_EMPTY_ID_PREFIX = '_sourceEmptyId:';
+export const SQL_EMPTY_ID_PREFIX = "_sqlEmptyId:";
+
 export default function () {
     let dataSourceConfigArray: ItemType[] = reactive([])
     let sqlArray: ItemType[] = reactive([])
@@ -16,10 +22,10 @@ export default function () {
                     if (item.sqlNameList != null) {
                         for (let j = 0; j < item.sqlNameList.length; j++) {
                             var subItem = item.sqlNameList[j]
-                            sqlArray[sqlCount++] = getItem(subItem.sqlName, subItem.sqlId);
+                            sqlArray[sqlCount++] = getItem(subItem.sqlName, SQL_ID_PREFIX + subItem.sqlId);
                         }
                     }
-                    dataSourceConfigArray[i] = getItem(item.sourceName, item.sourceId)
+                    dataSourceConfigArray[i] = getItem(item.sourceName, SOURCE_ID_PREFIX + item.sourceId)
                 }
             }
         })
@@ -38,7 +44,7 @@ export default function () {
      * 进入另外一个页面之后，状态值调整为对应的true
      */
 
-    function clearNavigator (){
+    function clearNavigator() {
 
     }
 

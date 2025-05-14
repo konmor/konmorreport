@@ -20,20 +20,20 @@ export interface DatasourceDetail {
 }
 
 export interface SSHConfig {
-    SSHId?: number|string
-    sourceId?: number|string
+    SSHId?: number | string
+    sourceId?: number | string
     sshHost?: string
     sshPort?: number
     sshUsername?: string
-    authType?: 'password'|'publicKey'
+    authType?: 'password' | 'publicKey'
     password?: string
     publicKeyPath?: string
     passphrase?: string
 }
 
 export interface SSLConfig {
-    SSLId?: number|string
-    sourceId?: number|string
+    SSLId?: number | string
+    sourceId?: number | string
     caCertPath?: string
     clientKeyPath?: string
     clientCertPath?: string
@@ -47,19 +47,19 @@ export interface Result<T> {
 }
 
 export interface SQLConfig {
-    sqlId: number,
-    sourceId: number,
-    dbId: number,
-    schemaId: number,
-    sqlName: string,
-    sqlContent: string,
-    fontSize: number,
-    sqlParamList: SQLParam[],
+    sqlId?: number | string,
+    sourceId?: number | string,
+    dbId?: number | string,
+    schemaId?: number | string,
+    sqlName?: string,
+    sqlContent?: string,
+    fontSize?: number,
+    sqlParamList?: SQLParam[],
 }
 
 export interface SQLParam {
-    paramId: number,
-    sqlId: number,
+    paramId: number | string,
+    sqlId: number | string,
     paramName: string,
     defaultValue: string,
 

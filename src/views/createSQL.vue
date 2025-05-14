@@ -21,7 +21,7 @@ let sqlName = ref<string>('');
 watch(
     () => route.query.key,
     (item) => {
-      sqlName.value = route.query.sqlName;
+      sqlName.value = route.query.sqlName as string;
       sourceId.value = item as string;
     }
 )
