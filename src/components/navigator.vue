@@ -36,6 +36,7 @@ import type {VueNode} from 'ant-design-vue/es/_util/type'
 import type {Handler} from "mitt";
 import {sql} from "@codemirror/lang-sql";
 import {SOURCE_EMPTY_ID_PREFIX, SQL_EMPTY_ID_PREFIX} from "@/composable/useNavigator.ts";
+import { ReportsError } from '@/utils/errorHandler/ReportsError.ts'
 
 let {refreshDatasourceList, data, sqlArray} = useNavigator()
 // 导航栏宽度 从home主页来
@@ -377,19 +378,19 @@ async function checkAndSaveData(dataName?: string, behaviour?: string) {
       } else {
         // 否则失败
         if (res != null) {
-          error = new Error(res.error)
+          error = new ReportsError(res.error,'save')
         } else {
-          error = new Error('发生错误，请联系管理员！');
+          error = new ReportsError('发生错误，请联系管理员！','save');
         }
       }
     } catch (ex) {
       console.log(ex);
-      error = new Error('发生错误，请联系管理员！');
+      error = new ReportsError('发生错误，请联系管理员！','save');
     }
   } else if ((crtDataName != undefined || crtBehaviour != undefined) && checkAndSaveFun == undefined) {
     console.log('未找到保存前检查函数和保存函数');
     // 未找到处理函数
-    error = new Error('发生错误，请联系管理员！');
+    error = new ReportsError('发生错误，请联系管理员！','save');
   } else {
     console.log('没有当前状态，无需执行');
   }
@@ -505,29 +506,32 @@ onUnmounted(() => {
 </script>
 <template>
   <a-menu
-      id="mainMenu"
-      v-model:openKeys="openKeys"
-      v-model:selectedKeys="selectedKeys"
-      :style="{ width: navigatorWidth }"
-      mode="inline"
-      :inlineIndent="10"
-      @click="handleClick">
+    id="mainMenu"
+    v-model:openKeys="openKeys"
+    v-model:selectedKeys="selectedKeys"
+    :style="{ width: navigatorWidth }"
+    mode="inline"
+    :inlineIndent="10"
+    @click="handleClick"
+  >
     <!--    数据源菜单-->
     <a-sub-menu :key="DATASOURCE_CONFIG_MENU" class="datasourceClass">
       <template #title>
         <span>
-          <database-outlined/>
+          <database-outlined />
           <span>数据源</span>
 
-          <a-button type="default"
-                    class="buttonClass"
-                    @click="addDataSource"
-                    :style="{border:'0px',display:'inline',height:0,width:0}">
+          <a-button
+            type="default"
+            class="buttonClass"
+            @click="addDataSource"
+            :style="{ border: '0px', display: 'inline', height: 0, width: 0 }"
+          >
             <template #icon>
               <a-tooltip title="创建数据源">
-              <span class="icon-wrapper">
-              <add-datasource-icon></add-datasource-icon>
-              </span>
+                <span class="icon-wrapper">
+                  <add-datasource-icon></add-datasource-icon>
+                </span>
               </a-tooltip>
             </template>
           </a-button>
@@ -535,48 +539,55 @@ onUnmounted(() => {
       </template>
 
       <a-menu-item
-          v-for="(myItem, index) in items"
-          :key="String(myItem?.key)"
-          @click="showDatasourceDetail(myItem, $event)"
-          @mouseenter="datasourceShowButton[index] = true"
-          @mouseleave="datasourceShowButton[index] = false">
+        v-for="(myItem, index) in items"
+        :key="String(myItem?.key)"
+        @click="showDatasourceDetail(myItem, $event)"
+        @mouseenter="datasourceShowButton[index] = true"
+        @mouseleave="datasourceShowButton[index] = false"
+      >
         <span v-if="myItem !== null && 'label' in myItem">{{ myItem.label }}</span>
         <a-button-group
-            v-if="datasourceShowButton[index] &&  myItem != null && !String(myItem.key).startsWith(SOURCE_EMPTY_ID_PREFIX)"
-            :style="{display:'inline-flex',justifyContent:'space-between',position:'absolute',right:'8px',top:'8px'}">
+          v-if="
+            datasourceShowButton[index] &&
+            myItem != null &&
+            !String(myItem.key).startsWith(SOURCE_EMPTY_ID_PREFIX)
+          "
+          :style="{
+            display: 'inline-flex',
+            justifyContent: 'space-between',
+            position: 'absolute',
+            right: '8px',
+            top: '8px',
+          }"
+        >
           <a-tooltip title="创建SQL">
-            <a-button
-                size="small"
-                @click="addSQL(myItem?.key as string, $event)">
+            <a-button size="small" @click="addSQL(myItem?.key as string, $event)">
               <template #icon>
-                <PlusOutlined/>
+                <PlusOutlined />
               </template>
             </a-button>
           </a-tooltip>
 
           <a-tooltip title="删除数据源">
-            <a-button size="small"
-                      @click="removeDatasource(myItem?.key as string, $event)">
+            <a-button size="small" @click="removeDatasource(myItem?.key as string, $event)">
               <template #icon>
-                <DeleteOutlined/>
+                <DeleteOutlined />
               </template>
             </a-button>
           </a-tooltip>
 
           <a-tooltip title="查看/编辑数据源配置">
-            <a-button size="small"
-                      @click="checkDatasourceConfig(myItem?.key as string, $event)">
+            <a-button size="small" @click="checkDatasourceConfig(myItem?.key as string, $event)">
               <template #icon>
-                <EditOutlined/>
+                <EditOutlined />
               </template>
             </a-button>
           </a-tooltip>
 
           <a-tooltip title="查看数据">
-            <a-button size="small"
-                      @click="checkDatasourceData(myItem?.key as string, $event)">
+            <a-button size="small" @click="checkDatasourceData(myItem?.key as string, $event)">
               <template #icon>
-                <TableOutlined/>
+                <TableOutlined />
               </template>
             </a-button>
           </a-tooltip>
@@ -588,51 +599,69 @@ onUnmounted(() => {
     <a-sub-menu :key="SQL_MENU" class="SQLMenuClass">
       <template #title>
         <span>
-          <bar-chart-outlined/>
+          <bar-chart-outlined />
           <span>SQL</span>
-            <span class="sqlCreateClass">
-              <a-tooltip title="创建sql">
-                <a-button size="small"
-                          @click="addSQL(undefined,$event)"
-                          :style="{height:'24px',width:'44px',fontSize:'10px',padding:'1px 1px 2px 1px'}">SQL +</a-button>
-              </a-tooltip>
-            </span>
+          <span class="sqlCreateClass">
+            <a-tooltip title="创建sql">
+              <a-button
+                size="small"
+                @click="addSQL(undefined, $event)"
+                :style="{
+                  height: '24px',
+                  width: '44px',
+                  fontSize: '10px',
+                  padding: '1px 1px 2px 1px',
+                }"
+                >SQL +</a-button
+              >
+            </a-tooltip>
+          </span>
         </span>
       </template>
       <a-menu-item
-          v-if="sqlArray !== null && sqlArray.length > 0"
-          v-for="(subItem ,index) in sqlArray"
-          @click="showSQLDetail(subItem?.key as string, $event)"
-          :key="String(subItem?.key)"
-          @mouseenter="sqlShowButton[index] = true"
-          @mouseleave="sqlShowButton[index] = false">
+        v-if="sqlArray !== null && sqlArray.length > 0"
+        v-for="(subItem, index) in sqlArray"
+        @click="showSQLDetail(subItem?.key as string, $event)"
+        :key="String(subItem?.key)"
+        @mouseenter="sqlShowButton[index] = true"
+        @mouseleave="sqlShowButton[index] = false"
+      >
         <span v-if="subItem !== null && 'label' in subItem">{{ subItem.label }}</span>
 
-        <a-button-group v-if="sqlShowButton[index] &&  subItem != null && !String(subItem.key).startsWith(SQL_EMPTY_ID_PREFIX)"
-                        :style="{display:'inline-flex',justifyContent:'space-between',position:'absolute',right:'8px',top:'8px'}">
+        <a-button-group
+          v-if="
+            sqlShowButton[index] &&
+            subItem != null &&
+            !String(subItem.key).startsWith(SQL_EMPTY_ID_PREFIX)
+          "
+          :style="{
+            display: 'inline-flex',
+            justifyContent: 'space-between',
+            position: 'absolute',
+            right: '8px',
+            top: '8px',
+          }"
+        >
           <a-tooltip title="删除SQL">
-            <a-button size="small"
-                      @click="removeSQL(subItem?.key as string, $event)">
+            <a-button size="small" @click="removeSQL(subItem?.key as string, $event)">
               <template #icon>
-                <DeleteOutlined/>
+                <DeleteOutlined />
               </template>
             </a-button>
           </a-tooltip>
 
           <a-tooltip title="查看/编辑SQL配置">
-            <a-button size="small"
-                      @click="checkSQLConfig(subItem?.key as string, $event)">
+            <a-button size="small" @click="checkSQLConfig(subItem?.key as string, $event)">
               <template #icon>
-                <EditOutlined/>
+                <EditOutlined />
               </template>
             </a-button>
           </a-tooltip>
 
           <a-tooltip title="查看SQL数据">
-            <a-button size="small"
-                      @click="checkSQLData(subItem?.key as string, $event)">
+            <a-button size="small" @click="checkSQLData(subItem?.key as string, $event)">
               <template #icon>
-                <TableOutlined/>
+                <TableOutlined />
               </template>
             </a-button>
           </a-tooltip>
@@ -643,7 +672,7 @@ onUnmounted(() => {
     <a-sub-menu :key="REPORTS_MENU">
       <template #title>
         <span>
-          <bar-chart-outlined/>
+          <bar-chart-outlined />
           <span>仪表板</span>
         </span>
       </template>
@@ -651,7 +680,6 @@ onUnmounted(() => {
   </a-menu>
 </template>
 <style scoped>
-
 .datasourceClass:hover .buttonClass .icon-wrapper {
   display: inline-flex;
 }
