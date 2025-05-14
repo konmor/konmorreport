@@ -107,7 +107,6 @@ async function addDataSource(event: Event) {
   }
 
   if (crtDataName != null || crtBehaviour != null) {
-    // 无论是相同还是不同，都要弹框提醒，并执行保存前和保存函数
     Modal.confirm({
       title: '确认' + behaviour + dataName + '吗？',
       content: '点击确认将保存' + crtDataName + '数据。取消则返回继续' + crtBehaviour + crtDataName + '。',
@@ -216,26 +215,48 @@ async function addSQL(key: string | undefined, event?: Event) {
     }
   }
 
-  if (crtDataName != null || crtBehaviour != null) {
+  if (crtDataName != undefined || crtBehaviour != undefined ||( key == undefined || key == '')) {
+    // 模态框内容
     let modalContent :any;
+    // 模态框宽度，一般是undefined。当需要选择下拉时是 600px宽度
     let modalWidth : string|undefined = undefined;
+
     if (key != undefined && key != '') {
-      //
-      modalContent = '点击确认将保存' + crtDataName + '数据.取消则返回继续' + crtBehaviour + crtDataName + '。'
-    } else {
+      // (crtDataName != null || crtBehaviour != null) && key 不为空
+      // 这里表示原本有数据（由crtDataName、crtBehaviour 当前的数据 和行为确定）正在新增或者编辑，同时点击新增或者编辑 SQL。并且选中了要添加sql的数据源的key
+
+      modalContent = '点击确认将保存' + crtDataName + '数据。取消则返回继续' + crtBehaviour + crtDataName + '。'
+    } else if(crtDataName != undefined || crtBehaviour != undefined ) {
+      // 上面的 else if == crtDataName crtBehaviour 不为空 并且 key 为空
+      // 这里表示原本有数据（由crtDataName、crtBehaviour 当前的数据 和行为确定）正在新增或者编辑，同时点击新增或者编辑 SQL。没有选中数据源
       modalWidth = '600px';
       modalContent = ()=>
-        <p>
+        <>
+          <p>{'请选择数据源！'}</p>
+          <p>{'点击确认将保存' + crtDataName + '数据。取消则返回继续' + crtBehaviour + crtDataName + '。'}</p>
+          <a-select options={datasourceSelectOption.value} style={{width:'300px'}}
+                    v-model = {[choiceDatasource.value,'value']} placeholder="选择数据源">
+
+          </a-select>
+
+          { choiceDatasourceShow.value ? <span style={{marginLeft:'10px'}}> <CloseCircleOutlined style={{color:'red'}} />请选择正确的数据源！</span> : <span></span> }
+        </>
+      ;
+    }else {
+      // else 只剩下： (crtDataName == undefined && crtBehaviour == undefined) && ( key == undefined || key == ''))
+      // 这里表示没有数据正在新增或者编辑，，同时点击新增或者编辑 SQL。没有选中数据源
+      modalWidth = '600px';
+      modalContent = ()=>
+        <>
+          <p>{'请选择数据源，点击取消则返回。'}</p>
           <a-select options={datasourceSelectOption.value} style={{width:'300px'}}
                     v-model = {[choiceDatasource.value,'value']} placeholder="选择数据源">
           </a-select>
           { choiceDatasourceShow.value ? <span style={{marginLeft:'10px'}}> <CloseCircleOutlined style={{color:'red'}} />请选择正确的数据源！</span> : <span></span> }
-        </p>
+        </>
       ;
-
     }
 
-    // 无论是相同还是不同，都要弹框提醒，并执行保存前和保存函数
     Modal.confirm({
       title: '确认' + behaviour + dataName + '吗？',
       content: modalContent,
@@ -256,8 +277,6 @@ async function addSQL(key: string | undefined, event?: Event) {
             choiceDatasourceShow.value = false;
           }
         }
-
-
 
         try {
           await checkAndSaveData();
@@ -363,10 +382,12 @@ async function checkAndSaveData(dataName?: string, behaviour?: string) {
       console.log(ex);
       error = new Error('发生错误，请联系管理员！');
     }
-  } else {
+  } else if((crtDataName !=undefined ||  crtBehaviour != undefined)&& checkAndSaveFun == undefined) {
     console.log('未找到保存前检查函数和保存函数');
     // 未找到处理函数
     error = new Error('发生错误，请联系管理员！');
+  }else {
+    console.log('没有当前状态，无需执行');
   }
   if (error) {
     throw error;
@@ -551,8 +572,7 @@ onUnmounted(() => {
           @click="showSQLDetail(subItem?.key as string, $event)"
           :key="String(subItem?.key)"
           @mouseenter="sqlShowButton[index] = true"
-          @mouseleave="sqlShowButton[index] = false"
-      >
+          @mouseleave="sqlShowButton[index] = false">
         <span v-if="subItem !== null && 'label' in subItem">{{ subItem.label }}</span>
 
         <a-button-group v-if="sqlShowButton[index] &&  subItem != null && !String(subItem.key).startsWith(SQL_KEY)"
