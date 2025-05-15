@@ -45,7 +45,7 @@ onMounted(() => {
       </a-layout-header>
 
       <a-layout-content :style="{height:'100%'}">
-        <SQLDataViewer :scrollY=600 :sourceId="sourceId"></SQLDataViewer>
+        <SQLDataViewer :scrollY=680 :sourceId="sourceId"></SQLDataViewer>
       </a-layout-content>
     </a-layout>
   </a-layout>

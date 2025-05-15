@@ -74,7 +74,7 @@ export function queryTableData(tableDataQuery: TableDataQuery): Promise<Result<T
     let pageInfo = tableDataQuery.pageInfo;
     if (!pageInfo) {
         pageInfo = {
-            page: 1, size: 10, total: 0
+            page: 1, size: 20, total: 0
         }
     }
     tableDataQuery.pageInfo = pageInfo
