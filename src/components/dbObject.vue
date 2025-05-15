@@ -400,14 +400,15 @@ watch(searchValue, (value) => {
   }
 })
 
-
-watch(selectedKeys, (value) => {
-  if (value != null && value.length > 0 && value[0].startsWith(OBJECT_ID_PREFIX)) {
+const selectedDBObject = (selectedObjectId: Array<string>) => {
+  if (selectedObjectId != null && selectedObjectId.length > 0 && selectedObjectId[0].startsWith(OBJECT_ID_PREFIX)) {
     emitter.emit('DBObject:selectTable', {
-      objectId: value[0]
+      objectId: selectedObjectId[0],
     });
   }
-})
+  console.log('select', selectedObjectId)
+}
+
 onMounted(() => {
   emptyTree.value = true
   // 初次加载
@@ -445,6 +446,7 @@ onMounted(() => {
       <a-tree
           :tree-data="treeData"
           v-model:selectedKeys="selectedKeys"
+          @select="selectedDBObject"
           v-model:expandedKeys="expandedKeys"
           @expand="onExpand"
           :auto-expand-parent="autoExpandParent"

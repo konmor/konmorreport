@@ -23,7 +23,7 @@ import {ReportsError} from "@/utils/errorHandler/ReportsError.ts";
 // title 表头名称 key 表头对应的唯一key 自定义 dataindex 对应数据的索引key  width 列宽度 fixed 固定在什么位置， left 、right
 // 扩展下类型
 interface MyColumnType<RecordType = DefaultRecordType> extends ColumnType<RecordType> {
-  dataType?: 'string' | 'number' | 'time'
+  dataType?: 'string' | 'number' | 'date'
 }
 
 // 原类型为 TableColumnsType
@@ -204,20 +204,20 @@ const calculateScrollX = function () {
 }
 
 // 列表高度
-let {scrollY} = defineProps(['scrollY']);
+let {scrollY, sourceId: datasourceId} = defineProps(['scrollY', 'sourceId']);
 let route = useRoute();
-let sourceId_ref = ref<string>();
-watch(() => route.query.key, (key) => {
-  sourceId_ref.value = key as string;
-})
 
-let datas_ref = reactive<Array<any>>([]);
+let datas_ref = ref([{}]);
+let loading = ref(false);
+
 emitter.on('DBObject:selectTable', (value) => {
+  console.log('触发一次')
+  loading.value = true;
   let sourceId: string;
-  if (!value.sourceId) {
+  if (value.sourceId != undefined) {
     sourceId = value.sourceId as string;
   } else {
-    sourceId = sourceId_ref.value as string;
+    sourceId = route.query.key as string;
   }
   let dbId = value.dbId as string;
   let schemaId = value.schemaId as string;
@@ -230,8 +230,23 @@ emitter.on('DBObject:selectTable', (value) => {
     objectId,
     pageInfo: value.pageInfo!
   }
+  // 数据转换 数据库返回的是 String Number Time 转换为 'string' | 'number' | 'date'
+  const convertFieldType = (dataType: string): 'string' | 'number' | 'date' | undefined => {
+    if (dataType == 'String') {
+      return 'string'
+    } else if (dataType == 'Number') {
+      return 'number'
+    } else if (dataType == 'Time') {
+      return 'date'
+    } else {
+      return undefined
+    }
+  }
   queryTableData(tableDataQuery).then(response => {
+    console.log('触发then 一次')
     if (response.code == 0) {
+      columns.value = []
+      datas_ref.value = []
       let index = 0
       columns.value[index++] = {
         title: '序号',
@@ -257,24 +272,31 @@ emitter.on('DBObject:selectTable', (value) => {
         let tableField = response.data.columns[i];
         columns.value[index] = {
           title: tableField.fieldName,
-          dataIndex: tableField.tableFieldId,
-          key: tableField.tableFieldId,
+          dataIndex: tableField.fieldName,
+          key: tableField.fieldName,
+          dataType: convertFieldType(tableField.fieldType2 as string),
         }
       }
 
       for (let i = 0; i < response.data.data.length; i++) {
-        datas_ref[i] = response.data.data[i];
+        datas_ref.value[i] = response.data.data[i];
       }
-
+      loading.value = false;
     } else {
+      loading.value = false;
       throw new ReportsError(response.error, 'queryTableData')
     }
+  }).catch((a) => {
+    loading.value = false;
+    console.log(a);
   })
 })
 
-
+let count:number = 0;
 onMounted(() => {
-  calculateScrollX()
+  calculateScrollX();
+
+  console.log('组件加载一次',count++)
 })
 
 let datas: [{ name?: string; age?: number; sex?: string; address?: string }] = [{}]
@@ -302,6 +324,7 @@ for (let i = 0; i < 100; i++) {
         :columns="columns"
         :scroll="{ x: scrollX, y: scrollY }"
         @resizeColumn="handleResizeColumn"
+        :loading="loading"
         bordered
     >
       <template #headerCell="{ column }">
@@ -317,7 +340,7 @@ for (let i = 0; i < 100; i++) {
             {{ column.title }}
           </span>
         </template>
-        <template v-else-if="column.dataType === 'time'">
+        <template v-else-if="column.dataType === 'time' || 'date' ">
           <span>
             <field-time-outlined :style="{ color: '#1890ff' }"/>
             {{ column.title }}

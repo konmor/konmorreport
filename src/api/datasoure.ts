@@ -67,9 +67,9 @@ export function checkConnection(datasource: DatasourceDetail): Promise<Result<st
 }
 
 export function queryTableData(tableDataQuery: TableDataQuery): Promise<Result<TableDataDTO>> {
-    let sourceId = deletePrefix(tableDataQuery.sourceId as string, SOURCE_ID_PREFIX, SOURCE_EMPTY_ID_PREFIX);
-    let dbId = deletePrefix(tableDataQuery.dbId as string, DB_ID_PREFIX, DB_EMPTY_ID_PREFIX)
-    let objectId = deletePrefix(tableDataQuery.objectId as string, OBJECT_ID_PREFIX, OBJECT_EMPTY_ID_PREFIX);
+    tableDataQuery.sourceId = deletePrefix(tableDataQuery.sourceId as string, SOURCE_ID_PREFIX, SOURCE_EMPTY_ID_PREFIX);
+    tableDataQuery.dbId = deletePrefix(tableDataQuery.dbId as string, DB_ID_PREFIX, DB_EMPTY_ID_PREFIX)
+    tableDataQuery.objectId = deletePrefix(tableDataQuery.objectId as string, OBJECT_ID_PREFIX, OBJECT_EMPTY_ID_PREFIX);
 
     let pageInfo = tableDataQuery.pageInfo;
     if (!pageInfo) {
@@ -77,7 +77,8 @@ export function queryTableData(tableDataQuery: TableDataQuery): Promise<Result<T
             page: 1, size: 10, total: 0
         }
     }
-    return instance.post(`datasources/${sourceId}/database/${dbId}/tableDatas/${objectId}`, pageInfo)
+    tableDataQuery.pageInfo = pageInfo
+    return instance.post('datasource/datasources/database/tableDatas', tableDataQuery)
 }
 
 function deletePrefix(id: string, prefix1: string, prefix2: string) {

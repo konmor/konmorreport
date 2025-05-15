@@ -7,6 +7,24 @@ export default {
 
 import DbObject from "@/components/dbObject.vue";
 import SQLDataViewer from "@/components/sqlDataViewer.vue";
+import {useRoute} from "vue-router";
+import {onMounted, ref, watch} from "vue";
+
+let route = useRoute()
+
+let sourceId = ref<string>('');
+// 添加对路由的监听
+watch(
+    () => route.query.key,
+    (item) => {
+      sourceId.value = item as string;
+    }
+)
+
+onMounted(() => {
+  sourceId.value = route.query.key as string;
+})
+
 </script>
 
 <template>
@@ -27,7 +45,7 @@ import SQLDataViewer from "@/components/sqlDataViewer.vue";
       </a-layout-header>
 
       <a-layout-content :style="{height:'100%'}">
-        <SQLDataViewer :scrollY=600></SQLDataViewer>
+        <SQLDataViewer :scrollY=600 :sourceId="sourceId"></SQLDataViewer>
       </a-layout-content>
     </a-layout>
   </a-layout>
