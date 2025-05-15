@@ -10,16 +10,17 @@ let emitter = mitt<MittEvents>();
 // 3. 暴露 emitter
 export default emitter;
 
+export type EmitterTableQueryType = {
+    sourceId?: string,
+    dbId?: string,
+    schemaId?: string,
+    objectId: string,
+    fieldId?: string,
+    pageInfo?: PageInfo
+};
 export type  MittEvents = {
     // sql name 变更事件，key SQL:sqlName:change,事件值是 string类型
     'SQL:sqlName:change': string,
     'Datasource:sourceName:change': string;
-    'DBObject:selectTable': {
-        sourceId?: string,
-        dbId?: string,
-        schemaId?: string,
-        objectId: string,
-        fieldId?: string,
-        pageInfo?: PageInfo
-    };
+    'DBObject:selectTable': EmitterTableQueryType
 }

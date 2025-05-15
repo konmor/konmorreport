@@ -10,11 +10,12 @@ import {
   FieldTimeOutlined,
   FieldNumberOutlined,
   FieldStringOutlined,
+  ArrowLeftOutlined,
 } from '@ant-design/icons-vue'
 import {onMounted, reactive, ref, watch} from 'vue'
 import type {DefaultRecordType} from 'ant-design-vue/es/vc-table/interface'
 import type {ColumnGroupType, ColumnType} from 'ant-design-vue/es/table/interface'
-import emitter from "@/utils/EventBus.ts";
+import emitter, {type EmitterTableQueryType} from "@/utils/EventBus.ts";
 import {useRoute} from "vue-router";
 import {queryTableData} from "@/api/datasoure.ts";
 import type {TableDataQuery} from "@/types/api.ts";
@@ -29,143 +30,18 @@ interface MyColumnType<RecordType = DefaultRecordType> extends ColumnType<Record
 // 原类型为 TableColumnsType
 // TableColumnsType
 // export type ColumnsType<RecordType = DefaultRecordType> = (ColumnGroupType<RecordType> | ColumnType<RecordType>)[];
-type MyTableColumnsType = (ColumnGroupType<DefaultRecordType> | MyColumnType<DefaultRecordType>)[]
+// type MyTableColumnsType = (ColumnGroupType<DefaultRecordType> | MyColumnType<DefaultRecordType>)[]
+type MyTableColumnsType = {
+  dataType?: 'string' | 'number' | 'date',
+  title: string,
+  resizable?: boolean,
+  width: string,
+  key: string,
+  dataIndex: string | number
+}
 
 // 必须使用 ref包裹 响应式时使用
-const columns = ref<MyTableColumnsType>([
-  {
-    title: '序号',
-    fixed: 'left',
-    dataIndex: 'index',
-    key: 'index',
-    customRender: ({index}) => {
-      return `${index + 1}`
-    },
-  },
-  {
-    title: '名称',
-    key: '1',
-    dataIndex: 'name',
-    width: 200,
-    fixed: 'left',
-    dataType: 'string',
-  },
-  {
-    title: '年龄',
-    key: '2',
-    dataIndex: 'age',
-    width: 200,
-    fixed: 'left',
-    dataType: 'number',
-  },
-  {
-    title: '性别',
-    key: '3',
-    dataIndex: 'sex',
-    dataType: 'string',
-  },
-  {
-    title: '住址',
-    key: '4',
-    dataIndex: 'address',
-    dataType: 'string',
-  },
-  {
-    title: '其他字段1',
-    key: '5',
-    dataIndex: 'address',
-    dataType: 'time',
-  },
-  {
-    title: '其他字段2',
-    key: '6',
-    dataIndex: 'address',
-    dataType: 'time',
-  },
-  {
-    title: '其他字段3',
-    key: '7',
-    dataIndex: 'address',
-    dataType: 'time',
-  },
-  {
-    title: '其他字段4',
-    key: '8',
-    dataIndex: 'address',
-    dataType: 'string',
-  },
-  {
-    title: '其他字段5',
-    key: '9',
-    dataIndex: 'address',
-  },
-  {
-    title: '其他字段6',
-    key: '10',
-    dataIndex: 'address',
-  },
-  {
-    title: '其他字段7',
-    key: '11',
-    dataIndex: 'address',
-  },
-  {
-    title: '其他字段8',
-    key: '12',
-    dataIndex: 'address',
-  },
-  {
-    title: '其他字段9',
-    key: '13',
-    dataIndex: 'address',
-  },
-  {
-    title: '其他字段10',
-    key: '14',
-    dataIndex: 'address',
-  },
-  {
-    title: '其他字段11',
-    key: '15',
-    dataIndex: 'address',
-  },
-  {
-    title: '其他字段12',
-    key: '16',
-    dataIndex: 'address',
-  },
-  {
-    title: '其他字段13',
-    key: '17',
-    dataIndex: 'address',
-  },
-
-  {
-    title: '其他字段14',
-    key: '18',
-    dataIndex: 'address',
-  },
-  {
-    title: '其他字段15',
-    key: '19',
-    dataIndex: 'address',
-  },
-  {
-    title: '其他字段16',
-    key: '20',
-    dataIndex: 'address',
-  },
-  {
-    title: '其他字段17',
-    key: '21',
-    dataIndex: 'address',
-  },
-  {
-    title: '其他字段18',
-    key: '22',
-    dataIndex: 'address',
-  },
-])
+const columns = ref<MyTableColumnsType[]>([])
 
 // 全部可以拖拽
 for (let i = 0; i < columns.value.length; i++) {
@@ -184,19 +60,15 @@ let scrollX = ref(1600);
 const calculateScrollX = function () {
   let totalWidth: number = 0
   columns.value.forEach((column) => {
-    if (column.width) {
-      if (typeof column.width === 'number') {
-        totalWidth += column.width
-      } else {
-        totalWidth += parseInt(column.width)
-      }
+    if (column.width != null) {
+      totalWidth += parseInt(column.width)
     } else {
       // 如果没有设置宽度，可以默认一个值或者根据内容动态计算
       // let title = column.title.toString().length *20;
-      if (column.title) {
-        totalWidth += (column.title.toString().length * 22) + 14
+      if ('dataType' in column && column.dataType == 'number') {
+        totalWidth += (column.title?.toString().length * 14) > 84 ? (column.title.length * 14) : 84
       } else {
-        totalWidth += 120
+        totalWidth += (column.title?.toString().length * 14)
       }
     }
   })
@@ -210,8 +82,13 @@ let route = useRoute();
 let datas_ref = ref([{}]);
 let loading = ref(false);
 
-emitter.on('DBObject:selectTable', (value) => {
-  console.log('触发一次')
+// 分页
+let page = ref(1); // 第几页
+let size = ref(10); // 页大小
+let total = ref(0);
+let out_objectId = ref(''); // 由 emitter 赋值
+
+function renderTableData(value: EmitterTableQueryType) {
   loading.value = true;
   let sourceId: string;
   if (value.sourceId != undefined) {
@@ -242,21 +119,25 @@ emitter.on('DBObject:selectTable', (value) => {
       return undefined
     }
   }
+
+  const caculateWidth = (dataType: string) => {
+    if (dataType == 'String') {
+      return '300'
+    } else if (dataType == 'Number') {
+      return '80'
+    } else if (dataType == 'Time') {
+      return '140'
+    } else {
+      return '120'
+    }
+  }
   queryTableData(tableDataQuery).then(response => {
-    console.log('触发then 一次')
     if (response.code == 0) {
+      // 分页处理
+      total.value = response.data.total;
+
       columns.value = []
       datas_ref.value = []
-      let index = 0
-      columns.value[index++] = {
-        title: '序号',
-        fixed: 'left',
-        dataIndex: 'index',
-        key: 'index',
-        customRender: ({index}) => {
-          return `${index + 1}`
-        },
-      }
       /**
        * tableFieldId
        * objectId
@@ -268,16 +149,18 @@ emitter.on('DBObject:selectTable', (value) => {
        *     key: '13',
        *     dataIndex: 'address',
        */
-      for (let i = 0; i < response.data.columns.length; i++, index++) {
+      for (let i = 0; i < response.data.columns.length; i++) {
         let tableField = response.data.columns[i];
-        columns.value[index] = {
-          title: tableField.fieldName,
-          dataIndex: tableField.fieldName,
-          key: tableField.fieldName,
+        columns.value[i] = {
+          title: tableField.fieldName as string,
+          dataIndex: tableField.fieldName as string,
+          key: tableField.fieldName as string,
           dataType: convertFieldType(tableField.fieldType2 as string),
+          width: caculateWidth(tableField.fieldType2 as string),
         }
       }
 
+      calculateScrollX();
       for (let i = 0; i < response.data.data.length; i++) {
         datas_ref.value[i] = response.data.data[i];
       }
@@ -290,35 +173,62 @@ emitter.on('DBObject:selectTable', (value) => {
     loading.value = false;
     console.log(a);
   })
-})
-
-let count:number = 0;
-onMounted(() => {
-  calculateScrollX();
-
-  console.log('组件加载一次',count++)
-})
-
-let datas: [{ name?: string; age?: number; sex?: string; address?: string }] = [{}]
-for (let i = 0; i < 100; i++) {
-  let name = '张三' + i
-  let age = 1 + i
-  let sex = i % 3 > 0 ? '男' : '女'
-  let address
-  if (i % 4 > 0) {
-    address = '朝阳区' + i
-  }
-  datas[i] = {
-    name,
-    age,
-    sex,
-    address,
-  }
 }
+
+emitter.on('DBObject:selectTable', (value) => {
+  console.log('触发一次')
+  out_objectId.value = value.objectId as string;
+
+  renderTableData(value);
+})
+
+
+let count: number = 0;
+
+onMounted(() => {
+
+  console.log('组件加载一次', count++)
+})
+
+// 分页选项
+let pageSizeOptions = ref<string []>(['10', '20', '40', '50', '100', '200'])
+
+const onShowSizeChange = (current: number, pageSize: number) => {
+  size.value = pageSize;
+
+  renderTableData({
+    objectId: out_objectId.value,
+    pageInfo: {
+      page: current,
+      size: pageSize,
+      total: total.value
+    },
+  })
+};
+
+// 监听当前页
+watch(page, (page) => {
+  renderTableData({
+    objectId: out_objectId.value,
+    pageInfo: {
+      page: page,
+      size: size.value,
+      total: total.value
+    },
+  })
+
+})
+
+
 </script>
 
 <template>
   <a-config-provider :locale="zhCN">
+    <a-empty v-if="out_objectId=='' || out_objectId == null ">
+      <template #description>
+        <span> <ArrowLeftOutlined/>请选择视图或表</span>
+      </template>
+    </a-empty>
     <a-table
         :data-source="datas_ref"
         :columns="columns"
@@ -326,32 +236,47 @@ for (let i = 0; i < 100; i++) {
         @resizeColumn="handleResizeColumn"
         :loading="loading"
         bordered
+        :pagination="false"
+        v-else
     >
       <template #headerCell="{ column }">
         <template v-if="column.dataType === 'string'">
           <span>
-            <field-string-outlined :style="{ color: '#efb056' }"/>
             {{ column.title }}
+            <field-string-outlined :style="{ color: '#efb056' }"/>
           </span>
         </template>
         <template v-else-if="column.dataType === 'number'">
           <span>
-            <field-number-outlined :style="{ color: '#6fd845' }"/>
             {{ column.title }}
+            <field-number-outlined :style="{ color: '#6fd845' }"/>
           </span>
         </template>
         <template v-else-if="column.dataType === 'time' || 'date' ">
           <span>
-            <field-time-outlined :style="{ color: '#1890ff' }"/>
             {{ column.title }}
+            <field-time-outlined :style="{ color: '#1890ff' }"/>
           </span>
         </template>
         <template v-else>
           <span>
-            <field-string-outlined :style="{ color: '#efb056' }"/>
             {{ column.title }}
+            <field-string-outlined :style="{ color: '#efb056' }"/>
           </span>
         </template>
+      </template>
+      <template #footer>
+        <a-pagination
+            v-model:current="page"
+            v-model:page-size="size"
+            :page-size-options="pageSizeOptions"
+            :total="total"
+            show-size-changer
+            @showSizeChange="onShowSizeChange"
+            show-quick-jumper
+            :style="{backgroundColor:'#fff'}">
+
+        </a-pagination>
       </template>
     </a-table>
   </a-config-provider>
