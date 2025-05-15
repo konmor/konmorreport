@@ -4,20 +4,21 @@ export default {
 }
 </script>
 <script setup lang="ts">
-import { type TableColumnsType } from 'ant-design-vue'
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import {
   FundViewOutlined,
   FieldTimeOutlined,
   FieldNumberOutlined,
   FieldStringOutlined,
-  TableOutlined,
-  WindowsOutlined,
 } from '@ant-design/icons-vue'
-import { onMounted, ref } from 'vue'
-import type { DefaultRecordType } from 'ant-design-vue/es/vc-table/interface'
-import type { ColumnGroupType, ColumnType } from 'ant-design-vue/es/table/interface'
-import type { ColumnsType } from 'ant-design-vue/lib/table'
+import {onMounted, reactive, ref, watch} from 'vue'
+import type {DefaultRecordType} from 'ant-design-vue/es/vc-table/interface'
+import type {ColumnGroupType, ColumnType} from 'ant-design-vue/es/table/interface'
+import emitter from "@/utils/EventBus.ts";
+import {useRoute} from "vue-router";
+import {queryTableData} from "@/api/datasoure.ts";
+import type {TableDataQuery} from "@/types/api.ts";
+import {ReportsError} from "@/utils/errorHandler/ReportsError.ts";
 
 // title 表头名称 key 表头对应的唯一key 自定义 dataindex 对应数据的索引key  width 列宽度 fixed 固定在什么位置， left 、right
 // 扩展下类型
@@ -37,7 +38,7 @@ const columns = ref<MyTableColumnsType>([
     fixed: 'left',
     dataIndex: 'index',
     key: 'index',
-    customRender: ({ index }) => {
+    customRender: ({index}) => {
       return `${index + 1}`
     },
   },
@@ -177,7 +178,8 @@ function handleResizeColumn(w: number, col: any) {
 }
 
 // 动态计算列宽  列宽的计算触发条件 加载完成后触发、使用watch监听 columns 和 datas的变化也可触发 还有 handleResizeColumn 函数触发
-let scrollX = ref(1600)
+let scrollX = ref(1600);
+
 
 const calculateScrollX = function () {
   let totalWidth: number = 0
@@ -191,16 +193,87 @@ const calculateScrollX = function () {
     } else {
       // 如果没有设置宽度，可以默认一个值或者根据内容动态计算
       // let title = column.title.toString().length *20;
-      if(column.title){
-        totalWidth += (column.title.toString().length *22) + 14
-      }else {
+      if (column.title) {
+        totalWidth += (column.title.toString().length * 22) + 14
+      } else {
         totalWidth += 120
       }
     }
   })
   scrollX.value = totalWidth;
 }
-onMounted(()=>{
+
+// 列表高度
+let {scrollY} = defineProps(['scrollY']);
+let route = useRoute();
+let sourceId_ref = ref<string>();
+watch(() => route.query.key, (key) => {
+  sourceId_ref.value = key as string;
+})
+
+let datas_ref = reactive<Array<any>>([]);
+emitter.on('DBObject:selectTable', (value) => {
+  let sourceId: string;
+  if (!value.sourceId) {
+    sourceId = value.sourceId as string;
+  } else {
+    sourceId = sourceId_ref.value as string;
+  }
+  let dbId = value.dbId as string;
+  let schemaId = value.schemaId as string;
+  let objectId = value.objectId as string;
+
+  let tableDataQuery: TableDataQuery = {
+    sourceId,
+    dbId,
+    schemaId,
+    objectId,
+    pageInfo: value.pageInfo!
+  }
+  queryTableData(tableDataQuery).then(response => {
+    if (response.code == 0) {
+      let index = 0
+      columns.value[index++] = {
+        title: '序号',
+        fixed: 'left',
+        dataIndex: 'index',
+        key: 'index',
+        customRender: ({index}) => {
+          return `${index + 1}`
+        },
+      }
+      /**
+       * tableFieldId
+       * objectId
+       * fieldName
+       * fieldType
+       * fieldType2
+       *
+       * title: '其他字段9',
+       *     key: '13',
+       *     dataIndex: 'address',
+       */
+      for (let i = 0; i < response.data.columns.length; i++, index++) {
+        let tableField = response.data.columns[i];
+        columns.value[index] = {
+          title: tableField.fieldName,
+          dataIndex: tableField.tableFieldId,
+          key: tableField.tableFieldId,
+        }
+      }
+
+      for (let i = 0; i < response.data.data.length; i++) {
+        datas_ref[i] = response.data.data[i];
+      }
+
+    } else {
+      throw new ReportsError(response.error, 'queryTableData')
+    }
+  })
+})
+
+
+onMounted(() => {
   calculateScrollX()
 })
 
@@ -225,34 +298,34 @@ for (let i = 0; i < 100; i++) {
 <template>
   <a-config-provider :locale="zhCN">
     <a-table
-      :data-source="datas"
-      :columns="columns"
-      :scroll="{ x: scrollX, y: 200 }"
-      @resizeColumn="handleResizeColumn"
-      bordered
+        :data-source="datas_ref"
+        :columns="columns"
+        :scroll="{ x: scrollX, y: scrollY }"
+        @resizeColumn="handleResizeColumn"
+        bordered
     >
       <template #headerCell="{ column }">
         <template v-if="column.dataType === 'string'">
           <span>
-            <field-string-outlined :style="{ color: '#efb056' }" />
+            <field-string-outlined :style="{ color: '#efb056' }"/>
             {{ column.title }}
           </span>
         </template>
         <template v-else-if="column.dataType === 'number'">
           <span>
-            <field-number-outlined :style="{ color: '#6fd845' }" />
+            <field-number-outlined :style="{ color: '#6fd845' }"/>
             {{ column.title }}
           </span>
         </template>
         <template v-else-if="column.dataType === 'time'">
           <span>
-            <field-time-outlined :style="{ color: '#1890ff' }" />
+            <field-time-outlined :style="{ color: '#1890ff' }"/>
             {{ column.title }}
           </span>
         </template>
         <template v-else>
           <span>
-            <field-string-outlined :style="{ color: '#efb056' }" />
+            <field-string-outlined :style="{ color: '#efb056' }"/>
             {{ column.title }}
           </span>
         </template>

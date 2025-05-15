@@ -12,12 +12,13 @@ import {
   FunctionOutlined,
   TableOutlined,
 } from '@ant-design/icons-vue'
-import { onMounted, reactive, ref, watch } from 'vue'
-import type { TreeProps } from 'ant-design-vue'
-import { useRoute } from 'vue-router'
-import { getDBObjectList } from '@/api/dbObject.ts'
-import type { DBInfo, DBObject, Routine, TableField } from '@/types/api.ts'
-import { SOURCE_ID_PREFIX } from '@/composable/useNavigator.ts'
+import {onMounted, reactive, ref, watch} from 'vue'
+import type {TreeProps} from 'ant-design-vue'
+import {useRoute} from 'vue-router'
+import {getDBObjectList} from '@/api/dbObject.ts'
+import type {DBInfo, DBObject, Routine, TableField} from '@/types/api.ts'
+import {FIELD_ID_PREFIX, OBJECT_ID_PREFIX, SOURCE_ID_PREFIX} from '@/composable/useNavigator.ts'
+import emitter from "@/utils/EventBus.ts";
 
 // 路由
 let route = useRoute()
@@ -122,7 +123,6 @@ const convertFieldType = (dataType: string): 'string' | 'number' | 'date' | unde
 
 // 将数据库对象DBObject 转换为 树形结构要求的数据结构(ant-design-vue tree 组件要求的结构)
 // DBObject 返回的结构是接口的的字段和值，需要转换下
-const FIELD_PRE = '_field:'
 
 function convertToTableFields(dbObject: DBObject) {
   let tableChildren: DataType[] = []
@@ -130,20 +130,18 @@ function convertToTableFields(dbObject: DBObject) {
     for (let j = 0; j < dbObject.value.length; j++) {
       let item = dbObject.value[j] as TableField
       tableChildren[j] = buildTreeData(
-        (FIELD_PRE + item.tableFieldId) as string,
-        item.fieldName as string,
-        undefined,
-        convertFieldType(item.fieldType2 as string),
-        undefined,
-        false,
+          (FIELD_ID_PREFIX + item.tableFieldId) as string,
+          item.fieldName as string,
+          undefined,
+          convertFieldType(item.fieldType2 as string),
+          undefined,
+          false,
       )
       item.objectId
     }
   }
   return tableChildren
 }
-
-const DB_OBJECT_PRE = '_db_object:'
 
 /**
  * 从 dbInfo 中抽取他的schema数据
@@ -222,35 +220,35 @@ function convertToTreeData(dbInfo: DBInfo, schemaIndex: number = 0): DataType[] 
         let tableChildren = convertToTableFields(dbObject)
 
         tableData[t++] = buildTreeData(
-          (DB_OBJECT_PRE + dbObject.dbObjectId) as string,
-          dbObject.objectName as string,
-          undefined,
-          undefined,
-          tableChildren,
-          false,
+            (OBJECT_ID_PREFIX + dbObject.dbObjectId) as string,
+            dbObject.objectName as string,
+            undefined,
+            undefined,
+            tableChildren,
+            false,
         )
       } else if (dbObject.objectType == 'VIEW') {
         let viewChildren: DataType[] = convertToTableFields(dbObject)
 
         viewData[v++] = buildTreeData(
-          (DB_OBJECT_PRE + dbObject.dbObjectId) as string,
-          dbObject.objectName as string,
-          undefined,
-          undefined,
-          viewChildren,
-          false,
+            (OBJECT_ID_PREFIX + dbObject.dbObjectId) as string,
+            dbObject.objectName as string,
+            undefined,
+            undefined,
+            viewChildren,
+            false,
         )
       } else if (dbObject.objectType == 'ROUTINE') {
         // 函数 存储过程 的 routineBody 暂时不体现出来
         let item = dbObject.value as Routine
         let routineBody = item.routineBody
         routineData[r++] = buildTreeData(
-          (DB_OBJECT_PRE + dbObject.dbObjectId) as string,
-          dbObject.objectName as string,
-          undefined,
-          undefined,
-          undefined,
-          false,
+            (OBJECT_ID_PREFIX + dbObject.dbObjectId) as string,
+            dbObject.objectName as string,
+            undefined,
+            undefined,
+            undefined,
+            false,
         )
       }
     }
@@ -285,7 +283,7 @@ const generateList = (data: DataType[]) => {
     if ('title' in node) {
       title = node.title
     }
-    dataList.push({ key: key as string, title: title })
+    dataList.push({key: key as string, title: title})
     if (node.children) {
       generateList(node.children)
     }
@@ -308,12 +306,12 @@ const setDBInfoData = function (dbInfo: DBInfo) {
         let dbSchema = dbInfo.dbSchemaDTOList[i]
         let data: DataType[] = convertToTreeData(dbInfo, i)
         schemaData[i] = buildTreeData(
-          '_schema:' + dbSchema.schemaId,
-          dbSchema.schemaName as string,
-          undefined,
-          undefined,
-          data,
-          true,
+            '_schema:' + dbSchema.schemaId,
+            dbSchema.schemaName as string,
+            undefined,
+            undefined,
+            data,
+            true,
         )
       }
     }
@@ -327,12 +325,12 @@ const setDBInfoData = function (dbInfo: DBInfo) {
 }
 
 const buildTreeData = function (
-  key: string | undefined,
-  title: string,
-  type?: 'table' | 'view' | 'routine' | undefined,
-  dataType?: 'number' | 'string' | 'date',
-  children?: DataType[],
-  schema?: true | false,
+    key: string | undefined,
+    title: string,
+    type?: 'table' | 'view' | 'routine' | undefined,
+    dataType?: 'number' | 'string' | 'date',
+    children?: DataType[],
+    schema?: true | false,
 ) {
   return {
     key,
@@ -346,6 +344,7 @@ const buildTreeData = function (
 
 const autoExpandParent = ref<boolean>(true)
 const expandedKeys = ref<string[]>(['view', 'table'])
+const selectedKeys = ref<string[]>([]);
 const onExpand = (keys: string[]) => {
   expandedKeys.value = keys
   autoExpandParent.value = false
@@ -354,31 +353,31 @@ const onExpand = (keys: string[]) => {
 const emptyTree = ref(true)
 // 监听 路由变化 重新加载数据
 watch(
-  () => route.query.key,
-  (sourceId) => {
-    // 可能会有前缀
-    let start = sourceId?.indexOf(SOURCE_ID_PREFIX)
-    if (start && start > -1) {
-      sourceId = sourceId?.substring(10)
-    }
-    emptyTree.value = true
-    if (sourceId != null && typeof sourceId === 'string' && sourceId.length > 0) {
-      getDBObjectList(sourceId).then((reponse) => {
-        if (reponse.code == 0) {
-          // 转化为 treeData 能够接受的数据
-          setDBInfoData(reponse.data)
-        } else if (reponse.code == -1) {
-          // 发生报错 使用默认数据
-          setDefaultData()
-        }
-      })
-      emptyTree.value = false
-    } else {
-      // 使用默认数据
-      setDefaultData()
-      emptyTree.value = false
-    }
-  },
+    () => route.query.key,
+    (sourceId) => {
+      // 可能会有前缀
+      let start = sourceId?.indexOf(SOURCE_ID_PREFIX)
+      if (start && start > -1) {
+        sourceId = sourceId?.substring(10)
+      }
+      emptyTree.value = true
+      if (sourceId != null && typeof sourceId === 'string' && sourceId.length > 0) {
+        getDBObjectList(sourceId).then((reponse) => {
+          if (reponse.code == 0) {
+            // 转化为 treeData 能够接受的数据
+            setDBInfoData(reponse.data)
+          } else if (reponse.code == -1) {
+            // 发生报错 使用默认数据
+            setDefaultData()
+          }
+        })
+        emptyTree.value = false
+      } else {
+        // 使用默认数据
+        setDefaultData()
+        emptyTree.value = false
+      }
+    },
 )
 
 const searchValue = ref<string>('')
@@ -386,13 +385,13 @@ const searchValue = ref<string>('')
 watch(searchValue, (value) => {
   if (value != null && value.length > 0) {
     const expanded = dataList
-      .map((item) => {
-        if (value != null && value.length > 0 && item.title.indexOf(value) > -1) {
-          return item.key
-        }
-        return null
-      })
-      .filter((item, i, self) => item && self.indexOf(item) === i)
+        .map((item) => {
+          if (value != null && value.length > 0 && item.title.indexOf(value) > -1) {
+            return item.key
+          }
+          return null
+        })
+        .filter((item, i, self) => item && self.indexOf(item) === i)
     expandedKeys.value = expanded as string[]
     searchValue.value = value
     autoExpandParent.value = true
@@ -401,6 +400,14 @@ watch(searchValue, (value) => {
   }
 })
 
+
+watch(selectedKeys, (value) => {
+  if (value != null && value.length > 0 && value[0].startsWith(OBJECT_ID_PREFIX)) {
+    emitter.emit('DBObject:selectTable', {
+      objectId: value[0]
+    });
+  }
+})
 onMounted(() => {
   emptyTree.value = true
   // 初次加载
@@ -427,22 +434,23 @@ onMounted(() => {
 
 <template>
   <a-layout-sider theme="light" :style="{ marginRight: '10px' }">
-    <a-input-search v-model:value="searchValue" style="margin-bottom: 8px" placeholder="Search" />
+    <a-input-search v-model:value="searchValue" style="margin-bottom: 8px" placeholder="Search"/>
 
     <div
-      :style="{
+        :style="{
         height: `${siderHeight}+ px`,
       }"
     >
-      <a-empty v-if="emptyTree" />
+      <a-empty v-if="emptyTree"/>
       <a-tree
-        :tree-data="treeData"
-        v-model:expandedKeys="expandedKeys"
-        @expand="onExpand"
-        :auto-expand-parent="autoExpandParent"
-        :style="{ width: '100%' }"
-        :height="siderHeight - 1"
-        v-if="!emptyTree"
+          :tree-data="treeData"
+          v-model:selectedKeys="selectedKeys"
+          v-model:expandedKeys="expandedKeys"
+          @expand="onExpand"
+          :auto-expand-parent="autoExpandParent"
+          :style="{ width: '100%' }"
+          :height="siderHeight - 1"
+          v-if="!emptyTree"
       >
         <template #title="{ title, key, type, dataType }">
           <a-tooltip :title="title">

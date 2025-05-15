@@ -46,7 +46,6 @@ const routes = ref<Route[]>([
     ]
   },
 ])
-console.log(useRoute().path);
 </script>
 
 <template>

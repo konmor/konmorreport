@@ -4,9 +4,18 @@ import {getDatasourceList} from '@/api/datasoure.ts'
 
 export const SOURCE_ID_PREFIX = '_sourceId:';
 export const SQL_ID_PREFIX = '_sqlId:';
+export const DB_ID_PREFIX = '_dbId:'
+export const SCHEMA_ID_PREFIX = '_schemaId:'
+export const OBJECT_ID_PREFIX = '_objectId:'
+export const FIELD_ID_PREFIX = '_fieldId:'
 
 export const SOURCE_EMPTY_ID_PREFIX = '_sourceEmptyId:';
 export const SQL_EMPTY_ID_PREFIX = "_sqlEmptyId:";
+
+export const DB_EMPTY_ID_PREFIX = "_dbEmptyId:";
+export const SCHEMA_EMPTY_ID_PREFIX = "_schemaEmptyId:";
+export const OBJECT_EMPTY_ID_PREFIX = "_objectEmptyId:";
+export const FIELD_EMPTY_ID_PREFIX = "_fieldEmptyId:";
 
 export default function () {
     let dataSourceConfigArray: ItemType[] = reactive([])

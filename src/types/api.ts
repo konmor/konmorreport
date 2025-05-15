@@ -107,3 +107,29 @@ export interface Routine {
     objectId?: string | number,
     routineBody?: string,
 }
+
+export interface PageInfo {
+
+    page: number;
+
+    size: number;
+
+    total: number;
+}
+
+export interface PageData<T> extends PageInfo {
+    data: Array<T>
+}
+
+// 查询时使用
+export interface TableDataQuery {
+    sourceId: number | string,
+    dbId: number | string,
+    objectId: number | string,
+    schemaId: number | string,
+    pageInfo: PageInfo,
+}
+
+export interface TableDataDTO extends PageData<Map<string, any>> {
+    columns: Array<TableField>
+}
