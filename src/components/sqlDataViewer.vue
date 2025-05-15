@@ -41,6 +41,7 @@ type MyTableColumnsType = {
   maxWidth?: number
   minWidth?: number
   ellipsis?: boolean
+  customCell?: (record: any, rowIndex: any, column: any) => any
 }
 
 // 必须使用 ref包裹 响应式时使用
@@ -149,7 +150,7 @@ function renderTableData(value: EmitterTableQueryType) {
             key: tableField.fieldName as string,
             dataType: convertFieldType(tableField.fieldType2 as string),
             ellipsis: true,
-            width: '120'
+            width: '120',
           }
         }
 
@@ -256,7 +257,6 @@ watch(page, (page) => {
           </span>
         </template>
       </template>
-      <template #emptyText><span>-</span></template>
       <template #footer>
         <a-pagination
           position="bottomRight"
@@ -268,7 +268,7 @@ watch(page, (page) => {
           hideOnSinglePage
           @showSizeChange="onShowSizeChange"
           show-quick-jumper
-          :style="{ backgroundColor: '#fff'}"
+          :style="{ backgroundColor: '#fff' }"
         >
         </a-pagination>
       </template>
