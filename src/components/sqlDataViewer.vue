@@ -12,7 +12,7 @@ import {
   FieldStringOutlined,
   ArrowLeftOutlined,
 } from '@ant-design/icons-vue'
-import { onMounted, reactive, ref, watch } from 'vue'
+import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import type { DefaultRecordType } from 'ant-design-vue/es/vc-table/interface'
 import type { ColumnGroupType, ColumnType } from 'ant-design-vue/es/table/interface'
 import emitter, { type EmitterTableQueryType } from '@/utils/EventBus.ts'
@@ -209,6 +209,10 @@ watch(page, (page) => {
       total: total.value,
     },
   })
+})
+
+onUnmounted(() => {
+  emitter.off('DBObject:selectTable')
 })
 </script>
 

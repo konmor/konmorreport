@@ -1,9 +1,0 @@
-<svg width="80" height="40" viewBox="0 0 80 40" xmlns="http://www.w3.org/2000/svg">
-    <!-- 边框 + 背景矩形 -->
-    <rect x="0" y="0" width="80" height="40" rx="6" fill="#e8f5e9" stroke="#6aaf49" stroke-width="1.5"/>
-
-    <!-- 文字内容 -->
-    <text x="40" y="25" font-family="Arial, sans-serif" font-size="14" fill="#333" text-anchor="middle" dominant-baseline="middle">
-        SQL
-    </text>
-</svg>
