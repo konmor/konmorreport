@@ -574,21 +574,19 @@ onUnmounted(() => {
     <!--    数据源菜单-->
     <a-sub-menu :key="DATASOURCE_CONFIG_MENU" class="datasourceClass">
       <template #title>
-        <span>
-          <database-outlined/>
-          <span>数据源</span>
-
-          <a-button
-              type="default"
-              class="buttonClass"
-              @click="addDataSource"
-              :style="{ border: '0px', display: 'inline', height: 0, width: 0 }"
-          >
-            <template #icon>
-             <AddDatasource/>
-            </template>
-          </a-button>
-        </span>
+        <span>数据源</span>
+        <a-button
+            @click="addDataSource"
+            size="small"
+            :style="{float:'right',top:'8px',display:'none' }"
+            class="datasourceCreateBtn">
+          <template #icon>
+            <AddDatasource/>
+          </template>
+        </a-button>
+      </template>
+      <template #icon>
+        <database-outlined/>
       </template>
 
       <a-menu-item
@@ -651,18 +649,21 @@ onUnmounted(() => {
     <!--sql列表菜单-->
     <a-sub-menu :key="SQL_MENU" class="SQLMenuClass">
       <template #title>
-        <span>
-          <bar-chart-outlined/>
-          <span>SQL</span>
-            <a-tooltip title="创建sql">
-              <a-button @click="addSQL(undefined, $event)" size="small">
-                <template #icon>
-                  <SQLBiger/>
-                </template>
-              </a-button>
-            </a-tooltip>
-        </span>
+        <span>SQL</span>
+        <a-tooltip title="创建sql">
+          <a-button @click="addSQL(undefined, $event)" size="small"
+                    :style="{float:'right',top:'8px' ,display:'none'}"
+                    class="sqlCreateBtn">
+            <template #icon>
+              <SQLBiger/>
+            </template>
+          </a-button>
+        </a-tooltip>
       </template>
+      <template #icon>
+        <bar-chart-outlined/>
+      </template>
+
       <a-menu-item
           v-if="sqlArray !== null && sqlArray.length > 0"
           v-for="(subItem, index) in sqlArray"
@@ -725,30 +726,11 @@ onUnmounted(() => {
   </a-menu>
 </template>
 <style scoped>
-.datasourceClass:hover .buttonClass .icon-wrapper {
-  display: inline-flex;
-}
-
-.SQLMenuClass:hover .sqlCreateClass {
+.SQLMenuClass:hover .sqlCreateBtn {
   display: inline-block;
 }
 
-.icon-wrapper {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 100%;
-  position: relative;
-  top: 15px;
-  left: 30px;
-}
-
-.sqlCreateClass {
-  display: none;
-  width: 36px;
-  height: 100%;
-  position: relative;
-  left: 45px;
+.datasourceClass:hover .datasourceCreateBtn {
+  display: inline-block;
 }
 </style>
