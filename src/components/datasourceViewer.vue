@@ -12,10 +12,18 @@ import Icon, {EditOutlined} from '@ant-design/icons-vue'
 import SyncToDataWarehouse from "@/assets/icon/SyncToDataWarehouse.vue";
 import AddDatasource from "@/assets/icon/AddDatasource.vue";
 import SQLBiger from "@/assets/icon/SQLBiger.vue";
+import emitter from '@/utils/EventBus.ts'
 
 let route = useRoute()
 
 let sourceId = ref<string>('')
+const editDatasourceConfig = (key:string,event:Event)=>{
+  emitter.emit('Datasource:config:editor',key)
+}
+const addSQL = (key:string,event:Event)=>{
+  emitter.emit('SQL:create',key)
+}
+
 // 添加对路由的监听
 watch(
     () => route.query.key,
@@ -43,7 +51,7 @@ onMounted(() => {
       >
         <a-space size="large">
           <a-tooltip title="编辑当前数据源连接配置">
-            <a-button>
+            <a-button @click="editDatasourceConfig(sourceId, $event)">
               <template #icon>
                 <EditOutlined/>
               </template>
@@ -59,7 +67,7 @@ onMounted(() => {
             </a-button>
           </a-tooltip>
           <a-tooltip title="给当前数据源添加SQL">
-            <a-button @click="addSQL(undefined, $event)">
+            <a-button @click="addSQL(sourceId, $event)">
               <template #icon>
                 <SQLBiger/>
               </template>

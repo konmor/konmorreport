@@ -41,8 +41,8 @@ async function save() {
   if (!formRef.value) {
     return { code: -1, data: null, error: '没有数据！' }
   }
-  let items = await formRef.value.validate()
-  let saveDetail: DatasourceDetail = { ...(items as DatasourceDetail) }
+  let itemsAfterValidate = await formRef.value.validate()
+  let saveDetail: DatasourceDetail = { ...(itemsAfterValidate as DatasourceDetail) }
   saveDetail.useSsl = false
   saveDetail.useSsh = false
   // 保存数据

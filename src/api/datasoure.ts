@@ -35,41 +35,25 @@ export function getDatasourceList(): Promise<Result<any>> {
  * sslConfigDTO
  * @param sourceId
  */
-export function getDatasourceDetail(sourceId: string): Promise<Result<any>> {
-    if (sourceId && sourceId.startsWith(SOURCE_ID_PREFIX)) {
-        sourceId = sourceId.substring(SOURCE_ID_PREFIX.length);
-    } else if (sourceId && sourceId.startsWith(SOURCE_EMPTY_ID_PREFIX)) {
-        sourceId = sourceId.substring(SOURCE_EMPTY_ID_PREFIX.length);
-    }
+export function getDatasourceDetail(sourceId: string|number): Promise<Result<any>> {
+    sourceId =  deletePrefix(sourceId!, SOURCE_ID_PREFIX, SOURCE_EMPTY_ID_PREFIX);
     return instance.get(`datasource/datasources/datails?sourceId=${sourceId}`)
 }
 
 export function saveDatasource(datasource: DatasourceDetail): Promise<Result<any>> {
-    let sourceId = datasource.sourceId as string;
-    if (sourceId && sourceId.startsWith(SOURCE_ID_PREFIX)) {
-        sourceId = sourceId.substring(SOURCE_ID_PREFIX.length);
-    } else if (sourceId && sourceId.startsWith(SOURCE_EMPTY_ID_PREFIX)) {
-        sourceId = sourceId.substring(SOURCE_EMPTY_ID_PREFIX.length);
-    }
-    datasource.sourceId = sourceId;
+    datasource.sourceId =deletePrefix(datasource.sourceId!, SOURCE_ID_PREFIX, SOURCE_EMPTY_ID_PREFIX);
     return instance.post('datasource/datasource', datasource)
 }
 
 export function checkConnection(datasource: DatasourceDetail): Promise<Result<string>> {
-    let sourceId = datasource.sourceId as string;
-    if (sourceId && sourceId.startsWith(SOURCE_ID_PREFIX)) {
-        sourceId = sourceId.substring(SOURCE_ID_PREFIX.length);
-    } else if (sourceId && sourceId.startsWith(SOURCE_EMPTY_ID_PREFIX)) {
-        sourceId = sourceId.substring(SOURCE_EMPTY_ID_PREFIX.length);
-    }
-    datasource.sourceId = sourceId;
+    datasource.sourceId = deletePrefix(datasource.sourceId!, SOURCE_ID_PREFIX, SOURCE_EMPTY_ID_PREFIX);
     return instance.post('datasource/datasource/connections', datasource)
 }
 
 export function queryTableData(tableDataQuery: TableDataQuery): Promise<Result<TableDataDTO>> {
-    tableDataQuery.sourceId = deletePrefix(tableDataQuery.sourceId as string, SOURCE_ID_PREFIX, SOURCE_EMPTY_ID_PREFIX);
-    tableDataQuery.dbId = deletePrefix(tableDataQuery.dbId as string, DB_ID_PREFIX, DB_EMPTY_ID_PREFIX)
-    tableDataQuery.objectId = deletePrefix(tableDataQuery.objectId as string, OBJECT_ID_PREFIX, OBJECT_EMPTY_ID_PREFIX);
+    tableDataQuery.sourceId = deletePrefix(tableDataQuery.sourceId, SOURCE_ID_PREFIX, SOURCE_EMPTY_ID_PREFIX);
+    tableDataQuery.dbId = deletePrefix(tableDataQuery.dbId, DB_ID_PREFIX, DB_EMPTY_ID_PREFIX)
+    tableDataQuery.objectId = deletePrefix(tableDataQuery.objectId, OBJECT_ID_PREFIX, OBJECT_EMPTY_ID_PREFIX);
 
     let pageInfo = tableDataQuery.pageInfo;
     if (!pageInfo) {
@@ -81,11 +65,13 @@ export function queryTableData(tableDataQuery: TableDataQuery): Promise<Result<T
     return instance.post('datasource/datasources/database/tableDatas', tableDataQuery)
 }
 
-function deletePrefix(id: string, prefix1: string, prefix2: string) {
-    if (id && id.startsWith(prefix1)) {
+export function deletePrefix(id: string|number, prefix1: string, prefix2: string) {
+    if(typeof id == 'string'){
+      if (id && id.startsWith(prefix1)) {
         id = id.substring(prefix1.length);
-    } else if (id && id.startsWith(prefix2)) {
+      } else if (id && id.startsWith(prefix2)) {
         id = id.substring(prefix2.length);
+      }
     }
     return id;
 }
