@@ -406,7 +406,6 @@ const selectedDBObject = (selectedObjectId: Array<string>) => {
       objectId: selectedObjectId[0],
     });
   }
-  console.log('select', selectedObjectId)
 }
 
 onMounted(() => {

@@ -6,19 +6,22 @@ export default {
 <script setup lang="ts">
 import DbObject from '@/components/dbObject.vue'
 import SQLDataViewer from '@/components/sqlDataViewer.vue'
-import { useRoute } from 'vue-router'
-import { onMounted, ref, watch } from 'vue'
-import { EditOutlined } from '@ant-design/icons-vue'
+import {useRoute} from 'vue-router'
+import {onMounted, ref, watch} from 'vue'
+import Icon, {EditOutlined} from '@ant-design/icons-vue'
+import SyncToDataWarehouse from "@/assets/icon/SyncToDataWarehouse.vue";
+import AddDatasource from "@/assets/icon/AddDatasource.vue";
+import SQLBiger from "@/assets/icon/SQLBiger.vue";
 
 let route = useRoute()
 
 let sourceId = ref<string>('')
 // 添加对路由的监听
 watch(
-  () => route.query.key,
-  (item) => {
-    sourceId.value = item as string
-  },
+    () => route.query.key,
+    (item) => {
+      sourceId.value = item as string
+    },
 )
 
 onMounted(() => {
@@ -29,29 +32,41 @@ onMounted(() => {
 <template>
   <a-layout>
     <!--    数据源对象数据-->
-    <db-object />
+    <db-object/>
     <a-layout>
       <a-layout-header
-        :style="{
+          :style="{
           backgroundColor: '#FFF',
           boxShadow: '2px 2px 5px rgba(0, 0, 0, 0.3)',
           marginBottom: '10px',
         }"
       >
-        <a-space size="middle">
-          <a-button
-            >编辑
-            <template #icon>
-              <EditOutlined />
-            </template>
-          </a-button>
-          <a-button>同步数仓
-          <template #icon>
-            <syncDataWarehouse></syncDataWarehouse>
-          </template>
+        <a-space size="large">
+          <a-tooltip title="编辑当前数据源连接配置">
+            <a-button>
+              <template #icon>
+                <EditOutlined/>
+              </template>
+              <span>编辑</span>
+            </a-button>
+          </a-tooltip>
+          <a-tooltip title="将当前表数据同步到数仓">
+            <a-button>
+              <template #icon>
+                <SyncToDataWarehouse/>
+              </template>
+              <span>同步</span>
+            </a-button>
+          </a-tooltip>
+          <a-tooltip title="给当前数据源添加SQL">
+            <a-button @click="addSQL(undefined, $event)">
+              <template #icon>
+                <SQLBiger/>
+              </template>
+              <span>添加</span>
+            </a-button>
+          </a-tooltip>
 
-          </a-button>
-          <a-button size="small" @click="addSQL(undefined, $event)">SQL + </a-button>
         </a-space>
       </a-layout-header>
 
