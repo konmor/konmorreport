@@ -605,7 +605,6 @@ onMounted(() => {
           datasourceSelectOption.value[i] = { value: item.key, label: item.label }
         }
       }
-      console.log('datasourceSelectOption', datasourceSelectOption)
     }
   }, 300)
 
@@ -716,7 +715,7 @@ onUnmounted(() => {
     <a-sub-menu :key="SQL_MENU" class="SQLMenuClass">
       <template #title>
         <span>SQL</span>
-        <a-tooltip title="创建sql">
+        <a-tooltip title="新建sql">
           <a-button
             @click="addSQL(undefined, $event)"
             size="small"

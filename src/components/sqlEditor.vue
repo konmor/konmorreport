@@ -34,31 +34,20 @@ let fontSize = ref(14)
 
 let sqlConfig = reactive<SQLConfig>({});
 
-const updateFontSize = (newSize: number) => {
-  fontSize.value = newSize
-
-  // 更新编辑器的样式
-  editor.dom.style.fontSize = `${fontSize}px`
-
-  // 可选：更新其他与字体相关的属性，如行高
-  editor.dom.style.lineHeight = '1.5'
-}
-
-//  todo 改成 数字输入框，点击升降方式调整大小
 const zoomIn = () => {
   if (fontSize.value < 25) {
-    updateFontSize(fontSize.value + 1) // 字体放大
+    fontSize.value = fontSize.value + 1// 字体放大
   }
 }
 
 const zoomOut = () => {
   if (fontSize.value > 8) {
     // 设置最小字体限制
-    updateFontSize(fontSize.value - 1) // 字体缩小
+    fontSize.value = fontSize.value - 1 // 字体缩小
   }
 }
 const resetFontSize = () => {
-  updateFontSize(14) // 字体缩小
+  fontSize.value = 14// 字体缩小
 }
 
 function formatSQL() {
@@ -138,7 +127,7 @@ function changeHeight(e: Event) {
   window.addEventListener('mouseup', up)
 }
 
-let editor = reactive<EditorView>({})
+let editor = reactive<EditorView>(new EditorView())
 
 async function saveSQLConfig() {
   /*sqlId
@@ -311,8 +300,8 @@ onUnmounted(() => {
         <a-layout-content class="top" :style="{ height: topHeight + 'px' }">
           <!--          sql 的编辑框-->
           <a-layout>
-            <!--            todo控制大小-->
-            <div ref="sqlEditor" id="_sqlEditor" style="height: 470px; overflow: auto"></div>
+            <div ref="sqlEditor" id="_sqlEditor"
+                 :style="{height: '470px', overflow:'auto',fontSize:`${fontSize}px`}"></div>
           </a-layout>
         </a-layout-content>
         <a-divider

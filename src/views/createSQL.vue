@@ -11,7 +11,6 @@ import {
   useRoute
 } from "vue-router";
 import {onMounted, ref, watch} from "vue";
-import {Modal} from "ant-design-vue";
 
 let route = useRoute()
 
@@ -30,21 +29,6 @@ onMounted(() => {
   sourceId.value = route.query.key as string;
   sqlName.value = route.query.sqlName as string;
 })
-
-// onBeforeRouteLeave((to: RouteLocationNormalized, from: RouteLocationNormalizedLoaded, next: NavigationGuardNext) => {
-//   Modal.confirm({
-//     title: '你确认放弃此次新增SQL吗？',
-//     content: '点击确认将会放弃此次编辑内容，并跳转到其他页面。取消则返回继续新增SQL',
-//     okText: '确认',
-//     cancelText: '取消',
-//     onOk: () => {
-//       next();
-//     },
-//     onCancel: () => {
-//       next(false);
-//     }
-//   })
-// })
 
 </script>
 
