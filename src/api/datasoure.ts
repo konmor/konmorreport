@@ -75,3 +75,9 @@ export function deletePrefix(id: string|number, prefix1: string, prefix2: string
     }
     return id;
 }
+
+export function deleteDatasource(sourceId:string|number): Promise<Result<any>> {
+  sourceId =  deletePrefix(sourceId!, SOURCE_ID_PREFIX, SOURCE_EMPTY_ID_PREFIX);
+
+  return instance.delete(`datasource/datasources/${sourceId}`)
+}

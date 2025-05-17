@@ -17,7 +17,7 @@ import {
   EditOutlined,
 } from '@ant-design/icons-vue'
 import { reactive, ref, watch, h, onMounted, inject, onUnmounted, VueElement, type Ref } from 'vue'
-import { type MenuProps, type ItemType, Modal, type SelectProps } from 'ant-design-vue'
+import { type MenuProps, type ItemType, Modal, type SelectProps, message } from 'ant-design-vue'
 import {
   type NavigationGuard,
   type NavigationGuardNext,
@@ -26,7 +26,7 @@ import {
   type RouteLocationNormalizedLoaded,
   type Router,
 } from 'vue-router'
-import useNavigator from '@/composable/useNavigator.ts'
+import useNavigator, { SOURCE_ID_PREFIX } from '@/composable/useNavigator.ts'
 import addDatasourceIcon from '@/components/button/addDatasource.vue'
 import { useCreateStore } from '@/stores/useCreateStore.ts'
 import { storeToRefs } from 'pinia'
@@ -41,6 +41,7 @@ import { ReportsError } from '@/utils/errorHandler/ReportsError.ts'
 import AddDatasource from '@/assets/icon/AddDatasource.vue'
 import SQLSmall from '@/assets/icon/SQLSmall.vue'
 import SQLBiger from '@/assets/icon/SQLBiger.vue'
+import { deleteDatasource } from '@/api/datasoure.ts'
 
 let { refreshDatasourceList, data, sqlArray } = useNavigator()
 // 导航栏宽度 从home主页来
@@ -339,10 +340,59 @@ async function addSQL(key: string | undefined, event?: Event) {
 
 function removeDatasource(key: string, event: Event) {
   event.stopPropagation()
+
+  function removeSourceItem() {
+    selectedKeys.value = []
+    for (let i = items.length - 1; i >= 0; i--) {
+      let item = items[i]
+      if (item?.key == key) {
+        items.splice(i, 1)
+      }
+    }
+  }
+
+  if (key != null) {
+    if (key.startsWith(SOURCE_EMPTY_ID_PREFIX)) {
+      removeSourceItem()
+    } else if (key.startsWith(SOURCE_ID_PREFIX)) {
+      Modal.confirm({
+        title: '确认删除数据源吗？',
+        content: '删除数据源后，不可回退且与之关联的SQL以及数仓数据将无法使用，请谨慎操作！',
+        okText: '确认删除',
+        cancelText: '取消',
+        onCancel: () => {},
+        onOk: async (reject) => {
+          deleteDatasource(key)
+            .then((response) => {
+              if (response.code != 0) {
+                throw new ReportsError(
+                  '删除数据源时发生错误，请联系管理员！',
+                  'source:delete:error',
+                  String(response.error),
+                )
+              }else {
+                removeSourceItem()
+              }
+            })
+            .catch((reason) => {
+              // 主动调用模态框的reject 关闭弹框
+              reject()
+              throw new ReportsError(
+                '删除数据源时发生错误，请联系管理员！',
+                'source:delete:error',
+                String(reason),
+              )
+            })
+        },
+      })
+    } else {
+      throw new ReportsError('无效删除，请联系管理员！', 'source:delete:unEffect')
+    }
+  }
 }
 
 function checkDatasourceConfig(key: string, event?: Event) {
-  if(event != null){
+  if (event != null) {
     event.stopPropagation()
   }
 
@@ -523,11 +573,11 @@ emitter.on('Datasource:sourceName:change', (value) => {
   }
 })
 
-emitter.on('Datasource:config:editor',(key:string)=>{
+emitter.on('Datasource:config:editor', (key: string) => {
   checkDatasourceConfig(key)
 })
 
-emitter.on('SQL:create',(key:string)=>{
+emitter.on('SQL:create', (key: string) => {
   addSQL(key)
 })
 
@@ -570,8 +620,8 @@ onUnmounted(() => {
   emitter.off('Datasource:sourceName:change')
   emitter.off('SQL:sqlName:change')
 
-  emitter.off('Datasource:config:editor');
-  emitter.off('SQL:create');
+  emitter.off('Datasource:config:editor')
+  emitter.off('SQL:create')
 })
 </script>
 <template>
@@ -588,13 +638,12 @@ onUnmounted(() => {
     <a-sub-menu :key="DATASOURCE_CONFIG_MENU" class="datasourceClass">
       <template #title>
         <span>数据源</span>
-        <a-tooltip title="新建数据源" >
+        <a-tooltip title="新建数据源">
           <a-button
             @click="addDataSource"
             size="small"
-            :style="{ float: 'right', top: '8px' }"
+            :style="{ float: 'right', top: '8px', width: '36px' }"
             class="datasourceCreateBtn"
-            type="primary"
           >
             <template #icon>
               <AddDatasource />
@@ -667,13 +716,13 @@ onUnmounted(() => {
     <a-sub-menu :key="SQL_MENU" class="SQLMenuClass">
       <template #title>
         <span>SQL</span>
-        <a-tooltip title="创建sql" >
+        <a-tooltip title="创建sql">
           <a-button
             @click="addSQL(undefined, $event)"
             size="small"
-            :style="{ float: 'right', top: '8px' }"
-            type="primary"
-            class="sqlCreateBtn">
+            :style="{ float: 'right', top: '8px', width: '36px' }"
+            class="sqlCreateBtn"
+          >
             <template #icon>
               <SQLBiger />
             </template>

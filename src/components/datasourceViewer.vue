@@ -10,7 +10,6 @@ import {useRoute} from 'vue-router'
 import {onMounted, ref, watch} from 'vue'
 import Icon, {EditOutlined} from '@ant-design/icons-vue'
 import SyncToDataWarehouse from "@/assets/icon/SyncToDataWarehouse.vue";
-import AddDatasource from "@/assets/icon/AddDatasource.vue";
 import SQLBiger from "@/assets/icon/SQLBiger.vue";
 import emitter from '@/utils/EventBus.ts'
 
@@ -78,7 +77,7 @@ onMounted(() => {
         </a-space>
       </a-layout-header>
 
-      <a-layout-content :style="{ height: '100%' }">
+      <a-layout-content :style="{ height: '760px' }">
         <SQLDataViewer :scrollY="680" :sourceId="sourceId"></SQLDataViewer>
       </a-layout-content>
     </a-layout>

@@ -3,11 +3,13 @@ import type { ErrorKeyType, ErrorValueType } from '@/utils/errorHandler/HandlerE
 export class ReportsError implements Error {
   message: string
   name: string
+  reason:string
 
-  constructor(message?: string, name?: string)
-  constructor(message: string = '', name: string = '') {
+  constructor(message?: string, name?: string,reason?:string)
+  constructor(message: string = '', name: string = '',reason:string='') {
     this.message = message
     this.name = name
+    this.reason = reason
   }
 }
 
