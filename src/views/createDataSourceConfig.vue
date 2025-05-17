@@ -73,34 +73,10 @@ let createStore = useCreateStore();
 let {createDatasource} = storeToRefs(createStore);
 let router: Router | undefined = inject<Router>('router');
 
-// onBeforeRouteLeave((to: RouteLocationNormalized, from: RouteLocationNormalizedLoaded, next: NavigationGuardNext) => {
-//   if (createDatasource.value) {
-//     Modal.confirm({
-//       title: '确认放弃此次新增数据源吗？',
-//       content: '点击确认将会放弃此次编辑内容，并跳转到其他页面。取消则返回继续编辑数据源',
-//       okText: '确认',
-//       cancelText: '取消',
-//       onOk: () => {
-//         next();
-//         createDatasource.value = false;
-//       },
-//       onCancel: () => {
-//         createDatasource.value = true;
-//         next(false);
-//       }
-//     })
-//   } else {
-//     createDatasource.value = false;
-//     next();
-//   }
-// })
-
-
-
 </script>
 
 <template>
-  <data-source-config-editor :datasource-detail="dataSourceDetail"/>
+  <data-source-config-editor :datasource-detail="dataSourceDetail" :disabledAll="false"/>
 </template>
 
 <style scoped></style>

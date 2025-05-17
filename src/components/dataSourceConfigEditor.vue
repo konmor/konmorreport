@@ -5,10 +5,10 @@ export default {
 </script>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
-import type { FormInstance } from 'ant-design-vue'
-import { saveDatasource, checkConnection } from '@/api/datasoure.ts'
-import type { DatasourceDetail, Result } from '@/types/api.ts'
+import {onMounted, onUnmounted, reactive, ref, watch} from 'vue'
+import type {FormInstance} from 'ant-design-vue'
+import {saveDatasource, checkConnection} from '@/api/datasoure.ts'
+import type {DatasourceDetail, Result} from '@/types/api.ts'
 import {
   DatabaseFilled,
   CheckCircleOutlined,
@@ -16,15 +16,14 @@ import {
   LoadingOutlined,
   CloseOutlined,
 } from '@ant-design/icons-vue'
-import { onRequest, removeRequestHandler } from '@/utils/RequestBus.ts'
+import {onRequest, removeRequestHandler} from '@/utils/RequestBus.ts'
 import emitter from '@/utils/EventBus.ts'
 
+
+let {disabledAll, datasourceDetail} = defineProps(['disabledAll', 'datasourceDetail']);
 let disabled = ref(true)
-let checked = ref(false)
-watch(checked, () => {
-  disabled.value = !checked.value
-})
-let { datasourceDetail } = defineProps(['datasourceDetail'])
+
+disabled.value = disabledAll;
 
 const focus = () => {
   console.log('focus')
@@ -39,10 +38,10 @@ async function save() {
   let result: Result<any>
 
   if (!formRef.value) {
-    return { code: -1, data: null, error: '没有数据！' }
+    return {code: -1, data: null, error: '没有数据！'}
   }
   let itemsAfterValidate = await formRef.value.validate()
-  let saveDetail: DatasourceDetail = { ...(itemsAfterValidate as DatasourceDetail) }
+  let saveDetail: DatasourceDetail = {...(itemsAfterValidate as DatasourceDetail)}
   saveDetail.useSsl = false
   saveDetail.useSsh = false
   // 保存数据
@@ -108,7 +107,8 @@ const testConnection = () => {
     })
   }, 500)
 }
-const resetConnectUrl = () => {}
+const resetConnectUrl = () => {
+}
 const checkSSL = (event: Event) => {
   event.stopPropagation()
 
@@ -127,38 +127,20 @@ onMounted(() => {
 </script>
 
 <template>
-  <a-layout >
-    <div
-      :style="{
-        display: 'flex',
-        margin: '0 0 0 20px',
-        paddingRight:'20px',
-        backgroundColor: '#fff',
-        justifyContent: 'end',
-        alignItems: 'center',
-      }"
-    >
-      <span
-        :style="{
-          margin: '12px 0 12px 50px',
-          display: 'inline-block',
-        }"
-        >编辑</span
-      >
-      <a-switch v-model:checked="checked" size="small" reverse :style="{ marginLeft: '10px' }" />
-    </div>
+  <a-layout>
+
 
     <a-layout>
       <a-form
-        ref="formRef"
-        name="datasourceForm"
-        :model="datasourceDetail"
-        :label-col="{ span: 8 }"
-        :wrapper-col="{ span: 16 }"
-        :disabled="disabled"
+          ref="formRef"
+          name="datasourceForm"
+          :model="datasourceDetail"
+          :label-col="{ span: 8 }"
+          :wrapper-col="{ span: 16 }"
+          :disabled="disabled"
       >
         <div
-          :style="{
+            :style="{
             margin: '10px 0 0 20px',
             height: '50px',
             backgroundColor: '#fff',
@@ -167,17 +149,17 @@ onMounted(() => {
           <a-row :gutter="24">
             <a-col :span="6">
               <a-form-item
-                label="数据源类型"
-                required
-                :style="{ lineHeight: '50px' }"
-                name="dataSourceType"
+                  label="数据源类型"
+                  required
+                  :style="{ lineHeight: '50px' }"
+                  name="dataSourceType"
               >
                 <a-select
-                  v-model:value="datasourceDetail.dataSourceType"
-                  @focus="focus"
-                  @change="handleChange"
-                  placeholder="请选择数据源类型"
-                  allowClear
+                    v-model:value="datasourceDetail.dataSourceType"
+                    @focus="focus"
+                    @change="handleChange"
+                    placeholder="请选择数据源类型"
+                    allowClear
                 >
                   <a-select-option value="MYSQL">MySQL</a-select-option>
                   <a-select-option value="POSTGRESQL" disabled>PostgreSQL</a-select-option>
@@ -188,16 +170,16 @@ onMounted(() => {
 
             <a-col :span="8">
               <a-form-item
-                label="数据源名称"
-                required
-                :style="{ lineHeight: '50px' }"
-                name="dataSourceName"
+                  label="数据源名称"
+                  required
+                  :style="{ lineHeight: '50px' }"
+                  name="dataSourceName"
               >
                 <a-input
-                  v-model:value="datasourceDetail.dataSourceName"
-                  placeholder="请输入数据源名称"
-                  allowClear
-                  @change="changDatasourceName"
+                    v-model:value="datasourceDetail.dataSourceName"
+                    placeholder="请输入数据源名称"
+                    allowClear
+                    @change="changDatasourceName"
                 ></a-input>
               </a-form-item>
             </a-col>
@@ -205,9 +187,9 @@ onMounted(() => {
             <a-col :span="9">
               <a-form-item label="备注" :style="{ lineHeight: '50px' }" name="description">
                 <a-input
-                  v-model:value="datasourceDetail.description"
-                  placeholder="备注"
-                  allowClear
+                    v-model:value="datasourceDetail.description"
+                    placeholder="备注"
+                    allowClear
                 ></a-input>
               </a-form-item>
             </a-col>
@@ -215,7 +197,7 @@ onMounted(() => {
         </div>
 
         <div
-          :style="{
+            :style="{
             margin: '10px 0 0 20px',
             backgroundColor: '#e8f5e9',
             boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
@@ -226,9 +208,9 @@ onMounted(() => {
           <a-row :gutter="24">
             <a-col :span="24">
               <div style="padding: 0 0 0 20px">
-                <DatabaseFilled />
+                <DatabaseFilled/>
                 <span :style="{ lineHeight: '50px', fontSize: '14px', margin: '0 0 0 10px' }"
-                  >数据源配置</span
+                >数据源配置</span
                 >
                 <a-form-item name="sourceId" v-show="false">
                   <a-input v-model:value="datasourceDetail.sourceId" v-show="false"></a-input>
@@ -241,18 +223,18 @@ onMounted(() => {
             <a-col :span="6">
               <a-form-item label="IP地址" required name="host">
                 <a-input
-                  v-model:value="datasourceDetail.host"
-                  placeholder="请输入ip地址"
-                  allow-clear
+                    v-model:value="datasourceDetail.host"
+                    placeholder="请输入ip地址"
+                    allow-clear
                 ></a-input>
               </a-form-item>
             </a-col>
             <a-col :span="6">
               <a-form-item label="端口号" required name="port">
                 <a-input-number
-                  v-model:value="datasourceDetail.port"
-                  placeholder="请输入端口号"
-                  allow-clear
+                    v-model:value="datasourceDetail.port"
+                    placeholder="请输入端口号"
+                    allow-clear
                 ></a-input-number>
               </a-form-item>
             </a-col>
@@ -261,27 +243,27 @@ onMounted(() => {
             <a-col :span="6">
               <a-form-item label="用户名" required name="username">
                 <a-input
-                  v-model:value="datasourceDetail.username"
-                  placeholder="请输入用户名"
-                  allow-clear
+                    v-model:value="datasourceDetail.username"
+                    placeholder="请输入用户名"
+                    allow-clear
                 ></a-input>
               </a-form-item>
             </a-col>
             <a-col :span="6">
               <a-form-item label="密码" required name="password">
                 <a-input-password
-                  v-model:value="datasourceDetail.password"
-                  placeholder="请输入密码"
-                  allow-clear
+                    v-model:value="datasourceDetail.password"
+                    placeholder="请输入密码"
+                    allow-clear
                 ></a-input-password>
               </a-form-item>
             </a-col>
             <a-col :span="8">
               <a-form-item label="数据库名称" name="databaseName">
                 <a-input
-                  v-model:value="datasourceDetail.databaseName"
-                  placeholder="请输入数据库名称"
-                  allow-clear
+                    v-model:value="datasourceDetail.databaseName"
+                    placeholder="请输入数据库名称"
+                    allow-clear
                 ></a-input>
               </a-form-item>
             </a-col>
@@ -290,9 +272,9 @@ onMounted(() => {
             <a-col :span="6">
               <a-form-item label="驱动选择" required name="driverClass">
                 <a-select
-                  v-model:value="datasourceDetail.driverClass"
-                  placeholder="请选择驱动"
-                  allow-clear
+                    v-model:value="datasourceDetail.driverClass"
+                    placeholder="请选择驱动"
+                    allow-clear
                 >
                   <a-select-option value="com.mysql.jdbc.Driver">MySQL5.X</a-select-option>
                   <a-select-option value="com.mysql.cj.jdbc.Driver">MySQL8.X</a-select-option>
@@ -304,9 +286,9 @@ onMounted(() => {
             <a-col :span="6">
               <a-form-item label="时区" required name="timezone">
                 <a-select
-                  v-model:value="datasourceDetail.timezone"
-                  placeholder="请选择时区"
-                  allow-clear
+                    v-model:value="datasourceDetail.timezone"
+                    placeholder="请选择时区"
+                    allow-clear
                 >
                   <a-select-option value="Asia/Shanghai"> Asia/Shanghai</a-select-option>
                   <a-select-option value="Europe/London">Europe/London</a-select-option>
@@ -318,9 +300,9 @@ onMounted(() => {
             <a-col :span="8">
               <a-form-item label="字符集" required name="charset">
                 <a-select
-                  v-model:value="datasourceDetail.charset"
-                  placeholder="请选择编码"
-                  allow-clear
+                    v-model:value="datasourceDetail.charset"
+                    placeholder="请选择编码"
+                    allow-clear
                 >
                   <a-select-option value="UTF-8">UTF-8</a-select-option>
                   <a-select-option value="GBK">GBK</a-select-option>
@@ -334,23 +316,23 @@ onMounted(() => {
           <a-row :gutter="24" :style="{ position: 'relative' }">
             <a-col :span="23">
               <a-form-item
-                label="url"
-                required
-                name="connectionUrl"
-                :labelCol="{ span: 2 }"
-                :wrapper-col="{ span: 12 }"
+                  label="url"
+                  required
+                  name="connectionUrl"
+                  :labelCol="{ span: 2 }"
+                  :wrapper-col="{ span: 12 }"
               >
                 <a-input
-                  v-model:value="datasourceDetail.connectionUrl"
-                  placeholder="url"
-                  allow-clear
+                    v-model:value="datasourceDetail.connectionUrl"
+                    placeholder="url"
+                    allow-clear
                 ></a-input>
               </a-form-item>
             </a-col>
             <a-col :span="1" :style="{ position: 'relative', right: '40%' }">
               <a-tooltip title="重置jdbc连接">
                 <a-button type="default" shape="default" @click="resetConnectUrl"
-                  ><span>重置</span></a-button
+                ><span>重置</span></a-button
                 >
               </a-tooltip>
             </a-col>
@@ -363,17 +345,17 @@ onMounted(() => {
               <template #title>
                 <div :style="{ display: 'flex', justifyContent: 'space-between' }">
                   <span v-show="datasourceCheck.alertType == 'success'" style="color: #6fd845">{{
-                    datasourceCheck.message
-                  }}</span>
+                      datasourceCheck.message
+                    }}</span>
                   <span v-show="datasourceCheck.alertType == 'error'" style="color: red">{{
-                    datasourceCheck.message
-                  }}</span>
+                      datasourceCheck.message
+                    }}</span>
                   <span v-show="datasourceCheck.alertType == 'loading'" style="color: #efb056">{{
-                    datasourceCheck.message
-                  }}</span>
+                      datasourceCheck.message
+                    }}</span>
                   <span
-                    ><a @click="datasourceCheck.show = false" style="color: #6fd845"
-                      ><CloseOutlined /></a
+                  ><a @click="datasourceCheck.show = false" style="color: #6fd845"
+                  ><CloseOutlined/></a
                   ></span>
                 </div>
               </template>
@@ -382,31 +364,31 @@ onMounted(() => {
               </template>
 
               <a-button
-                @click="testConnection"
-                type="default"
-                :style="{ margin: '10px 10px 10px 20px' }"
-                >测试连接
+                  @click="testConnection"
+                  type="default"
+                  :style="{ margin: '10px 10px 10px 20px' }"
+              >测试连接
               </a-button>
             </a-popover>
 
             <CheckCircleOutlined
-              v-show="datasourceCheck.alertType == 'success'"
-              style="color: #6fd845"
+                v-show="datasourceCheck.alertType == 'success'"
+                style="color: #6fd845"
             />
-            <ExclamationOutlined v-show="datasourceCheck.alertType == 'error'" style="color: red" />
+            <ExclamationOutlined v-show="datasourceCheck.alertType == 'error'" style="color: red"/>
             <LoadingOutlined
-              v-show="datasourceCheck.alertType == 'loading'"
-              style="color: #efb056"
+                v-show="datasourceCheck.alertType == 'loading'"
+                style="color: #efb056"
             />
 
             <span
-              :style="{
+                :style="{
                 lineHeight: '52px',
                 padding: '0px 2px 0 2px',
                 marginRight: '10px',
                 marginLeft: '8px',
               }"
-              >{{ datasourceCheck.version }}</span
+            >{{ datasourceCheck.version }}</span
             >
           </a-row>
         </div>
@@ -417,7 +399,7 @@ onMounted(() => {
             <a-form-item>
               <a-button type="primary" html-type="submit" @click="submitForm">提交</a-button>
               <a-button :style="{ marginLeft: '10px' }" @click="() => formRef?.resetFields()"
-                >重置
+              >重置
               </a-button>
             </a-form-item>
           </a-col>

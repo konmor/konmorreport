@@ -6,7 +6,7 @@ export default {
 <script setup lang="ts">
 import DataSourceConfigEditor from '@/components/dataSourceConfigEditor.vue'
 import {useRoute} from 'vue-router'
-import {onMounted, reactive, toRef, watch} from 'vue'
+import {onMounted, reactive, ref, toRef, watch} from 'vue'
 import {getDatasourceDetail} from '@/api/datasoure.ts'
 import type {DatasourceDetail} from '@/types/api.ts'
 import {SOURCE_EMPTY_ID_PREFIX} from "@/composable/useNavigator.ts";
@@ -60,10 +60,36 @@ watch(
       }
     },
 )
+let checked = ref(false)
+let disabledAll = ref(true);
+watch(checked, () => {
+  disabledAll.value = !checked.value
+})
 </script>
 
 <template>
-  <data-source-config-editor :datasource-detail="dataSourceDetail"/>
+  <a-layout>
+    <div
+        :style="{
+        display: 'flex',
+        margin: '0 0 0 20px',
+        paddingRight:'20px',
+        backgroundColor: '#fff',
+        justifyContent: 'end',
+        alignItems: 'center',
+      }"
+    >
+      <span
+          :style="{
+          margin: '12px 0 12px 50px',
+          display: 'inline-block',
+        }"
+      >编辑</span
+      >
+      <a-switch v-model:checked="checked" size="small" reverse :style="{ marginLeft: '10px' }"/>
+    </div>
+  </a-layout>
+  <data-source-config-editor :datasource-detail="dataSourceDetail" :disabledAll="disabledAll"/>
 </template>
 
 <style scoped></style>
