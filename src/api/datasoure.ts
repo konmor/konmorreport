@@ -35,13 +35,13 @@ export function getDatasourceList(): Promise<Result<any>> {
  * sslConfigDTO
  * @param sourceId
  */
-export function getDatasourceDetail(sourceId: string|number): Promise<Result<any>> {
-    sourceId =  deletePrefix(sourceId!, SOURCE_ID_PREFIX, SOURCE_EMPTY_ID_PREFIX);
+export function getDatasourceDetail(sourceId: string | number): Promise<Result<any>> {
+    sourceId = deletePrefix(sourceId!, SOURCE_ID_PREFIX, SOURCE_EMPTY_ID_PREFIX);
     return instance.get(`datasource/datasources/datails?sourceId=${sourceId}`)
 }
 
 export function saveDatasource(datasource: DatasourceDetail): Promise<Result<any>> {
-    datasource.sourceId =deletePrefix(datasource.sourceId!, SOURCE_ID_PREFIX, SOURCE_EMPTY_ID_PREFIX);
+    datasource.sourceId = deletePrefix(datasource.sourceId!, SOURCE_ID_PREFIX, SOURCE_EMPTY_ID_PREFIX);
     return instance.post('datasource/datasource', datasource)
 }
 
@@ -65,19 +65,19 @@ export function queryTableData(tableDataQuery: TableDataQuery): Promise<Result<T
     return instance.post('datasource/datasources/database/tableDatas', tableDataQuery)
 }
 
-export function deletePrefix(id: string|number, prefix1: string, prefix2: string) {
-    if(typeof id == 'string'){
-      if (id && id.startsWith(prefix1)) {
-        id = id.substring(prefix1.length);
-      } else if (id && id.startsWith(prefix2)) {
-        id = id.substring(prefix2.length);
-      }
+export function deletePrefix(id: string | number, prefix1: string, prefix2: string) {
+    if (typeof id == 'string') {
+        if (id && id.startsWith(prefix1)) {
+            id = id.substring(prefix1.length);
+        } else if (id && id.startsWith(prefix2)) {
+            id = id.substring(prefix2.length);
+        }
     }
     return id;
 }
 
-export function deleteDatasource(sourceId:string|number): Promise<Result<any>> {
-  sourceId =  deletePrefix(sourceId!, SOURCE_ID_PREFIX, SOURCE_EMPTY_ID_PREFIX);
+export function deleteDatasource(sourceId: string | number): Promise<Result<any>> {
+    sourceId = deletePrefix(sourceId!, SOURCE_ID_PREFIX, SOURCE_EMPTY_ID_PREFIX);
 
-  return instance.delete(`datasource/datasources/${sourceId}`)
+    return instance.delete(`datasource/datasources/${sourceId}`)
 }
