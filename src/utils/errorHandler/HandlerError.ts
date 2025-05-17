@@ -45,7 +45,7 @@ errorHandlers.bindHandler('source:delete:error', (value) => {
 })
 
 errorHandlers.bindHandler('source:delete:unEffect', (value) => {
-  message.warning(+value)
+  message.warning(value)
 })
 
 export function initErrorHandler(app: App) {
