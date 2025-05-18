@@ -11,10 +11,11 @@ import {
   FormatPainterOutlined,
   ZoomInOutlined,
   ZoomOutOutlined,
+  MenuFoldOutlined,
 } from '@ant-design/icons-vue'
 
 import { EditorState } from '@codemirror/state'
-import { EditorView } from '@codemirror/view'
+import { EditorView, keymap } from '@codemirror/view'
 import { basicSetup } from 'codemirror'
 import { sql } from '@codemirror/lang-sql'
 import { format } from 'sql-formatter'
@@ -28,6 +29,7 @@ import type { Result } from '@/types/api.ts'
 import type { SQLConfig } from '@/types/api.ts'
 import emitter from '@/utils/EventBus.ts'
 import { SOURCE_ID_PREFIX } from '@/composable/useNavigator.ts'
+import { MenuOutlined } from '@ant-design/icons-vue'
 
 let router = inject<Router>('router')
 let fontSize = ref(14)
@@ -240,6 +242,29 @@ const activeKey = ref(1)
 const callback: TabsProps['onTabScroll'] = (val) => {
   console.log(val)
 }
+
+let paramsData = reactive<[Record<string, string>]>([{}])
+
+paramsData = [{ paramName: 'abcd', paramValue: 'value1' }]
+
+let paramsColumn = [
+  { key: 'paramName', dataIndex: 'paramName', title: '参数名称' },
+  { key: 'paramValue', dataIndex: 'paramValue', title: '默认值' },
+]
+
+// 参数 的可编辑状态
+let editStatus = reactive<Record<string, boolean>>({})
+paramsData.forEach((item) => {
+  editStatus[item.paramName] = false
+})
+
+let tempParamsData = reactive<Record<string, string>>({});
+
+const saveParam = (key: string) => {}
+
+const editParam = (key: string) => {
+  tempParamsData[key] = paramsData.filter(item=>item.paramName)
+}
 </script>
 
 <template>
@@ -333,19 +358,49 @@ const callback: TabsProps['onTabScroll'] = (val) => {
             :tab-position="mode"
             :style="{ height: '200px' }"
             @tabScroll="callback"
-           >
+          >
             <a-tab-pane key="sqlParams" tab="参数">
-              Content of tab3
+              <a-table
+                :columns="paramsColumn"
+                :data-source="paramsData"
+                bordered
+                size="small"
+                header-cell=""
+                :pagination="false"
+              >
+                <template #bodyCell="{ column, text, record }">
+                  <template v-if="column.dataIndex === 'name'">
+                    <div class="editable-cell">
+                      <div v-if="editStatus[record.key]" class="editable-cell-input-wrapper">
+                        <a-input
+                          v-model:value="tempParamsData[record.key].value"
+                          @pressEnter="saveParam(record.key)"
+                        />
+                        <check-outlined
+                          class="editable-cell-icon-check"
+                          @click="saveParam(record.key)"
+                        />
+                      </div>
+                      <div v-else class="editable-cell-text-wrapper">
+                        {{ text || ' ' }}
+                        <edit-outlined class="editable-cell-icon" @click="editParam(record.key)" />
+                      </div>
+                    </div>
+                  </template>
+                </template>
+              </a-table>
             </a-tab-pane>
-            <a-tab-pane key="sqlData" tab="数据">
-              Content of tab2
-            </a-tab-pane>
-            <a-tab-pane key="sqlExplain" tab="执行计划">
-              Content of tab1
-            </a-tab-pane>
-          </a-tabs>
+            <a-tab-pane key="sqlData" tab="数据"> Content of tab2</a-tab-pane>
+            <a-tab-pane key="sqlExplain" tab="执行计划"> Content of tab1</a-tab-pane>
 
-          <router-view></router-view>
+            <template #rightExtra>
+              <a-button>
+                <template #icon>
+                  <MenuFoldOutlined :rotate="-90" />
+                </template>
+              </a-button>
+            </template>
+          </a-tabs>
         </a-layout-content>
       </a-layout>
     </a-layout>
