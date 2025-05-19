@@ -210,6 +210,88 @@ watch(
     },
 )
 
+const mode = ref<TabsProps['tabPosition']>('top')
+const activeKey = ref(1)
+const callback: TabsProps['onTabScroll'] = (val) => {
+  console.log(val)
+}
+
+let paramsData = reactive<{ paramName: string, paramValue: string | undefined }[]>([{}])
+
+
+let paramsColumn = [
+  {key: 'paramName', dataIndex: 'paramName', title: '参数名称'},
+  {key: 'paramValue', dataIndex: 'paramValue', title: '默认值'},
+]
+
+// 参数 的可编辑状态
+let editStatus = reactive<Record<string, { value: string|undefined, isEdit: boolean }>>({})
+
+const saveParam = (key: string) => {
+  for (let i = 0; i < paramsData.length; i++) {
+    if (paramsData[i].paramName == key) {
+      paramsData[i].paramValue = editStatus[key].value;
+      delete editStatus[key]
+      return;
+    }
+  }
+}
+
+const editParam = (key: string) => {
+  editStatus[key] = {value: paramsData.filter((item) => key == item.paramName)[0].paramValue as string, isEdit: true}
+}
+
+let refreshObj = reactive({
+  paramRefresh: true,
+  dataRefresh: true,
+  explainRefresh: true,
+  paramRefreshFunc: () => {
+    refreshObj.paramRefresh = false;
+    let slice = paramsData.slice();
+    paramsData.length = 0;
+    setTimeout(() => {
+      refreshObj.paramRefresh = true
+      let sql = editor.state.doc.toString();
+      let params = extractParams(sql);
+      for (let i = 0; i < params.length; i++) {
+        let paramData = slice.filter(item => item.paramName == params[i])[0];
+        paramsData.push({
+          paramName: params[i],
+          paramValue: paramData != null && paramData.paramValue != null ? paramData.paramValue : undefined
+        });
+      }
+      for (let editStatusKey in editStatus) {
+        delete editStatus[editStatusKey];
+      }
+      paramsData.forEach((item) => {
+        let paramData = paramsData.filter((item) => item.paramName)[0];
+        editStatus[item.paramName] = {
+          value: paramData.paramValue != null ? paramData.paramValue as string : undefined,
+          isEdit: true
+        };
+      })
+      console.log('paramsData,editStatus', paramsData, editStatus)
+    }, 500)
+
+  },
+  dataRefreshFunc: () => {
+    refreshObj.dataRefresh = false;
+    setTimeout(() => refreshObj.dataRefresh = true, 1000)
+
+  },
+  explainRefreshFunc: () => {
+    refreshObj.explainRefresh = false;
+    setTimeout(() => refreshObj.explainRefresh = true, 1000)
+  },
+})
+
+function extractParams(sql: string) {
+  const regex = /:([a-zA-Z_]\w*)/g
+  const matches = [...sql.matchAll(regex)]
+  return [...new Set(matches.map(m => m[1]))];
+}
+
+
 onMounted(() => {
   let sqlEditor = document.getElementById('_sqlEditor')
   const state = EditorState.create({
@@ -242,94 +324,19 @@ onMounted(() => {
   }
   // 绑定事件
   onRequest<Result<any>>('sql:save', saveSQLConfig)
+
+
+  // 初始化参数
+  if(paramsData != null && paramsData.length > 0) {
+    paramsData.forEach((item) => {
+      editStatus[item.paramName] = {value: paramsData.filter((item) => item.paramName)[0].paramValue as string, isEdit: true}
+    })
+  }
 })
 
 onUnmounted(() => {
   removeRequestHandler('sql:save')
 })
-const mode = ref<TabsProps['tabPosition']>('top')
-const activeKey = ref(1)
-const callback: TabsProps['onTabScroll'] = (val) => {
-  console.log(val)
-}
-
-let paramsData = reactive<Record<string, string>[]>([{}])
-
-paramsData = [{paramName: 'abcd', paramValue: 'value1'}]
-
-let paramsColumn = [
-  {key: 'paramName', dataIndex: 'paramName', title: '参数名称'},
-  {key: 'paramValue', dataIndex: 'paramValue', title: '默认值'},
-]
-
-// 参数 的可编辑状态
-let editStatus = reactive<Record<string, string>>({})
-paramsData.forEach((item) => {
-  editStatus[item.paramName] = paramsData.filter((item) => item.paramName)[0].paramValue
-})
-
-
-const saveParam = (key: string) => {
-  for (let i = 0; i < paramsData.length; i++) {
-    if (paramsData[i].paramName == key) {
-      paramsData[i].paramValue = editStatus[key];
-      delete editStatus[key]
-      return;
-    }
-  }
-}
-
-const editParam = (key: string) => {
-  editStatus[key] = paramsData.filter((item) => key == item.paramName)[0].paramValue
-}
-
-let refreshObj = reactive({
-  paramRefresh: true,
-  dataRefresh: true,
-  explainRefresh: true,
-  paramRefreshFunc: () => {
-    refreshObj.paramRefresh = false;
-    setTimeout(() => {
-      refreshObj.paramRefresh = true
-      let sql = editor.state.doc.toString();
-      let params = extractParams(sql);
-      let slice = paramsData.slice();
-
-      paramsData.length = 0;
-      for (let i = 0; i < params.length; i++) {
-        let paramData = slice.filter(item => item.paramName == params[i])[0];
-        paramsData[i] = {
-          paramName: params[i],
-          paramValue: paramData !=null && paramData.paramValue != null ? paramData.paramValue : ''
-        };
-      }
-      for (let editStatusKey in editStatus) {
-        delete editStatus[editStatusKey];
-      }
-      paramsData.forEach((item) => {
-        let paramData = paramsData.filter((item) => item.paramName)[0];
-        editStatus[item.paramName] = paramData.paramValue != null ? paramData.paramValue : '';
-      })
-    }, 500)
-
-  },
-  dataRefreshFunc: () => {
-    refreshObj.dataRefresh = false;
-    setTimeout(() => refreshObj.dataRefresh = true, 1000)
-
-  },
-  explainRefreshFunc: () => {
-    refreshObj.explainRefresh = false;
-    setTimeout(() => refreshObj.explainRefresh = true, 1000)
-  },
-})
-
-function extractParams(sql: string) {
-  const regex = /:([a-zA-Z_]\w*)/g
-  const matches = [...sql.matchAll(regex)]
-  return [...new Set(matches.map(m => m[1]))];
-}
-
 </script>
 
 <template>
@@ -449,7 +456,7 @@ function extractParams(sql: string) {
                     <div class="editable-cell">
                       <div v-if="editStatus[record.paramName]" class="editable-cell-input-wrapper">
                         <a-input
-                            v-model:value="editStatus[record.paramName]"
+                            v-model:value="editStatus[record.paramName].value"
                             @pressEnter="saveParam(record.paramName)"
                         />
                         <check-outlined
