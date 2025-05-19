@@ -12,6 +12,8 @@ import {
   ZoomInOutlined,
   ZoomOutOutlined,
   MenuFoldOutlined,
+  CheckOutlined,
+  EditOutlined,
 } from '@ant-design/icons-vue'
 
 import { EditorState } from '@codemirror/state'
@@ -253,17 +255,24 @@ let paramsColumn = [
 ]
 
 // 参数 的可编辑状态
-let editStatus = reactive<Record<string, boolean>>({})
+let editStatus = reactive<Record<string, string>>({})
 paramsData.forEach((item) => {
-  editStatus[item.paramName] = false
+  editStatus[item.paramName] = paramsData.filter((item) => item.paramName)[0].paramValue
 })
 
-let tempParamsData = reactive<Record<string, string>>({});
 
-const saveParam = (key: string) => {}
+const saveParam = (key: string) => {
+  for (let i = 0; i < paramsData.length; i++) {
+    if(paramsData[i].paramName == key) {
+      paramsData[i].paramValue = editStatus[key];
+      delete editStatus[key]
+      return;
+    }
+  }
+}
 
 const editParam = (key: string) => {
-  tempParamsData[key] = paramsData.filter(item=>item.paramName)
+  editStatus[key] = paramsData.filter((item) => key == item.paramName)[0].paramValue
 }
 </script>
 
@@ -369,21 +378,24 @@ const editParam = (key: string) => {
                 :pagination="false"
               >
                 <template #bodyCell="{ column, text, record }">
-                  <template v-if="column.dataIndex === 'name'">
+                  <template v-if="column.dataIndex === 'paramValue'">
                     <div class="editable-cell">
-                      <div v-if="editStatus[record.key]" class="editable-cell-input-wrapper">
+                      <div v-if="editStatus[record.paramName]" class="editable-cell-input-wrapper">
                         <a-input
-                          v-model:value="tempParamsData[record.key].value"
-                          @pressEnter="saveParam(record.key)"
+                          v-model:value="editStatus[record.paramName]"
+                          @pressEnter="saveParam(record.paramName)"
                         />
                         <check-outlined
                           class="editable-cell-icon-check"
-                          @click="saveParam(record.key)"
+                          @click="saveParam(record.paramName)"
                         />
                       </div>
                       <div v-else class="editable-cell-text-wrapper">
                         {{ text || ' ' }}
-                        <edit-outlined class="editable-cell-icon" @click="editParam(record.key)" />
+                        <edit-outlined
+                          class="editable-cell-icon"
+                          @click="editParam(record.paramName)"
+                        />
                       </div>
                     </div>
                   </template>
@@ -419,5 +431,44 @@ const editParam = (key: string) => {
 
 .contentContainer .bottom {
   background-color: #77ea4a;
+}
+
+.editable-cell {
+  position: relative;
+}
+
+.editable-cell .editable-cell-input-wrapper,
+.editable-cell .editable-cell-text-wrapper {
+  padding-right: 24px;
+}
+
+.editable-cell .editable-cell-text-wrapper {
+  padding: 5px 24px 5px 5px;
+}
+
+.editable-cell .editable-cell-icon,
+.editable-cell .editable-cell-icon-check {
+  position: absolute;
+  right: 0;
+  width: 20px;
+  cursor: pointer;
+}
+
+.editable-cell .editable-cell-icon {
+  margin-top: 4px;
+  display: none;
+}
+
+.editable-cell .editable-cell-icon-check {
+  line-height: 28px;
+}
+
+.editable-cell .editable-cell-icon:hover,
+.editable-cell .editable-cell-icon-check:hover {
+  color: #108ee9;
+}
+
+.editable-cell:hover .editable-cell-icon {
+  display: inline-block;
 }
 </style>
