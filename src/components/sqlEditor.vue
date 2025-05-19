@@ -5,7 +5,7 @@ export default {
 </script>
 
 <script setup lang="ts">
-import {inject, onMounted, onUnmounted, reactive, ref, toRef, watch} from 'vue'
+import { inject, onMounted, onUnmounted, reactive, ref, toRef, watch } from 'vue'
 import {
   WindowsOutlined,
   FormatPainterOutlined,
@@ -18,22 +18,24 @@ import {
   LoadingOutlined,
 } from '@ant-design/icons-vue'
 
-import {EditorState} from '@codemirror/state'
-import {EditorView, keymap} from '@codemirror/view'
-import {basicSetup} from 'codemirror'
-import {sql} from '@codemirror/lang-sql'
-import {format} from 'sql-formatter'
-import type {Router} from 'vue-router'
+import { EditorState } from '@codemirror/state'
+import { EditorView, keymap } from '@codemirror/view'
+import { basicSetup } from 'codemirror'
+import { sql } from '@codemirror/lang-sql'
+import { format } from 'sql-formatter'
+import type { Router } from 'vue-router'
 import DbObject from '@/components/dbObject.vue'
-import {EyeOutlined} from '@ant-design/icons-vue'
+import { EyeOutlined } from '@ant-design/icons-vue'
 import useNavigator from '@/composable/useNavigator.ts'
-import type {ItemType, SelectProps, TabsProps} from 'ant-design-vue'
-import {onRequest, removeRequestHandler} from '@/utils/RequestBus.ts'
-import type {Result} from '@/types/api.ts'
-import type {SQLConfig} from '@/types/api.ts'
+import { type ItemType, message, type SelectProps, type TabsProps } from 'ant-design-vue'
+import { onRequest, removeRequestHandler } from '@/utils/RequestBus.ts'
+import type { Result, SQLParam } from '@/types/api.ts'
+import type { SQLConfig } from '@/types/api.ts'
 import emitter from '@/utils/EventBus.ts'
-import {SOURCE_ID_PREFIX} from '@/composable/useNavigator.ts'
-import {MenuOutlined} from '@ant-design/icons-vue'
+import { SOURCE_ID_PREFIX } from '@/composable/useNavigator.ts'
+import { MenuOutlined } from '@ant-design/icons-vue'
+import { saveSQL } from '@/api/sql.ts'
+import { ReportsError } from '@/utils/errorHandler/ReportsError.ts'
 
 let router = inject<Router>('router')
 let fontSize = ref(14)
@@ -60,7 +62,7 @@ function formatSQL() {
   if (editor != null) {
     const formattedContent = format(editor.state.doc.toString())
     editor.dispatch({
-      changes: {from: 0, to: editor.state.doc.length, insert: formattedContent},
+      changes: { from: 0, to: editor.state.doc.length, insert: formattedContent },
     })
   }
 }
@@ -135,27 +137,42 @@ function changeHeight(e: Event) {
 
 let editor = reactive<EditorView>(new EditorView())
 
-async function saveSQLConfig() {
-  /*sqlId
-  sourceId
-  dbId
-  schemaId
-  sqlName
-  sqlContent
-  fontSize
-  sqlParamList
-  paramId
-  sqlId
-  paramName
-  defaultValue*/
+function saveSQLConfig() {
+  _saveSQLConfig()
+    .then((respoonse) => {
+      if (respoonse.code == 0) {
+        message.info('保存SQL成功！')
+      } else {
+        message.error('保存sql失败！')
+      }
+    })
+    .catch((ex) => {
+      message.error('保存sql失败！')
+      console.log(ex)
+    })
+}
 
+async function _saveSQLConfig() {
   let sqlContent = format(editor.state.doc.toString())
-  let result: Result<any> = {data: null, error: '', code: 0}
+  let result: Result<any> = await saveSQL({
+    sourceId: _sourceId,
+    dbId: '',
+    schemaId: '',
+    sqlName: '',
+    fontSize: fontSize.value,
+    sqlContent: sqlContent,
+    sqlParamList: paramsData.slice().map((item) => {
+      return {
+        paramName: item.paramName,
+        defaultValue: item.defaultValue,
+      } as SQLParam
+    }),
+  })
   return result
 }
 
 // 获取父组件传递过来的值，父组件中 sourceId 是 ref对象
-let {sourceId: _sourceId, sqlName: _sqlName} = defineProps(['sourceId', 'sqlName'])
+let { sourceId: _sourceId, sqlName: _sqlName } = defineProps(['sourceId', 'sqlName'])
 
 const handleChange = (value: string) => {
   console.log(`selected ${value}`)
@@ -172,7 +189,7 @@ const filterOption = (input: string, option: any) => {
   return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
 }
 
-let {data, refreshDatasourceList} = useNavigator()
+let { data, refreshDatasourceList } = useNavigator()
 const options = ref<SelectProps['options']>([])
 refreshDatasourceList()
 
@@ -189,7 +206,7 @@ watch(data, (value) => {
     for (let i = 0; i < data.length; i++) {
       let item = data[i]
       if (item != null && options.value != null && 'label' in item) {
-        options.value[i] = {value: item.key as string, label: item.label}
+        options.value[i] = { value: item.key as string, label: item.label }
       }
     }
   }
@@ -198,16 +215,16 @@ watch(data, (value) => {
 // 监听sourceId 的变化，同时赋值给 sqlConfig.sourceId，便于切换值
 // 需要注意的是 这个值不是响应式的变量，但是可以通过 ()=> sourceId 方式监听
 watch(
-    () => _sourceId,
-    (sourceId) => {
-      let start = sourceId.indexOf(SOURCE_ID_PREFIX)
-      if (start > -1) {
-        sqlConfig.sourceId = sourceId
-      } else {
-        sqlConfig.sourceId = SOURCE_ID_PREFIX + sourceId
-      }
-      sqlConfig.sqlName = _sqlName
-    },
+  () => _sourceId,
+  (sourceId) => {
+    let start = sourceId.indexOf(SOURCE_ID_PREFIX)
+    if (start > -1) {
+      sqlConfig.sourceId = sourceId
+    } else {
+      sqlConfig.sourceId = SOURCE_ID_PREFIX + sourceId
+    }
+    sqlConfig.sqlName = _sqlName
+  },
 )
 
 const mode = ref<TabsProps['tabPosition']>('top')
@@ -216,29 +233,31 @@ const callback: TabsProps['onTabScroll'] = (val) => {
   console.log(val)
 }
 
-let paramsData = reactive<{ paramName: string, paramValue: string | undefined }[]>([{}])
-
+let paramsData = reactive<{ paramName: string; defaultValue: string | undefined }[]>([{}])
 
 let paramsColumn = [
-  {key: 'paramName', dataIndex: 'paramName', title: '参数名称'},
-  {key: 'paramValue', dataIndex: 'paramValue', title: '默认值'},
+  { key: 'paramName', dataIndex: 'paramName', title: '参数名称' },
+  { key: 'paramValue', dataIndex: 'paramValue', title: '默认值' },
 ]
 
 // 参数 的可编辑状态
-let editStatus = reactive<Record<string, { value: string|undefined, isEdit: boolean }>>({})
+let editStatus = reactive<Record<string, { value: string | undefined; isEdit: boolean }>>({})
 
 const saveParam = (key: string) => {
   for (let i = 0; i < paramsData.length; i++) {
     if (paramsData[i].paramName == key) {
-      paramsData[i].paramValue = editStatus[key].value;
+      paramsData[i].defaultValue = editStatus[key].value
       delete editStatus[key]
-      return;
+      return
     }
   }
 }
 
 const editParam = (key: string) => {
-  editStatus[key] = {value: paramsData.filter((item) => key == item.paramName)[0].paramValue as string, isEdit: true}
+  editStatus[key] = {
+    value: paramsData.filter((item) => key == item.paramName)[0].defaultValue as string,
+    isEdit: true,
+  }
 }
 
 let refreshObj = reactive({
@@ -246,62 +265,63 @@ let refreshObj = reactive({
   dataRefresh: true,
   explainRefresh: true,
   paramRefreshFunc: () => {
-    refreshObj.paramRefresh = false;
-    let slice = paramsData.slice();
-    paramsData.length = 0;
+    refreshObj.paramRefresh = false
+    let slice = paramsData.slice()
+    paramsData.length = 0
     setTimeout(() => {
       refreshObj.paramRefresh = true
-      let sql = editor.state.doc.toString();
-      let params = extractParams(sql);
+      let sql = editor.state.doc.toString()
+      let params = extractParams(sql)
       for (let i = 0; i < params.length; i++) {
-        let paramData = slice.filter(item => item.paramName == params[i])[0];
+        let paramData = slice.filter((item) => item.paramName == params[i])[0]
         paramsData.push({
           paramName: params[i],
-          paramValue: paramData != null && paramData.paramValue != null ? paramData.paramValue : undefined
-        });
+          defaultValue:
+            paramData != null && paramData.defaultValue != null
+              ? paramData.defaultValue
+              : undefined,
+        })
       }
       for (let editStatusKey in editStatus) {
-        delete editStatus[editStatusKey];
+        delete editStatus[editStatusKey]
       }
       paramsData.forEach((item) => {
-        let paramData = paramsData.filter((item) => item.paramName)[0];
+        let paramData = paramsData.filter((item) => item.paramName)[0]
         editStatus[item.paramName] = {
-          value: paramData.paramValue != null ? paramData.paramValue as string : undefined,
-          isEdit: true
-        };
+          value: paramData.defaultValue != null ? (paramData.defaultValue as string) : undefined,
+          isEdit: true,
+        }
       })
       console.log('paramsData,editStatus', paramsData, editStatus)
     }, 500)
-
   },
   dataRefreshFunc: () => {
-    refreshObj.dataRefresh = false;
-    setTimeout(() => refreshObj.dataRefresh = true, 1000)
-
+    refreshObj.dataRefresh = false
+    setTimeout(() => (refreshObj.dataRefresh = true), 1000)
   },
   explainRefreshFunc: () => {
-    refreshObj.explainRefresh = false;
-    setTimeout(() => refreshObj.explainRefresh = true, 1000)
+    refreshObj.explainRefresh = false
+    setTimeout(() => (refreshObj.explainRefresh = true), 1000)
   },
 })
 
 function extractParams(sql: string) {
   const regex = /:([a-zA-Z_]\w*)/g
   const matches = [...sql.matchAll(regex)]
-  return [...new Set(matches.map(m => m[1]))];
+  return [...new Set(matches.map((m) => m[1]))]
 }
-
 
 onMounted(() => {
   let sqlEditor = document.getElementById('_sqlEditor')
   const state = EditorState.create({
-    doc: 'SELECT\n' +
-        '  *\n' +
-        'FROM\n' +
-        '  table_name\n' +
-        'where\n' +
-        '  id = \':id\'\n' +
-        '  and name = \':name\';',
+    doc:
+      'SELECT\n' +
+      '  *\n' +
+      'FROM\n' +
+      '  table_name\n' +
+      'where\n' +
+      "  id = ':id'\n" +
+      "  and name = ':name';",
     extensions: [
       basicSetup, // 基础功能（如行号、缩进等）
       sql(), // SQL 语言支持
@@ -323,13 +343,15 @@ onMounted(() => {
     sqlConfig.sourceId = SOURCE_ID_PREFIX + _sourceId
   }
   // 绑定事件
-  onRequest<Result<any>>('sql:save', saveSQLConfig)
-
+  onRequest<Result<any>>('sql:save', _saveSQLConfig)
 
   // 初始化参数
-  if(paramsData != null && paramsData.length > 0) {
+  if (paramsData != null && paramsData.length > 0) {
     paramsData.forEach((item) => {
-      editStatus[item.paramName] = {value: paramsData.filter((item) => item.paramName)[0].paramValue as string, isEdit: true}
+      editStatus[item.paramName] = {
+        value: paramsData.filter((item) => item.paramName)[0].defaultValue as string,
+        isEdit: true,
+      }
     })
   }
 })
@@ -342,10 +364,10 @@ onUnmounted(() => {
 <template>
   <a-layout>
     <!--    数据源对象数据-->
-    <db-object/>
+    <db-object />
     <a-layout>
       <a-layout-header
-          :style="{
+        :style="{
           backgroundColor: '#FFF',
           boxShadow: '2px 2px 5px rgba(0, 0, 0, 0.3)',
           marginBottom: '10px',
@@ -353,29 +375,29 @@ onUnmounted(() => {
       >
         <a-space size="middle">
           <a-select
-              v-model:value="sqlConfig.sourceId"
-              :options="options"
-              style="width: 180px"
-              placeholder="切换数据源"
-              disabled
-              show-search
-              :filter-option="filterOption"
-              @focus="handleFocus"
-              @blur="handleBlur"
-              @change="handleChange"
+            v-model:value="sqlConfig.sourceId"
+            :options="options"
+            style="width: 180px"
+            placeholder="切换数据源"
+            disabled
+            show-search
+            :filter-option="filterOption"
+            @focus="handleFocus"
+            @blur="handleBlur"
+            @change="handleChange"
           >
           </a-select>
           <a-input
-              placeholder="名称"
-              show-count
-              :maxlength="20"
-              allow-clear
-              @change="changeSQLName"
-              v-model:value="sqlConfig.sqlName"
+            placeholder="名称"
+            show-count
+            :maxlength="20"
+            allow-clear
+            @change="changeSQLName"
+            v-model:value="sqlConfig.sqlName"
           ></a-input>
 
           <a-button @click="sqlView($event)" :style="{ color: '#f' }">
-            <EyeOutlined/>
+            <EyeOutlined />
             预览
           </a-button>
           <a-button @click="sqlExplain($event)"> Explain</a-button>
@@ -383,18 +405,18 @@ onUnmounted(() => {
             <a-checkbox :checked="cache">加速</a-checkbox>
           </a-tooltip>
           <a-button @click="formatSQL">
-            <FormatPainterOutlined/>
+            <FormatPainterOutlined />
             Format
           </a-button>
 
           <a-button-group>
             <!-- 放大字体-->
             <a-button @click="zoomIn">
-              <ZoomInOutlined/>
+              <ZoomInOutlined />
             </a-button>
             <!-- 缩小字体-->
             <a-button @click="zoomOut">
-              <ZoomOutOutlined/>
+              <ZoomOutOutlined />
             </a-button>
             <!-- 重置字体大小-->
             <a-button @click="resetFontSize"> Reset</a-button>
@@ -409,66 +431,68 @@ onUnmounted(() => {
           <!--          sql 的编辑框-->
           <a-layout>
             <div
-                ref="sqlEditor"
-                id="_sqlEditor"
-                :style="{ height: '470px', overflow: 'auto', fontSize: `${fontSize}px` }"
+              ref="sqlEditor"
+              id="_sqlEditor"
+              :style="{ height: '470px', overflow: 'auto', fontSize: `${fontSize}px` }"
             ></div>
           </a-layout>
         </a-layout-content>
         <a-divider
-            :style="{
+          :style="{
             height: '10px',
             backgroundColor: 'black',
             margin: '1px 0',
             cursor: 'row-resize',
           }"
-            @mousedown="changeHeight($event)"
+          @mousedown="changeHeight($event)"
         ></a-divider>
         <a-layout-content class="bottom" :style="{ height: bottomHeight + 'px' }">
           <a-tabs
-              v-model:activeKey="activeKey"
-              :tab-position="mode"
-              :style="{ height: '200px' }"
-              @tabScroll="callback"
+            v-model:activeKey="activeKey"
+            :tab-position="mode"
+            :style="{ height: '200px' }"
+            @tabScroll="callback"
           >
             <a-tab-pane key="sqlParams">
               <template #tab>
-                <a-button v-if="refreshObj.paramRefresh"
-                          @click="refreshObj.paramRefreshFunc()"
-                          :style="{border:'none',backgroundColor:'transparent',padding:'0'}">
+                <a-button
+                  v-if="refreshObj.paramRefresh"
+                  @click="refreshObj.paramRefreshFunc()"
+                  :style="{ border: 'none', backgroundColor: 'transparent', padding: '0' }"
+                >
                   <template #icon>
-                    <ReloadOutlined/>
+                    <ReloadOutlined />
                   </template>
                 </a-button>
-                <LoadingOutlined v-else/>
+                <LoadingOutlined v-else />
                 参数
               </template>
               <a-table
-                  :columns="paramsColumn"
-                  :data-source="paramsData"
-                  bordered
-                  size="small"
-                  header-cell=""
-                  :pagination="false"
+                :columns="paramsColumn"
+                :data-source="paramsData"
+                bordered
+                size="small"
+                header-cell=""
+                :pagination="false"
               >
                 <template #bodyCell="{ column, text, record }">
                   <template v-if="column.dataIndex === 'paramValue'">
                     <div class="editable-cell">
                       <div v-if="editStatus[record.paramName]" class="editable-cell-input-wrapper">
                         <a-input
-                            v-model:value="editStatus[record.paramName].value"
-                            @pressEnter="saveParam(record.paramName)"
+                          v-model:value="editStatus[record.paramName].value"
+                          @pressEnter="saveParam(record.paramName)"
                         />
                         <check-outlined
-                            class="editable-cell-icon-check"
-                            @click="saveParam(record.paramName)"
+                          class="editable-cell-icon-check"
+                          @click="saveParam(record.paramName)"
                         />
                       </div>
                       <div v-else class="editable-cell-text-wrapper">
                         {{ text || ' ' }}
                         <edit-outlined
-                            class="editable-cell-icon"
-                            @click="editParam(record.paramName)"
+                          class="editable-cell-icon"
+                          @click="editParam(record.paramName)"
                         />
                       </div>
                     </div>
@@ -478,26 +502,32 @@ onUnmounted(() => {
             </a-tab-pane>
             <a-tab-pane key="sqlData">
               <template #tab>
-                <a-button v-if="refreshObj.dataRefresh" @click="refreshObj.dataRefreshFunc"
-                          :style="{border:'none',backgroundColor:'transparent',padding:'0'}">
+                <a-button
+                  v-if="refreshObj.dataRefresh"
+                  @click="refreshObj.dataRefreshFunc"
+                  :style="{ border: 'none', backgroundColor: 'transparent', padding: '0' }"
+                >
                   <template #icon>
-                    <ReloadOutlined/>
+                    <ReloadOutlined />
                   </template>
                 </a-button>
-                <LoadingOutlined v-else/>
+                <LoadingOutlined v-else />
                 数据
               </template>
               content of tab2
             </a-tab-pane>
             <a-tab-pane key="sqlExplain">
               <template #tab>
-                <a-button v-if="refreshObj.explainRefresh" @click="refreshObj.explainRefreshFunc"
-                          :style="{border:'none',backgroundColor:'transparent',padding:'0'}">
+                <a-button
+                  v-if="refreshObj.explainRefresh"
+                  @click="refreshObj.explainRefreshFunc"
+                  :style="{ border: 'none', backgroundColor: 'transparent', padding: '0' }"
+                >
                   <template #icon>
-                    <ReloadOutlined/>
+                    <ReloadOutlined />
                   </template>
                 </a-button>
-                <LoadingOutlined v-else/>
+                <LoadingOutlined v-else />
                 执行计划
               </template>
               Content of tab1
@@ -506,7 +536,7 @@ onUnmounted(() => {
             <template #rightExtra>
               <a-button>
                 <template #icon>
-                  <MenuFoldOutlined :rotate="-90"/>
+                  <MenuFoldOutlined :rotate="-90" />
                 </template>
               </a-button>
             </template>

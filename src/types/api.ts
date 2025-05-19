@@ -58,8 +58,8 @@ export interface SQLConfig {
 }
 
 export interface SQLParam {
-    paramId: number | string,
-    sqlId: number | string,
+    paramId?: number | string,
+    sqlId?: number | string,
     paramName: string,
     defaultValue: string,
 
