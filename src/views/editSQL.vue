@@ -13,20 +13,20 @@ import {message} from "ant-design-vue";
 import emitter from "@/utils/EventBus.ts";
 
 let route = useRoute()
-let sqlConfig = ref<SQLConfig>({});
+let sqlConfig = reactive<SQLConfig>({});
 // 添加对路由的监听
 watch(
     () => route.query.sqlId,
     (item) => {
       // 从数据库中重新查询数据
-      sqlConfig.value.sqlId = item as string;
-      getSQLConfig(sqlConfig.value.sqlId);
+      sqlConfig.sqlId = item as string;
+      getSQLConfig(sqlConfig.sqlId);
     }
 )
 
 onMounted(() => {
-  sqlConfig.value.sqlId = route.query.sqlId as string;
-  getSQLConfig(sqlConfig.value.sqlId);
+  sqlConfig.sqlId = route.query.sqlId as string;
+  getSQLConfig(sqlConfig.sqlId);
 
 })
 
@@ -34,7 +34,7 @@ function getSQLConfig(sqlId: string | number) {
   querySQLConfigDetail(sqlId).then((response) => {
     if (response.code == 0) {
       Object.assign(sqlConfig, response.data);
-      emitter.emit('DBObject:refresh', sqlConfig.value.sourceId as string);
+      emitter.emit('DBObject:refresh', sqlConfig.sourceId as number | string);
     } else {
       message.error('查询SQL配置失败！' + response.error);
     }

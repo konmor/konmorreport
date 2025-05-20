@@ -39,7 +39,7 @@ import {ReportsError} from '@/utils/errorHandler/ReportsError.ts'
 
 let router = inject<Router>('router')
 // 获取父组件传递过来的值，父组件中 sourceId 是 ref对象
-let props= defineProps(['sourceId', 'sqlName', 'dbId', 'sqlConfig'])
+let props = defineProps(['sourceId', 'sqlName', 'dbId', 'sqlConfig'])
 
 let sqlConfig = reactive<SQLConfig>({})
 sqlConfig.fontSize = 14;
@@ -213,27 +213,6 @@ watch(data, (value) => {
   }
 })
 
-// 监听sourceId 的变化，同时赋值给 sqlConfig.sourceId，便于切换值
-// 需要注意的是 这个值不是响应式的变量，但是可以通过 ()=> sourceId 方式监听
-watch(
-    () => props.sourceId,
-    (sourceId) => {
-      let start = sourceId.indexOf(SOURCE_ID_PREFIX)
-      if (start > -1) {
-        sqlConfig.sourceId = sourceId
-      } else {
-        sqlConfig.sourceId = SOURCE_ID_PREFIX + sourceId
-      }
-      sqlConfig.sqlName =  props.sqlName
-      sqlConfig.dbId = props.dbId
-    },
-)
-
-watch(() => props.sqlConfig, (value) => {
-  if (value != null) {
-    Object.assign(sqlConfig, value);
-  }
-})
 
 const mode = ref<TabsProps['tabPosition']>('top')
 const activeKey = ref(1)
@@ -245,16 +224,19 @@ let paramsData = reactive<{ paramName: string; defaultValue: string | undefined 
 
 let paramsColumn = [
   {key: 'paramName', dataIndex: 'paramName', title: '参数名称'},
-  {key: 'paramValue', dataIndex: 'paramValue', title: '默认值'},
+  {key: 'defaultValue', dataIndex: 'defaultValue', title: '默认值'},
 ]
 
 // 参数 的可编辑状态
 let editStatus = reactive<Record<string, { value: string | undefined; isEdit: boolean }>>({})
 
 const saveParam = (key: string) => {
-  for (let i = 0; i < paramsData.length; i++) {
-    if (paramsData[i].paramName == key) {
-      paramsData[i].defaultValue = editStatus[key].value
+  if(sqlConfig.sqlParamList == null){
+    sqlConfig.sqlParamList = [];
+  }
+  for (let i = 0; i < sqlConfig.sqlParamList.length; i++) {
+    if (sqlConfig.sqlParamList[i].paramName == key) {
+      sqlConfig.sqlParamList[i].defaultValue = editStatus[key].value
       delete editStatus[key]
       return
     }
@@ -263,7 +245,7 @@ const saveParam = (key: string) => {
 
 const editParam = (key: string) => {
   editStatus[key] = {
-    value: paramsData.filter((item) => key == item.paramName)[0].defaultValue as string,
+    value: sqlConfig.sqlParamList.filter((item) => key == item.paramName)[0].defaultValue as string,
     isEdit: true,
   }
 }
@@ -274,15 +256,15 @@ let refreshObj = reactive({
   explainRefresh: true,
   paramRefreshFunc: () => {
     refreshObj.paramRefresh = false
-    let slice = paramsData.slice()
-    paramsData.length = 0
+    let slice = sqlConfig.sqlParamList.slice()
+    sqlConfig.sqlParamList.length = 0
     setTimeout(() => {
       refreshObj.paramRefresh = true
       let sql = editor.state.doc.toString()
       let params = extractParams(sql)
       for (let i = 0; i < params.length; i++) {
         let paramData = slice.filter((item) => item.paramName == params[i])[0]
-        paramsData.push({
+        sqlConfig.sqlParamList.push({
           paramName: params[i],
           defaultValue:
               paramData != null && paramData.defaultValue != null
@@ -293,14 +275,14 @@ let refreshObj = reactive({
       for (let editStatusKey in editStatus) {
         delete editStatus[editStatusKey]
       }
-      paramsData.forEach((item) => {
-        let paramData = paramsData.filter((item) => item.paramName)[0]
+      sqlConfig.sqlParamList.forEach((item) => {
+        let paramData = sqlConfig.sqlParamList.filter((item) => item.paramName)[0]
         editStatus[item.paramName] = {
           value: paramData.defaultValue != null ? (paramData.defaultValue as string) : undefined,
           isEdit: true,
         }
       })
-      console.log('paramsData,editStatus', paramsData, editStatus)
+      console.log('paramsData,editStatus', sqlConfig.sqlParamList, editStatus)
     }, 500)
   },
   dataRefreshFunc: () => {
@@ -322,7 +304,7 @@ function extractParams(sql: string) {
 onMounted(() => {
   let sqlEditor = document.getElementById('_sqlEditor')
   const state = EditorState.create({
-    doc: sqlConfig.sqlContent != null ? sqlConfig.sqlContent :
+    doc:
         'SELECT\n' +
         '  *\n' +
         'FROM\n' +
@@ -343,11 +325,15 @@ onMounted(() => {
     })
   }
 
-  // 初始化加载 下拉菜单
-  let start = props.sourceId.indexOf(SOURCE_ID_PREFIX)
-  if (start > -1) {
-    sqlConfig.sourceId = props.sourceId
-  } else {
+  if(typeof props.sourceId === 'string') {
+    // 初始化加载 下拉菜单
+    let start = props.sourceId.indexOf(SOURCE_ID_PREFIX)
+    if (start > -1) {
+      sqlConfig.sourceId = props.sourceId
+    } else {
+      sqlConfig.sourceId = SOURCE_ID_PREFIX + props.sourceId
+    }
+  }else if(typeof props.sourceId === 'number') {
     sqlConfig.sourceId = SOURCE_ID_PREFIX + props.sourceId
   }
   // 绑定事件
@@ -361,6 +347,40 @@ onMounted(() => {
         isEdit: true,
       }
     })
+  }
+})
+
+
+// 监听sourceId 的变化，同时赋值给 sqlConfig.sourceId，便于切换值
+// 需要注意的是 这个值不是响应式的变量，但是可以通过 ()=> sourceId 方式监听
+watch(
+    () => props.sourceId,
+    (sourceId) => {
+      if (typeof sourceId === 'string') {
+        let start = sourceId.indexOf(SOURCE_ID_PREFIX)
+        if (start > -1) {
+          sqlConfig.sourceId = sourceId
+        } else {
+          sqlConfig.sourceId = SOURCE_ID_PREFIX + sourceId
+        }
+      } else if (typeof sourceId === 'number') {
+        sqlConfig.sourceId = SOURCE_ID_PREFIX + sourceId
+      }
+      sqlConfig.sqlName = props.sqlName
+      sqlConfig.dbId = props.dbId
+    },
+)
+
+watch(()=>props.sqlConfig.sqlId, (value) => {
+  if (value != null) {
+    Object.assign(sqlConfig, props.sqlConfig);
+    if (editor != null) {
+      // const formattedContent = format(editor.state.doc.toString())
+      editor.dispatch({
+        changes: {from: 0, to: editor.state.doc.length, insert: sqlConfig.sqlContent},
+      })
+    }
+
   }
 })
 
@@ -477,7 +497,7 @@ onUnmounted(() => {
               </template>
               <a-table
                   :columns="paramsColumn"
-                  :data-source="paramsData"
+                  :data-source="sqlConfig.sqlParamList"
                   bordered
                   size="small"
                   header-cell=""

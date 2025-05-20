@@ -12,7 +12,7 @@ import {
   FunctionOutlined,
   TableOutlined,
 } from '@ant-design/icons-vue'
-import {onMounted, reactive, ref, watch} from 'vue'
+import {onMounted, onUnmounted, reactive, ref, watch} from 'vue'
 import type {TreeProps} from 'ant-design-vue'
 import {useRoute} from 'vue-router'
 import {getDBObjectList} from '@/api/dbObject.ts'
@@ -351,11 +351,8 @@ const onExpand = (keys: string[]) => {
 }
 
 const emptyTree = ref(true)
-emitter.on('DBObject:refresh', (key: string) => {
-  refreshData(key);
-})
-
 const refreshData = (sourceId: string | number) => {
+  emptyTree.value = true
   // 可能会有前缀
   if (typeof sourceId == 'string') {
     let start = sourceId?.indexOf(SOURCE_ID_PREFIX)
@@ -363,13 +360,12 @@ const refreshData = (sourceId: string | number) => {
       sourceId = sourceId?.substring(10)
     }
   }
-  emptyTree.value = true
   if (sourceId != null && sourceId != '') {
-    getDBObjectList(sourceId).then((reponse) => {
-      if (reponse.code == 0) {
+    getDBObjectList(sourceId).then((response) => {
+      if (response.code == 0) {
         // 转化为 treeData 能够接受的数据
-        setDBInfoData(reponse.data)
-      } else if (reponse.code == -1) {
+        setDBInfoData(response.data)
+      } else if (response.code == -1) {
         // 发生报错 使用默认数据
         setDefaultData()
       }
@@ -425,6 +421,15 @@ onMounted(() => {
     let sourceId = route.query.key as string
     refreshData(sourceId);
   }
+
+  // 绑定事件 刷新
+  emitter.on('DBObject:refresh', (key: string|number) => {
+    refreshData(key);
+  })
+})
+
+onUnmounted(()=>{
+  emitter.off('DBObject:refresh');
 })
 </script>
 

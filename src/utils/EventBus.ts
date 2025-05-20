@@ -25,5 +25,5 @@ export type  MittEvents = {
     'DBObject:selectTable': EmitterTableQueryType
     'SQL:create': string,
     'Datasource:config:editor': string
-    'DBObject:refresh': string
+    'DBObject:refresh': string|number
 }
