@@ -160,18 +160,19 @@ function saveSQLConfig() {
 async function _saveSQLConfig() {
   let sqlContent = editor.state.doc.toString()
   let result: Result<any> = await saveSQL({
+    sqlId:sqlConfig.sqlId,
     sourceId: sqlConfig.sourceId,
     dbId: sqlConfig.dbId != null ? sqlConfig.dbId : props.dbId,
     schemaId: sqlConfig.schemaId,
     sqlName: sqlConfig.sqlName,
     fontSize: sqlConfig.fontSize != null ? sqlConfig.fontSize : 14,
     sqlContent: sqlContent,
-    sqlParamList: paramsData.slice().map((item) => {
+    sqlParamList: sqlConfig.sqlParamList != null ? sqlConfig.sqlParamList.slice().map((item) => {
       return {
         paramName: item.paramName,
         defaultValue: item.defaultValue,
       } as SQLParam
-    }),
+    }) : [],
   })
   return result
 }
@@ -219,9 +220,6 @@ const activeKey = ref(1)
 const callback: TabsProps['onTabScroll'] = (val) => {
   console.log(val)
 }
-
-let paramsData = reactive<{ paramName: string; defaultValue: string | undefined }[]>([{}])
-
 let paramsColumn = [
   {key: 'paramName', dataIndex: 'paramName', title: '参数名称'},
   {key: 'defaultValue', dataIndex: 'defaultValue', title: '默认值'},
@@ -231,7 +229,7 @@ let paramsColumn = [
 let editStatus = reactive<Record<string, { value: string | undefined; isEdit: boolean }>>({})
 
 const saveParam = (key: string) => {
-  if(sqlConfig.sqlParamList == null){
+  if (sqlConfig.sqlParamList == null) {
     sqlConfig.sqlParamList = [];
   }
   for (let i = 0; i < sqlConfig.sqlParamList.length; i++) {
@@ -325,7 +323,7 @@ onMounted(() => {
     })
   }
 
-  if(typeof props.sourceId === 'string') {
+  if (typeof props.sourceId === 'string') {
     // 初始化加载 下拉菜单
     let start = props.sourceId.indexOf(SOURCE_ID_PREFIX)
     if (start > -1) {
@@ -333,17 +331,17 @@ onMounted(() => {
     } else {
       sqlConfig.sourceId = SOURCE_ID_PREFIX + props.sourceId
     }
-  }else if(typeof props.sourceId === 'number') {
+  } else if (typeof props.sourceId === 'number') {
     sqlConfig.sourceId = SOURCE_ID_PREFIX + props.sourceId
   }
   // 绑定事件
   onRequest<Result<any>>('sql:save', _saveSQLConfig)
 
   // 初始化参数
-  if (paramsData != null && paramsData.length > 0) {
-    paramsData.forEach((item) => {
+  if (sqlConfig.sqlParamList != null && sqlConfig.sqlParamList.length > 0) {
+    sqlConfig.sqlParamList.forEach((item) => {
       editStatus[item.paramName] = {
-        value: paramsData.filter((item) => item.paramName)[0].defaultValue as string,
+        value: sqlConfig.sqlParamList.filter((item) => item.paramName)[0].defaultValue as string,
         isEdit: true,
       }
     })
@@ -371,7 +369,7 @@ watch(
     },
 )
 
-watch(()=>props.sqlConfig.sqlId, (value) => {
+watch(() => props.sqlConfig.sqlId, (value) => {
   if (value != null) {
     Object.assign(sqlConfig, props.sqlConfig);
     if (editor != null) {
@@ -504,7 +502,7 @@ onUnmounted(() => {
                   :pagination="false"
               >
                 <template #bodyCell="{ column, text, record }">
-                  <template v-if="column.dataIndex === 'paramValue'">
+                  <template v-if="column.dataIndex === 'defaultValue'">
                     <div class="editable-cell">
                       <div v-if="editStatus[record.paramName]" class="editable-cell-input-wrapper">
                         <a-input
