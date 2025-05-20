@@ -39,18 +39,13 @@ import {ReportsError} from '@/utils/errorHandler/ReportsError.ts'
 
 let router = inject<Router>('router')
 // 获取父组件传递过来的值，父组件中 sourceId 是 ref对象
-let {
-  sourceId: _sourceId,
-  sqlName: _sqlName,
-  dbId: _dbId,
-  sqlConfig: _sqlConfig
-} = defineProps(['sourceId', 'sqlName', 'dbId', 'sqlConfig'])
+let props= defineProps(['sourceId', 'sqlName', 'dbId', 'sqlConfig'])
 
 let sqlConfig = reactive<SQLConfig>({})
 sqlConfig.fontSize = 14;
 // 初始化
-if (_sqlConfig != null) {
-  Object.assign(sqlConfig, _sqlConfig)
+if (props.sqlConfig != null) {
+  Object.assign(sqlConfig, props.sqlConfig)
 }
 const zoomIn = () => {
   if (sqlConfig.fontSize! < 25) {
@@ -166,7 +161,7 @@ async function _saveSQLConfig() {
   let sqlContent = editor.state.doc.toString()
   let result: Result<any> = await saveSQL({
     sourceId: sqlConfig.sourceId,
-    dbId: sqlConfig.dbId != null ? sqlConfig.dbId : _dbId,
+    dbId: sqlConfig.dbId != null ? sqlConfig.dbId : props.dbId,
     schemaId: sqlConfig.schemaId,
     sqlName: sqlConfig.sqlName,
     fontSize: sqlConfig.fontSize != null ? sqlConfig.fontSize : 14,
@@ -221,7 +216,7 @@ watch(data, (value) => {
 // 监听sourceId 的变化，同时赋值给 sqlConfig.sourceId，便于切换值
 // 需要注意的是 这个值不是响应式的变量，但是可以通过 ()=> sourceId 方式监听
 watch(
-    () => _sourceId,
+    () => props.sourceId,
     (sourceId) => {
       let start = sourceId.indexOf(SOURCE_ID_PREFIX)
       if (start > -1) {
@@ -229,12 +224,12 @@ watch(
       } else {
         sqlConfig.sourceId = SOURCE_ID_PREFIX + sourceId
       }
-      sqlConfig.sqlName = _sqlName
-      sqlConfig.dbId = _dbId
+      sqlConfig.sqlName =  props.sqlName
+      sqlConfig.dbId = props.dbId
     },
 )
 
-watch(() => _sqlConfig, (value) => {
+watch(() => props.sqlConfig, (value) => {
   if (value != null) {
     Object.assign(sqlConfig, value);
   }
@@ -349,11 +344,11 @@ onMounted(() => {
   }
 
   // 初始化加载 下拉菜单
-  let start = _sourceId.indexOf(SOURCE_ID_PREFIX)
+  let start = props.sourceId.indexOf(SOURCE_ID_PREFIX)
   if (start > -1) {
-    sqlConfig.sourceId = _sourceId
+    sqlConfig.sourceId = props.sourceId
   } else {
-    sqlConfig.sourceId = SOURCE_ID_PREFIX + _sourceId
+    sqlConfig.sourceId = SOURCE_ID_PREFIX + props.sourceId
   }
   // 绑定事件
   onRequest<Result<any>>('sql:save', _saveSQLConfig)
