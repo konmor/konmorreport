@@ -202,6 +202,9 @@ async function addSQL(key: string | undefined, event?: Event) {
     // 执行完 保存之前的函数 和 保存 之后再跳转页面
     let label = '查询(' + createSQLFlag.value + ')'
     let sqlKey = SQL_EMPTY_ID_PREFIX + createSQLFlag.value
+
+    let dbId =  items.filter(a=>a?.key==key)[0]!.dbIdList[0];
+
     if (router != null && key != undefined) {
       router
         .push({
@@ -209,6 +212,7 @@ async function addSQL(key: string | undefined, event?: Event) {
           query: {
             key: key,
             sqlName: label,
+            dbId: dbId,
           },
         })
         .then(() => {

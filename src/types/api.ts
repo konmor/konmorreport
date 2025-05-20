@@ -1,3 +1,15 @@
+export type DatasourceAndSQLTree = {
+    sourceId: number;
+    sourceName: string;
+    dbIdList: number[];
+    sqlNameList: SQLNameDTO[];
+}
+
+export type SQLNameDTO = {
+    sqlId: number;
+    sqlName: string;
+}
+
 export interface DatasourceDetail {
     sourceId?: number | string
     dataSourceName?: string

@@ -1,6 +1,14 @@
 import instance from './index.ts'
 
-import type {DatasourceDetail, Result, SSHConfig, SSLConfig, TableDataDTO, TableDataQuery} from '@/types/api.ts'
+import type {
+    DatasourceAndSQLTree,
+    DatasourceDetail,
+    Result,
+    SSHConfig,
+    SSLConfig,
+    TableDataDTO,
+    TableDataQuery
+} from '@/types/api.ts'
 import {
     DB_EMPTY_ID_PREFIX,
     DB_ID_PREFIX, OBJECT_EMPTY_ID_PREFIX,
@@ -10,7 +18,7 @@ import {
     SOURCE_ID_PREFIX
 } from "@/composable/useNavigator.ts";
 
-export function getDatasourceList(): Promise<Result<any>> {
+export function getDatasourceList(): Promise<Result<DatasourceAndSQLTree[]>> {
     return instance.get('datasource/datasources/sqls')
 }
 

@@ -34,7 +34,8 @@ export default function () {
                             sqlArray[sqlCount++] = getItem(subItem.sqlName, SQL_ID_PREFIX + subItem.sqlId);
                         }
                     }
-                    dataSourceConfigArray[i] = getItem(item.sourceName, SOURCE_ID_PREFIX + item.sourceId)
+                    dataSourceConfigArray[i] = getItem(item.sourceName, SOURCE_ID_PREFIX + item.sourceId,
+                        null, [], "group", item.dbIdList.map((dbId) => DB_ID_PREFIX + dbId.toString()))
                 }
             }
         })
@@ -63,6 +64,7 @@ export default function () {
         icon?: any,
         children?: ItemType[],
         type?: 'group',
+        dbIdList?: string[] | number[]
     ): ItemType {
         return {
             key,
@@ -70,6 +72,7 @@ export default function () {
             children,
             label,
             type,
+            dbIdList,
         } as ItemType
     }
 

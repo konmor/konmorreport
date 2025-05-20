@@ -13,6 +13,7 @@ import { deletePrefix } from '@/api/datasoure.ts'
 export function saveSQL(sqlConfig: SQLConfig): Promise<Result<any>> {
   sqlConfig.sourceId = deletePrefix(sqlConfig.sourceId!, SOURCE_ID_PREFIX, SOURCE_EMPTY_ID_PREFIX)
   sqlConfig.sqlId = deletePrefix(sqlConfig.sqlId!, SQL_ID_PREFIX, SQL_EMPTY_ID_PREFIX)
+  sqlConfig.dbId = deletePrefix(sqlConfig.dbId!, DB_ID_PREFIX, DB_EMPTY_ID_PREFIX)
   return instance.post('datasource/datasources/sql', sqlConfig)
 }
 
