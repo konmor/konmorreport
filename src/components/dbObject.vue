@@ -351,33 +351,43 @@ const onExpand = (keys: string[]) => {
 }
 
 const emptyTree = ref(true)
+emitter.on('DBObject:refresh', (key: string) => {
+  refreshData(key);
+})
+
+const refreshData = (sourceId: string | number) => {
+  // 可能会有前缀
+  if (typeof sourceId == 'string') {
+    let start = sourceId?.indexOf(SOURCE_ID_PREFIX)
+    if (start && start > -1) {
+      sourceId = sourceId?.substring(10)
+    }
+  }
+  emptyTree.value = true
+  if (sourceId != null && sourceId != '') {
+    getDBObjectList(sourceId).then((reponse) => {
+      if (reponse.code == 0) {
+        // 转化为 treeData 能够接受的数据
+        setDBInfoData(reponse.data)
+      } else if (reponse.code == -1) {
+        // 发生报错 使用默认数据
+        setDefaultData()
+      }
+    })
+
+  } else {
+    // 使用默认数据
+    setDefaultData()
+  }
+  emptyTree.value = false
+};
+
 // 监听 路由变化 重新加载数据
 watch(
     () => route.query.key,
     (sourceId) => {
-      // 可能会有前缀
-      let start = sourceId?.indexOf(SOURCE_ID_PREFIX)
-      if (start && start > -1) {
-        sourceId = sourceId?.substring(10)
-      }
-      emptyTree.value = true
-      if (sourceId != null && typeof sourceId === 'string' && sourceId.length > 0) {
-        getDBObjectList(sourceId).then((reponse) => {
-          if (reponse.code == 0) {
-            // 转化为 treeData 能够接受的数据
-            setDBInfoData(reponse.data)
-          } else if (reponse.code == -1) {
-            // 发生报错 使用默认数据
-            setDefaultData()
-          }
-        })
-        emptyTree.value = false
-      } else {
-        // 使用默认数据
-        setDefaultData()
-        emptyTree.value = false
-      }
-    },
+      refreshData(sourceId as string)
+    }
 )
 
 const searchValue = ref<string>('')
@@ -413,21 +423,7 @@ onMounted(() => {
   // 初次加载
   if (route.query.key != null) {
     let sourceId = route.query.key as string
-    // 可能会有前缀
-    let start = sourceId.indexOf(SOURCE_ID_PREFIX)
-    if (start > -1) {
-      sourceId = sourceId.substring(10)
-    }
-    getDBObjectList(sourceId).then((response) => {
-      if (response.code == 0) {
-        // 转化为 treeData 能够接受的数据
-        setDBInfoData(response.data)
-      } else if (response.code == -1) {
-        // 发生报错
-        setDefaultData()
-      }
-      emptyTree.value = false
-    })
+    refreshData(sourceId);
   }
 })
 </script>

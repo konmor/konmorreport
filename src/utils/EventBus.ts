@@ -23,6 +23,7 @@ export type  MittEvents = {
     'SQL:sqlName:change': string,
     'Datasource:sourceName:change': string;
     'DBObject:selectTable': EmitterTableQueryType
-    'SQL:create':string,
-    'Datasource:config:editor':string
+    'SQL:create': string,
+    'Datasource:config:editor': string
+    'DBObject:refresh': string
 }

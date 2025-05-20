@@ -38,9 +38,20 @@ import {saveSQL} from '@/api/sql.ts'
 import {ReportsError} from '@/utils/errorHandler/ReportsError.ts'
 
 let router = inject<Router>('router')
+// 获取父组件传递过来的值，父组件中 sourceId 是 ref对象
+let {
+  sourceId: _sourceId,
+  sqlName: _sqlName,
+  dbId: _dbId,
+  sqlConfig: _sqlConfig
+} = defineProps(['sourceId', 'sqlName', 'dbId', 'sqlConfig'])
 
 let sqlConfig = reactive<SQLConfig>({})
 sqlConfig.fontSize = 14;
+// 初始化
+if (_sqlConfig != null) {
+  Object.assign(sqlConfig, _sqlConfig)
+}
 const zoomIn = () => {
   if (sqlConfig.fontSize! < 25) {
     sqlConfig.fontSize = sqlConfig.fontSize! + 1 // 字体放大
@@ -170,9 +181,6 @@ async function _saveSQLConfig() {
   return result
 }
 
-// 获取父组件传递过来的值，父组件中 sourceId 是 ref对象
-let {sourceId: _sourceId, sqlName: _sqlName, dbId: _dbId} = defineProps(['sourceId', 'sqlName', 'dbId'])
-
 const handleChange = (value: string) => {
   console.log(`selected ${value}`)
 }
@@ -225,6 +233,12 @@ watch(
       sqlConfig.dbId = _dbId
     },
 )
+
+watch(() => _sqlConfig, (value) => {
+  if (value != null) {
+    Object.assign(sqlConfig, value);
+  }
+})
 
 const mode = ref<TabsProps['tabPosition']>('top')
 const activeKey = ref(1)
@@ -313,7 +327,7 @@ function extractParams(sql: string) {
 onMounted(() => {
   let sqlEditor = document.getElementById('_sqlEditor')
   const state = EditorState.create({
-    doc:
+    doc: sqlConfig.sqlContent != null ? sqlConfig.sqlContent :
         'SELECT\n' +
         '  *\n' +
         'FROM\n' +

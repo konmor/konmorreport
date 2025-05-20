@@ -4,10 +4,6 @@ export default {name: 'createSQL'}
 <script setup lang="ts">
 import SqlEditor from '@/components/sqlEditor.vue'
 import {
-  type NavigationGuardNext,
-  onBeforeRouteLeave, onBeforeRouteUpdate,
-  type RouteLocationNormalized,
-  type RouteLocationNormalizedLoaded,
   useRoute
 } from "vue-router";
 import {onMounted, ref, watch} from "vue";

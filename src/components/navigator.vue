@@ -49,7 +49,7 @@ let { navigatorWidth } = defineProps(['navigatorWidth'])
 let router: Router | undefined = inject<Router>('router')
 // 调用钩子拿到导航栏数据
 refreshDatasourceList()
-let items: ItemType[] = data
+let items = data
 
 // 默认选中哪些内容
 let selectedKeys = ref<string[]>([])
@@ -202,8 +202,11 @@ async function addSQL(key: string | undefined, event?: Event) {
     // 执行完 保存之前的函数 和 保存 之后再跳转页面
     let label = '查询(' + createSQLFlag.value + ')'
     let sqlKey = SQL_EMPTY_ID_PREFIX + createSQLFlag.value
-
-    let dbId =  items.filter(a=>a?.key==key)[0]!.dbIdList[0];
+    let item = items.filter(a=>a?.key==key)[0];
+    let dbId;
+    if (item != null && 'dbIdList' in item){
+      dbId = item.dbIdList[0]  as string;
+    }
 
     if (router != null && key != undefined) {
       router
@@ -428,7 +431,15 @@ function removeSQL(key: string, event: Event) {
 }
 
 function checkSQLConfig(key: string, event: Event) {
-  event.stopPropagation()
+  event.stopPropagation();
+  if(router != null && key != '') {
+    router.push({
+      name: 'toEditSQL',
+      query:{
+        sqlId: key,
+      }
+    })
+  }
 }
 
 function checkSQLData(key: string, event: Event) {
