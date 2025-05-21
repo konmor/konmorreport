@@ -463,7 +463,7 @@ onUnmounted(() => {
       </a-layout-header>
 
       <a-layout id="_contentContainer">
-        <a-layout-content class="top" :style="{ height: topHeight + 'px' }">
+        <a-layout-content class="top" :style="{ height: divider.topHeight + 'px' }">
           <!--          sql 的编辑框-->
           <a-layout>
             <div
@@ -482,7 +482,7 @@ onUnmounted(() => {
           }"
           @mousedown="changeHeight($event)"
         ></a-divider>
-        <a-layout-content class="bottom" :style="{ height: bottomHeight + 'px' }">
+        <a-layout-content class="bottom" :style="{ height: divider.bottomHeight + 'px' }">
           <a-tabs
             v-model:activeKey="activeKey"
             :tab-position="mode"

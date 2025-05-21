@@ -424,6 +424,7 @@ function checkDatasourceData(key: string, event: Event) {
       },
     })
   }
+  selectedKeys.value = [key]
 }
 
 function removeSQL(key: string, event: Event) {
@@ -432,6 +433,7 @@ function removeSQL(key: string, event: Event) {
 
 function checkSQLConfig(key: string, event: Event) {
   event.stopPropagation();
+
   if(router != null && key != '') {
     router.push({
       name: 'toEditSQL',
@@ -440,6 +442,9 @@ function checkSQLConfig(key: string, event: Event) {
       }
     })
   }
+  // 命中当前的下拉树
+  selectedKeys.value = [key]
+  openKeys.value = [SQL_MENU]
 }
 
 function checkSQLData(key: string, event: Event) {
@@ -533,7 +538,7 @@ function initCheckAndSaveFunction() {
 
   // 初始化 sql保存函数
 
-  let sqlSave: CheckAndSaveFunction<Promise<Result<any>>> = {
+  const sqlSave: CheckAndSaveFunction<Promise<Result<any>>> = {
     name: 'SQL',
     behaviour: '新增',
     beforeSave: () => true,
@@ -550,50 +555,6 @@ function initCheckAndSaveFunction() {
 
 watch(openKeys, (val) => {
   console.log('openKeys', val)
-})
-
-// 事件绑定
-emitter.on('SQL:sqlName:change', (value) => {
-  for (let i = 0; i < sqlArray.length; i++) {
-    let sqlArrayElement = sqlArray[i]
-    // 选中的key
-    let selectedKey = selectedKeys.value[0]
-    if (
-      selectedKey != undefined &&
-      selectedKey != '' &&
-      selectedKey == sqlArrayElement?.key &&
-      'label' in sqlArrayElement
-    ) {
-      sqlArrayElement.label = value
-      return
-    }
-  }
-})
-
-emitter.on('Datasource:sourceName:change', (value) => {
-  console.log('Datasource:sourceName:change on', value)
-  for (let i = 0; i < items.length; i++) {
-    let item = items[i]
-    // 选中的key
-    let selectedKey = selectedKeys.value[0]
-    if (
-      selectedKey != undefined &&
-      selectedKey != '' &&
-      selectedKey == item?.key &&
-      'label' in item
-    ) {
-      item.label = value
-      return
-    }
-  }
-})
-
-emitter.on('Datasource:config:editor', (key: string) => {
-  checkDatasourceConfig(key)
-})
-
-emitter.on('SQL:create', (key: string) => {
-  addSQL(key)
 })
 
 onMounted(() => {
@@ -624,7 +585,51 @@ onMounted(() => {
   }, 300)
 
   // 初始化
-  initCheckAndSaveFunction()
+  initCheckAndSaveFunction();
+
+  // 事件绑定
+  emitter.on('SQL:sqlName:change', (value) => {
+    for (let i = 0; i < sqlArray.length; i++) {
+      let sqlArrayElement = sqlArray[i]
+      // 选中的key
+      let selectedKey = selectedKeys.value[0]
+      if (
+          selectedKey != undefined &&
+          selectedKey != '' &&
+          selectedKey == sqlArrayElement?.key &&
+          'label' in sqlArrayElement
+      ) {
+        sqlArrayElement.label = value
+        return
+      }
+    }
+  })
+
+  emitter.on('Datasource:sourceName:change', (value) => {
+    console.log('Datasource:sourceName:change on', value)
+    for (let i = 0; i < items.length; i++) {
+      let item = items[i]
+      // 选中的key
+      let selectedKey = selectedKeys.value[0]
+      if (
+          selectedKey != undefined &&
+          selectedKey != '' &&
+          selectedKey == item?.key &&
+          'label' in item
+      ) {
+        item.label = value
+        return
+      }
+    }
+  })
+
+  emitter.on('Datasource:config:editor', (key: string) => {
+    checkDatasourceConfig(key)
+  })
+
+  emitter.on('SQL:create', (key: string) => {
+    addSQL(key)
+  })
 })
 
 onUnmounted(() => {
