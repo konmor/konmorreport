@@ -21,7 +21,7 @@ import {
 import { EditorState } from '@codemirror/state'
 import { EditorView, keymap } from '@codemirror/view'
 import { basicSetup } from 'codemirror'
-import { MySQL, sql } from '@codemirror/lang-sql'
+import { MySQL, sql, type SQLDialect } from '@codemirror/lang-sql'
 import * as sqlFormatter from 'sql-formatter' // 默认导出
 import type { Router } from 'vue-router'
 import DbObject from '@/components/dbObject.vue'
@@ -33,15 +33,13 @@ import type { Result, SQLParam } from '@/types/api.ts'
 import type { SQLConfig } from '@/types/api.ts'
 import emitter from '@/utils/EventBus.ts'
 import { SOURCE_ID_PREFIX } from '@/composable/useNavigator.ts'
-import { MenuOutlined } from '@ant-design/icons-vue'
 import { saveSQL } from '@/api/sql.ts'
-import { ReportsError } from '@/utils/errorHandler/ReportsError.ts'
-import { mysql } from 'sql-formatter'
 
 let router = inject<Router>('router')
 // 获取父组件传递过来的值，父组件中 sourceId 是 ref对象
 let props = defineProps(['sourceId', 'sqlName', 'dbId', 'sqlConfig'])
 
+// 初始化默认值
 let sqlConfig = reactive<SQLConfig>({
   sqlId: '',
   sourceId: '',
@@ -56,6 +54,7 @@ let sqlConfig = reactive<SQLConfig>({
 if (props.sqlConfig != null) {
   Object.assign(sqlConfig, props.sqlConfig)
 }
+
 const zoomIn = () => {
   if (sqlConfig.fontSize! < 25) {
     sqlConfig.fontSize = sqlConfig.fontSize! + 1 // 字体放大
@@ -68,6 +67,7 @@ const zoomOut = () => {
     sqlConfig.fontSize = sqlConfig.fontSize! - 1 // 字体缩小
   }
 }
+
 const resetFontSize = () => {
   sqlConfig.fontSize = 14 // 字体缩小
 }
@@ -101,23 +101,18 @@ function sqlExplain(event: Event) {
     })
   }
 }
-
-function onSelect(selectedKeys: any, info: any) {
-  console.log('Selected:', selectedKeys, info)
-}
-
-let topHeight = ref(500)
-let bottomHeight = ref(260)
-let isDragging = ref(false)
-
+// 是否存入数仓
 let cache = ref(true)
+
+let divider = reactive({topHeight:500,bottomHeight:260,isDragging:false})
+
 
 function changeHeight(e: Event) {
   let element = document.getElementById('_contentContainer')
-  isDragging.value = true
+  divider.isDragging = true
 
   function move(event: any) {
-    if (isDragging) {
+    if (divider.isDragging) {
       // 拿到容器相对于视窗的 位置信息
       const containerRect = (element as Element).getBoundingClientRect()
       // 新的上部分高度 这个35是调试出来的
@@ -134,15 +129,15 @@ function changeHeight(e: Event) {
         a = 0
         b = 760
       }
-      topHeight.value = a
+      divider.topHeight = a
 
-      bottomHeight.value = b
+      divider.bottomHeight = b
       console.log('move', a, b)
     }
   }
 
   function up() {
-    isDragging.value = false
+    divider.isDragging = false
     window.removeEventListener('mousemove', move)
     window.removeEventListener('mouseup', up)
   }
@@ -151,8 +146,10 @@ function changeHeight(e: Event) {
   window.addEventListener('mouseup', up)
 }
 
-let editor = reactive<EditorView>(new EditorView())
 
+
+
+// 保存配置
 function saveSQLConfig() {
   _saveSQLConfig()
     .then((respoonse) => {
@@ -168,9 +165,12 @@ function saveSQLConfig() {
     })
 }
 
+// cord-mirror 编辑器对象
+let editor = reactive<EditorView>(new EditorView())
+// 提供给事件注册使用的保存配置
 async function _saveSQLConfig() {
   let sqlContent = editor.state.doc.toString()
-  let result: Result<any> = await saveSQL({
+  return await saveSQL({
     sqlId: sqlConfig.sqlId,
     sourceId: sqlConfig.sourceId,
     dbId: sqlConfig.dbId != null ? sqlConfig.dbId : props.dbId,
@@ -188,17 +188,11 @@ async function _saveSQLConfig() {
           })
         : [],
   })
-  return result
 }
 
+// 数据源切换函数
 const handleChange = (value: string) => {
   console.log(`selected ${value}`)
-}
-const handleBlur = () => {
-  console.log('blur')
-}
-const handleFocus = () => {
-  console.log('focus')
 }
 const filterOption = (input: string, option: any) => {
   //
@@ -229,7 +223,7 @@ watch(data, (value) => {
 })
 
 const mode = ref<TabsProps['tabPosition']>('top')
-const activeKey = ref(1)
+const activeKey = ref('sqlParams')
 const callback: TabsProps['onTabScroll'] = (val) => {
   console.log(val)
 }
@@ -238,7 +232,7 @@ let paramsColumn = [
   { key: 'defaultValue', dataIndex: 'defaultValue', title: '默认值' },
 ]
 
-// 参数 的可编辑状态
+// 参数 的可编辑状态 key 是被编辑的值，{ value: string | undefined; isEdit: boolean } 是被编辑的对象 值和 是否正在编辑
 let editStatus = reactive<Record<string, { value: string | undefined; isEdit: boolean }>>({})
 
 const saveParam = (key: string) => {
@@ -259,6 +253,12 @@ const editParam = (key: string) => {
     value: sqlConfig.sqlParamList.filter((item) => key == item.paramName)[0].defaultValue as string,
     isEdit: true,
   }
+}
+
+function extractParams(sql: string) {
+  const regex = /:([a-zA-Z_]\w*)/g
+  const matches = [...sql.matchAll(regex)]
+  return [...new Set(matches.map((m) => m[1]))]
 }
 
 let refreshObj = reactive({
@@ -306,12 +306,7 @@ let refreshObj = reactive({
   },
 })
 
-function extractParams(sql: string) {
-  const regex = /:([a-zA-Z_]\w*)/g
-  const matches = [...sql.matchAll(regex)]
-  return [...new Set(matches.map((m) => m[1]))]
-}
-
+// 可换方言
 onMounted(() => {
   let sqlEditor = document.getElementById('_sqlEditor')
   const state = EditorState.create({
@@ -327,11 +322,7 @@ onMounted(() => {
       basicSetup, // 基础功能（如行号、缩进等）
       sql({
         dialect: MySQL,
-        upperCaseKeywords: true,
-        keywordCompletion: (label, type) => {
-          console.log('label,type', label, type)
-          return {}
-        },
+        upperCaseKeywords: true
       }), // SQL 语言支持
     ],
   })
@@ -429,8 +420,6 @@ onUnmounted(() => {
             disabled
             show-search
             :filter-option="filterOption"
-            @focus="handleFocus"
-            @blur="handleBlur"
             @change="handleChange"
           >
           </a-select>
