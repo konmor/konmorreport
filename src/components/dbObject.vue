@@ -408,7 +408,7 @@ watch(searchValue, (value) => {
 
 const selectedDBObject = (selectedObjectId: Array<string>) => {
   if (selectedObjectId != null && selectedObjectId.length > 0 && selectedObjectId[0].startsWith(OBJECT_ID_PREFIX)) {
-    emitter.emit('DBObject:selectTable', {
+    emitter.emit('DBObjectOrSQL:refreshData', {
       objectId: selectedObjectId[0],
     });
   }
