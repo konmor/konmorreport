@@ -7,7 +7,7 @@ export default {
 import DbObject from '@/components/dbObject.vue'
 import SQLDataViewer from '@/components/sqlDataViewer.vue'
 import {useRoute} from 'vue-router'
-import {onMounted, ref, watch} from 'vue'
+import {onMounted, onUnmounted, ref, watch} from 'vue'
 import Icon, {EditOutlined, ArrowLeftOutlined,} from '@ant-design/icons-vue'
 import SyncToDataWarehouse from "@/assets/icon/SyncToDataWarehouse.vue";
 import SQLBiger from "@/assets/icon/SQLBiger.vue";
@@ -37,6 +37,16 @@ watch(
 
 onMounted(() => {
   sourceId.value = route.query.key as string
+
+  // 绑定事件
+  // 选择某个表或者视图之后 然后触发sqlDataViewer 表格刷新事件
+  emitter.on('DBObject:selected', (value) => {
+    emitter.emit('DBObjectOrSQL:refreshData', {...value});
+  })
+})
+
+onUnmounted(() => {
+  emitter.off('DBObject:selected')
 })
 
 

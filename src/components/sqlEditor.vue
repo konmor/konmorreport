@@ -5,9 +5,8 @@ export default {
 </script>
 
 <script setup lang="ts">
-import { inject, onMounted, onUnmounted, reactive, ref, toRef, watch } from 'vue'
+import {inject, onMounted, onUnmounted, reactive, ref, toRef, watch} from 'vue'
 import {
-  WindowsOutlined,
   FormatPainterOutlined,
   ZoomInOutlined,
   ZoomOutOutlined,
@@ -18,22 +17,26 @@ import {
   LoadingOutlined,
 } from '@ant-design/icons-vue'
 
-import { EditorState } from '@codemirror/state'
-import { EditorView, keymap } from '@codemirror/view'
-import { basicSetup } from 'codemirror'
-import { MySQL, sql, type SQLDialect } from '@codemirror/lang-sql'
+import {EditorState} from '@codemirror/state'
+import {EditorView, keymap} from '@codemirror/view'
+import {basicSetup} from 'codemirror'
+import {MySQL, sql, type SQLDialect} from '@codemirror/lang-sql'
 import * as sqlFormatter from 'sql-formatter' // 默认导出
-import type { Router } from 'vue-router'
+import type {Router} from 'vue-router'
 import DbObject from '@/components/dbObject.vue'
-import { EyeOutlined } from '@ant-design/icons-vue'
+import {EyeOutlined} from '@ant-design/icons-vue'
 import useNavigator from '@/composable/useNavigator.ts'
-import { type ItemType, message, type SelectProps, type TabsProps } from 'ant-design-vue'
-import { onRequest, removeRequestHandler } from '@/utils/RequestBus.ts'
-import type { Result, SQLParam } from '@/types/api.ts'
-import type { SQLConfig } from '@/types/api.ts'
-import emitter from '@/utils/EventBus.ts'
-import { SOURCE_ID_PREFIX } from '@/composable/useNavigator.ts'
-import { saveSQL } from '@/api/sql.ts'
+import {type ItemType, message, type SelectProps, type TabsProps} from 'ant-design-vue'
+import {onRequest, removeRequestHandler} from '@/utils/RequestBus.ts'
+import type {Result, SQLParam, SQLQuery, TableDataQuery} from '@/types/api.ts'
+import type {SQLConfig} from '@/types/api.ts'
+import emitter, {type DBObjectAndSQLResultRefreshQuery} from '@/utils/EventBus.ts'
+import {SOURCE_ID_PREFIX} from '@/composable/useNavigator.ts'
+import {saveSQL, sqlQueryData} from '@/api/sql.ts'
+import SQLDataViewer from "@/components/sqlDataViewer.vue";
+import type {TableOrSQLResult} from "@/types/DBData.ts";
+import {queryTableData} from "@/api/datasoure.ts";
+import {ReportsError} from "@/utils/errorHandler/ReportsError.ts";
 
 let router = inject<Router>('router')
 // 获取父组件传递过来的值，父组件中 sourceId 是 ref对象
@@ -78,7 +81,7 @@ function formatSQL() {
       language: 'sqlite',
     })
     editor.dispatch({
-      changes: { from: 0, to: editor.state.doc.length, insert: formattedContent },
+      changes: {from: 0, to: editor.state.doc.length, insert: formattedContent},
     })
   }
 }
@@ -101,10 +104,11 @@ function sqlExplain(event: Event) {
     })
   }
 }
+
 // 是否存入数仓
 let cache = ref(true)
 
-let divider = reactive({topHeight:500,bottomHeight:260,isDragging:false})
+let divider = reactive({topHeight: 500, bottomHeight: 260, isDragging: false})
 
 
 function changeHeight(e: Event) {
@@ -147,26 +151,25 @@ function changeHeight(e: Event) {
 }
 
 
-
-
 // 保存配置
 function saveSQLConfig() {
   _saveSQLConfig()
-    .then((respoonse) => {
-      if (respoonse.code == 0) {
-        message.info('保存SQL成功！')
-      } else {
+      .then((respoonse) => {
+        if (respoonse.code == 0) {
+          message.info('保存SQL成功！')
+        } else {
+          message.error('保存sql失败！')
+        }
+      })
+      .catch((ex) => {
         message.error('保存sql失败！')
-      }
-    })
-    .catch((ex) => {
-      message.error('保存sql失败！')
-      console.log(ex)
-    })
+        console.log(ex)
+      })
 }
 
 // cord-mirror 编辑器对象
 let editor = reactive<EditorView>(new EditorView())
+
 // 提供给事件注册使用的保存配置
 async function _saveSQLConfig() {
   let sqlContent = editor.state.doc.toString()
@@ -179,14 +182,14 @@ async function _saveSQLConfig() {
     fontSize: sqlConfig.fontSize != null ? sqlConfig.fontSize : 14,
     sqlContent: sqlContent,
     sqlParamList:
-      sqlConfig.sqlParamList != null
-        ? sqlConfig.sqlParamList.slice().map((item) => {
-            return {
-              paramName: item.paramName,
-              defaultValue: item.defaultValue,
-            } as SQLParam
-          })
-        : [],
+        sqlConfig.sqlParamList != null
+            ? sqlConfig.sqlParamList.slice().map((item) => {
+              return {
+                paramName: item.paramName,
+                defaultValue: item.defaultValue,
+              } as SQLParam
+            })
+            : [],
   })
 }
 
@@ -200,7 +203,7 @@ const filterOption = (input: string, option: any) => {
   return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
 }
 
-let { data, refreshDatasourceList } = useNavigator()
+let {data, refreshDatasourceList} = useNavigator()
 const options = ref<SelectProps['options']>([])
 refreshDatasourceList()
 
@@ -216,7 +219,7 @@ watch(data, (value) => {
     for (let i = 0; i < data.length; i++) {
       let item = data[i]
       if (item != null && options.value != null && 'label' in item) {
-        options.value[i] = { value: item.key as string, label: item.label }
+        options.value[i] = {value: item.key as string, label: item.label}
       }
     }
   }
@@ -228,8 +231,8 @@ const callback: TabsProps['onTabScroll'] = (val) => {
   console.log(val)
 }
 let paramsColumn = [
-  { key: 'paramName', dataIndex: 'paramName', title: '参数名称' },
-  { key: 'defaultValue', dataIndex: 'defaultValue', title: '默认值' },
+  {key: 'paramName', dataIndex: 'paramName', title: '参数名称'},
+  {key: 'defaultValue', dataIndex: 'defaultValue', title: '默认值'},
 ]
 
 // 参数 的可编辑状态 key 是被编辑的值，{ value: string | undefined; isEdit: boolean } 是被编辑的对象 值和 是否正在编辑
@@ -265,6 +268,8 @@ let refreshObj = reactive({
   paramRefresh: true,
   dataRefresh: true,
   explainRefresh: true,
+  showData:false,
+  showExplain:false,
   paramRefreshFunc: () => {
     refreshObj.paramRefresh = false
     let slice = sqlConfig.sqlParamList.slice()
@@ -278,9 +283,9 @@ let refreshObj = reactive({
         sqlConfig.sqlParamList.push({
           paramName: params[i],
           defaultValue:
-            paramData != null && paramData.defaultValue != null
-              ? paramData.defaultValue
-              : undefined,
+              paramData != null && paramData.defaultValue != null
+                  ? paramData.defaultValue
+                  : undefined,
         })
       }
       for (let editStatusKey in editStatus) {
@@ -298,7 +303,18 @@ let refreshObj = reactive({
   },
   dataRefreshFunc: () => {
     refreshObj.dataRefresh = false
-    setTimeout(() => (refreshObj.dataRefresh = true), 1000)
+    setTimeout(() => {
+      // 在切换tab后 点击刷新时调用
+      emitter.emit('DBObjectOrSQL:refreshData', {
+        sqlId: sqlConfig.sqlId,
+        sqlContent: sqlConfig.sqlContent,
+        sourceId: sqlConfig.sourceId,
+        sqlParams: sqlConfig.sqlParamList,
+        pageInfo: {page: 1, size: 20, total: 0}
+      })
+      refreshObj.showData = true;
+      refreshObj.dataRefresh = true
+    }, 1000)
   },
   explainRefreshFunc: () => {
     refreshObj.explainRefresh = false
@@ -306,18 +322,88 @@ let refreshObj = reactive({
   },
 })
 
+// 提供函数供子组件 sqlDataViewer 调用。该函数为查询sql数据
+async function getSQLResultData(query: DBObjectAndSQLResultRefreshQuery): Promise<TableOrSQLResult> {
+
+  // loading.value = true
+  let sqlId = query.sqlId != null ? query.sqlId : sqlConfig.sqlId as string
+  let sqlContent = query.sqlContent != null ? query.sqlContent : sqlConfig.sqlContent as string
+  let sourceId = query.sourceId != null ? query.sourceId : sqlConfig.sourceId as string
+  let sqlParams = query.sqlParams != null ? query.sqlParams : sqlConfig.sqlParamList
+
+  let sqlQuery: SQLQuery = {
+    sourceId,
+    sqlId,
+    sqlContent,
+    queryBySQLContent:true,
+    sqlParamList: sqlParams,
+    pageInfo: query.pageInfo!,
+  }
+  // 数据转换 数据库返回的是 String Number Time 转换为 'string' | 'number' | 'date'
+  const convertFieldType = (dataType: string): 'string' | 'number' | 'date' | undefined => {
+    if (dataType == 'String') {
+      return 'string'
+    } else if (dataType == 'Number') {
+      return 'number'
+    } else if (dataType == 'Time') {
+      return 'date'
+    } else {
+      return undefined
+    }
+  }
+
+  let result: TableOrSQLResult = {columns: [], pageData: {page: 1, size: 20, total: 0, data: []}};
+  let response
+  try {
+    response = await sqlQueryData(sqlQuery);
+  } catch (error) {
+    throw new ReportsError('查询数据发生异常', 'queryTableData');
+  }
+
+  if (response == null) {
+    throw new ReportsError('查询数据发生异常', 'queryTableData');
+  }
+
+  if (response.code == 0) {
+    // 分页处理
+    result.pageData.total = response.data.total
+    result.pageData.size = response.data.size
+    result.pageData.page = response.data.page
+
+    for (let i = 0; i < response.data.columns.length; i++) {
+      let tableField = response.data.columns[i]
+      let fieldName = tableField.fieldAlias != null ? tableField.fieldAlias : tableField.fieldName;
+      result.columns[i] = {
+        title: fieldName,
+        dataIndex: fieldName,
+        key: fieldName,
+        dataType: convertFieldType(tableField.fieldType2 as string),
+        ellipsis: true,
+        width: '120',
+      }
+    }
+
+    for (let i = 0; i < response.data.data.length; i++) {
+      result.pageData.data[i] = response.data.data[i]
+    }
+  } else {
+    throw new ReportsError(response.error, 'queryTableData')
+  }
+  return result;
+}
+
 // 可换方言
 onMounted(() => {
   let sqlEditor = document.getElementById('_sqlEditor')
   const state = EditorState.create({
     doc:
-      'SELECT\n' +
-      '  *\n' +
-      'FROM\n' +
-      '  table_name\n' +
-      'where\n' +
-      '  id = :id\n' +
-      '  and name = :name;',
+        'SELECT\n' +
+        '  *\n' +
+        'FROM\n' +
+        '  table_name\n' +
+        'where\n' +
+        '  id = :id\n' +
+        '  and name = :name;',
     extensions: [
       basicSetup, // 基础功能（如行号、缩进等）
       sql({
@@ -362,36 +448,36 @@ onMounted(() => {
 // 监听sourceId 的变化，同时赋值给 sqlConfig.sourceId，便于切换值
 // 需要注意的是 这个值不是响应式的变量，但是可以通过 ()=> sourceId 方式监听
 watch(
-  () => props.sourceId,
-  (sourceId) => {
-    if (typeof sourceId === 'string') {
-      let start = sourceId.indexOf(SOURCE_ID_PREFIX)
-      if (start > -1) {
-        sqlConfig.sourceId = sourceId
-      } else {
+    () => props.sourceId,
+    (sourceId) => {
+      if (typeof sourceId === 'string') {
+        let start = sourceId.indexOf(SOURCE_ID_PREFIX)
+        if (start > -1) {
+          sqlConfig.sourceId = sourceId
+        } else {
+          sqlConfig.sourceId = SOURCE_ID_PREFIX + sourceId
+        }
+      } else if (typeof sourceId === 'number') {
         sqlConfig.sourceId = SOURCE_ID_PREFIX + sourceId
       }
-    } else if (typeof sourceId === 'number') {
-      sqlConfig.sourceId = SOURCE_ID_PREFIX + sourceId
-    }
-    sqlConfig.sqlName = props.sqlName
-    sqlConfig.dbId = props.dbId
-  },
+      sqlConfig.sqlName = props.sqlName
+      sqlConfig.dbId = props.dbId
+    },
 )
 
 watch(
-  () => props.sqlConfig.sqlId,
-  (value) => {
-    if (value != null) {
-      Object.assign(sqlConfig, props.sqlConfig)
-      if (editor != null) {
-        // const formattedContent = format(editor.state.doc.toString())
-        editor.dispatch({
-          changes: { from: 0, to: editor.state.doc.length, insert: sqlConfig.sqlContent },
-        })
+    () => props.sqlConfig.sqlId,
+    (value) => {
+      if (value != null) {
+        Object.assign(sqlConfig, props.sqlConfig)
+        if (editor != null) {
+          // const formattedContent = format(editor.state.doc.toString())
+          editor.dispatch({
+            changes: {from: 0, to: editor.state.doc.length, insert: sqlConfig.sqlContent},
+          })
+        }
       }
-    }
-  },
+    },
 )
 
 onUnmounted(() => {
@@ -402,10 +488,10 @@ onUnmounted(() => {
 <template>
   <a-layout>
     <!--    数据源对象数据-->
-    <db-object />
+    <db-object/>
     <a-layout>
       <a-layout-header
-        :style="{
+          :style="{
           backgroundColor: '#FFF',
           boxShadow: '2px 2px 5px rgba(0, 0, 0, 0.3)',
           marginBottom: '10px',
@@ -413,27 +499,27 @@ onUnmounted(() => {
       >
         <a-space size="middle">
           <a-select
-            v-model:value="sqlConfig.sourceId"
-            :options="options"
-            style="width: 180px"
-            placeholder="切换数据源"
-            disabled
-            show-search
-            :filter-option="filterOption"
-            @change="handleChange"
+              v-model:value="sqlConfig.sourceId"
+              :options="options"
+              style="width: 180px"
+              placeholder="切换数据源"
+              disabled
+              show-search
+              :filter-option="filterOption"
+              @change="handleChange"
           >
           </a-select>
           <a-input
-            placeholder="名称"
-            show-count
-            :maxlength="20"
-            allow-clear
-            @change="changeSQLName"
-            v-model:value="sqlConfig.sqlName"
+              placeholder="名称"
+              show-count
+              :maxlength="20"
+              allow-clear
+              @change="changeSQLName"
+              v-model:value="sqlConfig.sqlName"
           ></a-input>
 
           <a-button @click="sqlView($event)" :style="{ color: '#f' }">
-            <EyeOutlined />
+            <EyeOutlined/>
             预览
           </a-button>
           <a-button @click="sqlExplain($event)"> Explain</a-button>
@@ -441,18 +527,18 @@ onUnmounted(() => {
             <a-checkbox :checked="cache">加速</a-checkbox>
           </a-tooltip>
           <a-button @click="formatSQL">
-            <FormatPainterOutlined />
+            <FormatPainterOutlined/>
             Format
           </a-button>
 
           <a-button-group>
             <!-- 放大字体-->
             <a-button @click="zoomIn">
-              <ZoomInOutlined />
+              <ZoomInOutlined/>
             </a-button>
             <!-- 缩小字体-->
             <a-button @click="zoomOut">
-              <ZoomOutOutlined />
+              <ZoomOutOutlined/>
             </a-button>
             <!-- 重置字体大小-->
             <a-button @click="resetFontSize"> Reset</a-button>
@@ -467,68 +553,68 @@ onUnmounted(() => {
           <!--          sql 的编辑框-->
           <a-layout>
             <div
-              ref="sqlEditor"
-              id="_sqlEditor"
-              :style="{ height: '470px', overflow: 'auto', fontSize: `${sqlConfig.fontSize}px` }"
+                ref="sqlEditor"
+                id="_sqlEditor"
+                :style="{ height: '470px', overflow: 'auto', fontSize: `${sqlConfig.fontSize}px` }"
             ></div>
           </a-layout>
         </a-layout-content>
         <a-divider
-          :style="{
+            :style="{
             height: '10px',
             backgroundColor: 'black',
             margin: '1px 0',
             cursor: 'row-resize',
           }"
-          @mousedown="changeHeight($event)"
+            @mousedown="changeHeight($event)"
         ></a-divider>
         <a-layout-content class="bottom" :style="{ height: divider.bottomHeight + 'px' }">
           <a-tabs
-            v-model:activeKey="activeKey"
-            :tab-position="mode"
-            :style="{ height: '200px' }"
-            @tabScroll="callback"
+              v-model:activeKey="activeKey"
+              :tab-position="mode"
+              :style="{ height: '200px' }"
+              @tabScroll="callback"
           >
             <a-tab-pane key="sqlParams">
               <template #tab>
                 <a-button
-                  v-if="refreshObj.paramRefresh"
-                  @click="refreshObj.paramRefreshFunc()"
-                  :style="{ border: 'none', backgroundColor: 'transparent', padding: '0' }"
+                    v-if="refreshObj.paramRefresh"
+                    @click="refreshObj.paramRefreshFunc()"
+                    :style="{ border: 'none', backgroundColor: 'transparent', padding: '0' }"
                 >
                   <template #icon>
-                    <ReloadOutlined />
+                    <ReloadOutlined/>
                   </template>
                 </a-button>
-                <LoadingOutlined v-else />
+                <LoadingOutlined v-else/>
                 参数
               </template>
               <a-table
-                :columns="paramsColumn"
-                :data-source="sqlConfig.sqlParamList"
-                bordered
-                size="small"
-                header-cell=""
-                :pagination="false"
+                  :columns="paramsColumn"
+                  :data-source="sqlConfig.sqlParamList"
+                  bordered
+                  size="small"
+                  header-cell=""
+                  :pagination="false"
               >
                 <template #bodyCell="{ column, text, record }">
                   <template v-if="column.dataIndex === 'defaultValue'">
                     <div class="editable-cell">
                       <div v-if="editStatus[record.paramName]" class="editable-cell-input-wrapper">
                         <a-input
-                          v-model:value="editStatus[record.paramName].value"
-                          @pressEnter="saveParam(record.paramName)"
+                            v-model:value="editStatus[record.paramName].value"
+                            @pressEnter="saveParam(record.paramName)"
                         />
                         <check-outlined
-                          class="editable-cell-icon-check"
-                          @click="saveParam(record.paramName)"
+                            class="editable-cell-icon-check"
+                            @click="saveParam(record.paramName)"
                         />
                       </div>
                       <div v-else class="editable-cell-text-wrapper">
                         {{ text || ' ' }}
                         <edit-outlined
-                          class="editable-cell-icon"
-                          @click="editParam(record.paramName)"
+                            class="editable-cell-icon"
+                            @click="editParam(record.paramName)"
                         />
                       </div>
                     </div>
@@ -539,45 +625,41 @@ onUnmounted(() => {
             <a-tab-pane key="sqlData">
               <template #tab>
                 <a-button
-                  v-if="refreshObj.dataRefresh"
-                  @click="refreshObj.dataRefreshFunc"
-                  :style="{ border: 'none', backgroundColor: 'transparent', padding: '0' }"
+                    v-if="refreshObj.dataRefresh"
+                    @click="refreshObj.dataRefreshFunc"
+                    :style="{ border: 'none', backgroundColor: 'transparent', padding: '0' }"
                 >
                   <template #icon>
-                    <ReloadOutlined />
+                    <ReloadOutlined/>
                   </template>
                 </a-button>
-                <LoadingOutlined v-else />
+                <LoadingOutlined v-else/>
                 数据
               </template>
-              content of tab2
+              <a-empty v-show="!refreshObj.showData" @click="refreshObj.dataRefreshFunc"></a-empty>
+              <SQLDataViewer v-show="refreshObj.showData" :getDataAndColumnsAndPage="getSQLResultData" :scrollY="200"></SQLDataViewer>
             </a-tab-pane>
             <a-tab-pane key="sqlExplain">
               <template #tab>
                 <a-button
-                  v-if="refreshObj.explainRefresh"
-                  @click="refreshObj.explainRefreshFunc"
-                  :style="{ border: 'none', backgroundColor: 'transparent', padding: '0' }"
+                    v-if="refreshObj.explainRefresh"
+                    @click="refreshObj.explainRefreshFunc"
+                    :style="{ border: 'none', backgroundColor: 'transparent', padding: '0' }"
                 >
                   <template #icon>
-                    <ReloadOutlined />
+                    <ReloadOutlined/>
                   </template>
                 </a-button>
-                <LoadingOutlined v-else />
+                <LoadingOutlined v-else/>
                 执行计划
               </template>
-              <a-table :columns="sqlColumn"
-                size="small"
-                :dataSource="sqlResult"
-                >
 
-              </a-table>
             </a-tab-pane>
 
             <template #rightExtra>
               <a-button>
                 <template #icon>
-                  <MenuFoldOutlined :rotate="-90" />
+                  <MenuFoldOutlined :rotate="-90"/>
                 </template>
               </a-button>
             </template>

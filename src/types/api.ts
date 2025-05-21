@@ -153,7 +153,8 @@ export interface SQLQuery {
     sourceId: string | number,
     sqlId: string | number,
     sqlContent: string,
-    sqlParamList: SQLParam[],
+    queryBySQLContent:boolean,
+    sqlParamList?: SQLParam[],
     pageInfo: PageInfo,
 }
 

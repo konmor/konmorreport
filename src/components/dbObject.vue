@@ -408,7 +408,7 @@ watch(searchValue, (value) => {
 
 const selectedDBObject = (selectedObjectId: Array<string>) => {
   if (selectedObjectId != null && selectedObjectId.length > 0 && selectedObjectId[0].startsWith(OBJECT_ID_PREFIX)) {
-    emitter.emit('DBObjectOrSQL:refreshData', {
+    emitter.emit('DBObject:selected', {
       objectId: selectedObjectId[0],
     });
   }
@@ -423,12 +423,12 @@ onMounted(() => {
   }
 
   // 绑定事件 刷新
-  emitter.on('DBObject:refresh', (key: string|number) => {
+  emitter.on('DBObject:refresh', (key: string | number) => {
     refreshData(key);
   })
 })
 
-onUnmounted(()=>{
+onUnmounted(() => {
   emitter.off('DBObject:refresh');
 })
 </script>

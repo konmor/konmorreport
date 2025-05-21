@@ -12,11 +12,11 @@ export default emitter;
 
 // type 为table时需要objectId用于查询数据库表，SQL 即执行sql，Explain 为查看执行计划
 export type DBObjectAndSQLResultRefreshQuery = {
-    sourceId?: string,
-    dbId?: string,
-    schemaId?: string,
-    objectId?: string,
-    fieldId?: string,
+    sourceId?: string | number,
+    dbId?: string | number,
+    schemaId?: string | number,
+    objectId?: string | number,
+    fieldId?: string | number,
     sqlId?: string | number,
     sqlContent?: string,
     sqlParams?: SQLParam[],
@@ -26,9 +26,12 @@ export type DBObjectAndSQLResultRefreshQuery = {
 export type  MittEvents = {
     // sql name 变更事件，key SQL:sqlName:change,事件值是 string类型
     'SQL:sqlName:change': string,
-    'Datasource:sourceName:change': string;
-    'DBObjectOrSQL:refreshData': DBObjectAndSQLResultRefreshQuery
+    'Datasource:sourceName:change': string,
+    // 用于 sqlDataViewer.vue 数据刷新事件
+    'DBObjectOrSQL:refreshData': DBObjectAndSQLResultRefreshQuery,
     'SQL:create': string,
     'Datasource:config:editor': string
     'DBObject:refresh': string | number
+    // 选择table和视图时触发事件
+    'DBObject:selected': { objectId: string }
 }

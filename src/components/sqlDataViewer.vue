@@ -12,26 +12,23 @@ import {
 } from '@ant-design/icons-vue'
 import {onMounted, onUnmounted, reactive, ref, watch} from 'vue'
 import emitter, {type DBObjectAndSQLResultRefreshQuery} from '@/utils/EventBus.ts'
-import type {PageData, PageInfo, TableDataQuery} from '@/types/api.ts'
+import type {PageInfo} from '@/types/api.ts'
 import type {MyTableColumnsType, TableOrSQLResult} from "@/types/DBData.ts";
 
 // 列表高度
-let {
-  scrollY,
-  sourceId: datasourceId,
-  columns: _columns,
-  datas: _datas,
-  getDataAndColumnsAndPage
-} = defineProps(['scrollY', 'sourceId', 'columns', 'datas', 'getDataAndColumnsAndPage'])
-
+let {scrollY, getDataAndColumnsAndPage} = defineProps(['scrollY', 'getDataAndColumnsAndPage'])
+// 获取数据的接口
 const queryData: (query: DBObjectAndSQLResultRefreshQuery) => Promise<TableOrSQLResult> = getDataAndColumnsAndPage;
+// 检查是否为null
+if (queryData == null) {
+  console.error('未传入getDataAndColumnsAndPage函数')
+}
 const loading = ref(false)
 // 数据 和 表头
 const columns = ref<MyTableColumnsType[]>([])
 const datas = ref([{}])
 // 分页
 const pageInfo: PageInfo = reactive({page: 1, size: 20, total: 0});
-
 // 保存请求数据
 let request: DBObjectAndSQLResultRefreshQuery = {}
 
