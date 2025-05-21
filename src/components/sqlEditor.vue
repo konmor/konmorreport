@@ -566,7 +566,12 @@ onUnmounted(() => {
                 <LoadingOutlined v-else />
                 执行计划
               </template>
-              Content of tab1
+              <a-table :columns="sqlColumn"
+                size="small"
+                :dataSource="sqlResult"
+                >
+
+              </a-table>
             </a-tab-pane>
 
             <template #rightExtra>

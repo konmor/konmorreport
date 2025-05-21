@@ -130,7 +130,7 @@ function convertToTableFields(dbObject: DBObject) {
     for (let j = 0; j < dbObject.value.length; j++) {
       let item = dbObject.value[j] as TableField
       tableChildren[j] = buildTreeData(
-          (FIELD_ID_PREFIX + item.tableFieldId) as string,
+          (FIELD_ID_PREFIX + item.fieldId) as string,
           item.fieldName as string,
           undefined,
           convertFieldType(item.fieldType2 as string),

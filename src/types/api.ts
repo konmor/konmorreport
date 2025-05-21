@@ -107,7 +107,7 @@ export interface DBObject {
 }
 
 export interface TableField {
-    tableFieldId?: string | number,
+    fieldId?: string | number,
     objectId?: string | number,
     fieldName?: string,
     fieldType?: string,
@@ -142,6 +142,32 @@ export interface TableDataQuery {
     pageInfo: PageInfo,
 }
 
+// 查询表或者视图时用到
 export interface TableDataDTO extends PageData<Map<string, any>> {
     columns: Array<TableField>
+}
+
+
+// 执行sql查询
+export interface SQLQuery {
+    sourceId: string | number,
+    sqlId: string | number,
+    sqlContent: string,
+    sqlParamList: SQLParam[],
+    pageInfo: PageInfo,
+}
+
+export interface SQLResultField {
+    fieldId: string | number,
+    sqlId: string | number,
+    fieldName: string,
+    fieldAlias: string,
+    fieldComment: string,
+    fieldType2: string,
+    fieldOrder: number,
+}
+
+// sql查询结果 与 表格结果类似
+export interface SQLSelectResultDTO extends PageData<Map<string, any>> {
+    columns: Array<SQLResultField>
 }

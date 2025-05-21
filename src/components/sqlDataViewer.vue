@@ -22,15 +22,8 @@ import type { TableDataQuery } from '@/types/api.ts'
 import { ReportsError } from '@/utils/errorHandler/ReportsError.ts'
 
 // title 表头名称 key 表头对应的唯一key 自定义 dataindex 对应数据的索引key  width 列宽度 fixed 固定在什么位置， left 、right
-// 扩展下类型
-interface MyColumnType<RecordType = DefaultRecordType> extends ColumnType<RecordType> {
-  dataType?: 'string' | 'number' | 'date'
-}
 
 // 原类型为 TableColumnsType
-// TableColumnsType
-// export type ColumnsType<RecordType = DefaultRecordType> = (ColumnGroupType<RecordType> | ColumnType<RecordType>)[];
-// type MyTableColumnsType = (ColumnGroupType<DefaultRecordType> | MyColumnType<DefaultRecordType>)[]
 type MyTableColumnsType = {
   dataType?: 'string' | 'number' | 'date'
   title: string
