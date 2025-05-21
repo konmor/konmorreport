@@ -15,13 +15,17 @@ import emitter, {type DBObjectAndSQLResultRefreshQuery} from '@/utils/EventBus.t
 import type {PageInfo} from '@/types/api.ts'
 import type {MyTableColumnsType, TableOrSQLResult} from "@/types/DBData.ts";
 
-// 列表高度
-let {scrollY, getDataAndColumnsAndPage} = defineProps(['scrollY', 'getDataAndColumnsAndPage'])
+// 列表高度,数据刷新函数，以及唯一key
+let {
+  scrollY,
+  getDataAndColumnsAndPage,
+  sqlDataViewKey
+} = defineProps(['scrollY', 'getDataAndColumnsAndPage', 'sqlDataViewKey'])
 // 获取数据的接口
 const queryData: (query: DBObjectAndSQLResultRefreshQuery) => Promise<TableOrSQLResult> = getDataAndColumnsAndPage;
 // 检查是否为null
-if (queryData == null) {
-  console.error('未传入getDataAndColumnsAndPage函数')
+if (queryData == null || sqlDataViewKey == null) {
+  console.error('未传入getDataAndColumnsAndPage函数 或者 未指定唯一key')
 }
 const loading = ref(false)
 // 数据 和 表头
@@ -59,6 +63,9 @@ const calculateScrollX = function () {
 }
 
 emitter.on('DBObjectOrSQL:refreshData', (refreshQuery) => {
+  if (sqlDataViewKey != refreshQuery.sqlDataViewKey) {
+    return;
+  }
   console.log('DBObjectOrSQL:refreshData 触发一次')
   // 清空数据
   datas.value = [];

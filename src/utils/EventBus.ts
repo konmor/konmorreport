@@ -12,6 +12,7 @@ export default emitter;
 
 // type 为table时需要objectId用于查询数据库表，SQL 即执行sql，Explain 为查看执行计划
 export type DBObjectAndSQLResultRefreshQuery = {
+    sqlDataViewKey: string | number,
     sourceId?: string | number,
     dbId?: string | number,
     schemaId?: string | number,

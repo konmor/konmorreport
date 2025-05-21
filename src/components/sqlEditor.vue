@@ -32,7 +32,7 @@ import type {Result, SQLParam, SQLQuery, TableDataQuery} from '@/types/api.ts'
 import type {SQLConfig} from '@/types/api.ts'
 import emitter, {type DBObjectAndSQLResultRefreshQuery} from '@/utils/EventBus.ts'
 import {SOURCE_ID_PREFIX} from '@/composable/useNavigator.ts'
-import {saveSQL, sqlQueryData} from '@/api/sql.ts'
+import {explain, saveSQL, sqlQueryData} from '@/api/sql.ts'
 import SQLDataViewer from "@/components/sqlDataViewer.vue";
 import type {TableOrSQLResult} from "@/types/DBData.ts";
 import {queryTableData} from "@/api/datasoure.ts";
@@ -268,8 +268,8 @@ let refreshObj = reactive({
   paramRefresh: true,
   dataRefresh: true,
   explainRefresh: true,
-  showData:false,
-  showExplain:false,
+  showData: false,
+  showExplain: false,
   paramRefreshFunc: () => {
     refreshObj.paramRefresh = false
     let slice = sqlConfig.sqlParamList.slice()
@@ -306,6 +306,7 @@ let refreshObj = reactive({
     setTimeout(() => {
       // 在切换tab后 点击刷新时调用
       emitter.emit('DBObjectOrSQL:refreshData', {
+        sqlDataViewKey:'sqlData',
         sqlId: sqlConfig.sqlId,
         sqlContent: sqlConfig.sqlContent,
         sourceId: sqlConfig.sourceId,
@@ -318,7 +319,21 @@ let refreshObj = reactive({
   },
   explainRefreshFunc: () => {
     refreshObj.explainRefresh = false
-    setTimeout(() => (refreshObj.explainRefresh = true), 1000)
+    setTimeout(() => {
+      //getSQLExplainData
+
+      emitter.emit('DBObjectOrSQL:refreshData', {
+        sqlDataViewKey:'sqlExplain',
+        sqlId: sqlConfig.sqlId,
+        sqlContent: sqlConfig.sqlContent,
+        sourceId: sqlConfig.sourceId,
+        type: 'Explain',
+        sqlParams: sqlConfig.sqlParamList,
+        pageInfo: {page: 1, size: 100, total: 0}
+      })
+      refreshObj.showExplain = true;
+      refreshObj.explainRefresh = true
+    }, 1000)
   },
 })
 
@@ -335,7 +350,7 @@ async function getSQLResultData(query: DBObjectAndSQLResultRefreshQuery): Promis
     sourceId,
     sqlId,
     sqlContent,
-    queryBySQLContent:true,
+    queryBySQLContent: true,
     sqlParamList: sqlParams,
     pageInfo: query.pageInfo!,
   }
@@ -356,6 +371,75 @@ async function getSQLResultData(query: DBObjectAndSQLResultRefreshQuery): Promis
   let response
   try {
     response = await sqlQueryData(sqlQuery);
+  } catch (error) {
+    throw new ReportsError('查询数据发生异常', 'queryTableData');
+  }
+
+  if (response == null) {
+    throw new ReportsError('查询数据发生异常', 'queryTableData');
+  }
+
+  if (response.code == 0) {
+    // 分页处理
+    result.pageData.total = response.data.total
+    result.pageData.size = response.data.size
+    result.pageData.page = response.data.page
+
+    for (let i = 0; i < response.data.columns.length; i++) {
+      let tableField = response.data.columns[i]
+      let fieldName = tableField.fieldAlias != null ? tableField.fieldAlias : tableField.fieldName;
+      result.columns[i] = {
+        title: fieldName,
+        dataIndex: fieldName,
+        key: fieldName,
+        dataType: convertFieldType(tableField.fieldType2 as string),
+        ellipsis: true,
+        width: '120',
+      }
+    }
+
+    for (let i = 0; i < response.data.data.length; i++) {
+      result.pageData.data[i] = response.data.data[i]
+    }
+  } else {
+    throw new ReportsError(response.error, 'queryTableData')
+  }
+  return result;
+}
+
+async function getSQLExplainData(query: DBObjectAndSQLResultRefreshQuery): Promise<TableOrSQLResult> {
+
+  // loading.value = true
+  let sqlId = query.sqlId != null ? query.sqlId : sqlConfig.sqlId as string
+  let sqlContent = query.sqlContent != null ? query.sqlContent : sqlConfig.sqlContent as string
+  let sourceId = query.sourceId != null ? query.sourceId : sqlConfig.sourceId as string
+  let sqlParams = query.sqlParams != null ? query.sqlParams : sqlConfig.sqlParamList
+
+  let sqlQuery: SQLQuery = {
+    sourceId,
+    sqlId,
+    sqlContent,
+    queryBySQLContent: true,
+    sqlParamList: sqlParams,
+    pageInfo: query.pageInfo!,
+  }
+  // 数据转换 数据库返回的是 String Number Time 转换为 'string' | 'number' | 'date'
+  const convertFieldType = (dataType: string): 'string' | 'number' | 'date' | undefined => {
+    if (dataType == 'String') {
+      return 'string'
+    } else if (dataType == 'Number') {
+      return 'number'
+    } else if (dataType == 'Time') {
+      return 'date'
+    } else {
+      return undefined
+    }
+  }
+
+  let result: TableOrSQLResult = {columns: [], pageData: {page: 1, size: 20, total: 0, data: []}};
+  let response
+  try {
+    response = await explain(sqlQuery);
   } catch (error) {
     throw new ReportsError('查询数据发生异常', 'queryTableData');
   }
@@ -637,7 +721,9 @@ onUnmounted(() => {
                 数据
               </template>
               <a-empty v-show="!refreshObj.showData" @click="refreshObj.dataRefreshFunc"></a-empty>
-              <SQLDataViewer v-show="refreshObj.showData" :getDataAndColumnsAndPage="getSQLResultData" :scrollY="200"></SQLDataViewer>
+              <SQLDataViewer v-show="refreshObj.showData" :getDataAndColumnsAndPage="getSQLResultData"
+                             sqlDataViewKey="sqlData"
+                             :scrollY="200"></SQLDataViewer>
             </a-tab-pane>
             <a-tab-pane key="sqlExplain">
               <template #tab>
@@ -651,9 +737,12 @@ onUnmounted(() => {
                   </template>
                 </a-button>
                 <LoadingOutlined v-else/>
-                执行计划
+                Explain
               </template>
-
+              <a-empty v-show="!refreshObj.showExplain" @click="refreshObj.explainRefreshFunc"></a-empty>
+              <SQLDataViewer v-show="refreshObj.showExplain" :getDataAndColumnsAndPage="getSQLExplainData"
+                             sqlDataViewKey="sqlExplain"
+                             :scrollY="200"></SQLDataViewer>
             </a-tab-pane>
 
             <template #rightExtra>

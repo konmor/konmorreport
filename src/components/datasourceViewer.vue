@@ -41,7 +41,7 @@ onMounted(() => {
   // 绑定事件
   // 选择某个表或者视图之后 然后触发sqlDataViewer 表格刷新事件
   emitter.on('DBObject:selected', (value) => {
-    emitter.emit('DBObjectOrSQL:refreshData', {...value});
+    emitter.emit('DBObjectOrSQL:refreshData', {...value, sqlDataViewKey: 'tableObject'});
   })
 })
 
@@ -181,6 +181,7 @@ async function getDataAndColumnsAndPage(query: DBObjectAndSQLResultRefreshQuery)
           </template>
         </a-empty>
         <SQLDataViewer v-show="choiceObjectId != null" :scrollY="680" :sourceId="sourceId"
+                       sqlDataViewKey="tableObject"
                        :getDataAndColumnsAndPage="getDataAndColumnsAndPage"></SQLDataViewer>
       </a-layout-content>
     </a-layout>
