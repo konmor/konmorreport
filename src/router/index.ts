@@ -12,6 +12,7 @@ import editSQL from '@/views/editSQL.vue'
 import createSQL from '@/views/createSQL.vue'
 import editDatasourceConfig from '@/views/editDatasourceConfig.vue'
 import DataSourceViewer from "@/components/datasourceViewer.vue";
+import EmptyReport from "@/components/EmptyReport.vue";
 // 4. 创建路由
 let router = createRouter({
     // 4.1 路由工作模式
@@ -25,7 +26,7 @@ let router = createRouter({
             children: [
                 {
                     path: 'datasource',
-                    redirect:'/',
+                    redirect: '/',
                     children: [
                         {
                             path: 'create',
@@ -64,6 +65,17 @@ let router = createRouter({
                         },
                     ],
                 },
+                {
+                    path: 'report',
+                    redirect: '/',
+                    children: [
+                        {
+                            path: 'create',
+                            name: 'toReportsCreator',
+                            component: EmptyReport
+                        }
+                    ]
+                }
             ],
         },
     ],

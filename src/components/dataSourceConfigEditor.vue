@@ -22,8 +22,10 @@ import emitter from '@/utils/EventBus.ts'
 
 let {disabledAll, datasourceDetail} = defineProps(['disabledAll', 'datasourceDetail']);
 let disabled = ref(true)
-
 disabled.value = disabledAll;
+watch(()=> disabledAll,(status)=>{
+  disabled.value = status;
+})
 
 const focus = () => {
   console.log('focus')

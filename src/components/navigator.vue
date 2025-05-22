@@ -16,8 +16,8 @@ import {
   TableOutlined,
   EditOutlined,
 } from '@ant-design/icons-vue'
-import { reactive, ref, watch, h, onMounted, inject, onUnmounted, VueElement, type Ref } from 'vue'
-import { type MenuProps, type ItemType, Modal, type SelectProps, message } from 'ant-design-vue'
+import {reactive, ref, watch, h, onMounted, inject, onUnmounted, VueElement, type Ref} from 'vue'
+import {type MenuProps, type ItemType, Modal, type SelectProps, message} from 'ant-design-vue'
 import {
   type NavigationGuard,
   type NavigationGuardNext,
@@ -26,26 +26,26 @@ import {
   type RouteLocationNormalizedLoaded,
   type Router,
 } from 'vue-router'
-import useNavigator, { SOURCE_ID_PREFIX } from '@/composable/useNavigator.ts'
+import useNavigator, {SOURCE_ID_PREFIX} from '@/composable/useNavigator.ts'
 import addDatasourceIcon from '@/components/button/addDatasource.vue'
-import { useCreateStore } from '@/stores/useCreateStore.ts'
-import { storeToRefs } from 'pinia'
-import type { Result } from '@/types/api.ts'
+import {useCreateStore} from '@/stores/useCreateStore.ts'
+import {storeToRefs} from 'pinia'
+import type {Result} from '@/types/api.ts'
 import emitter from '@/utils/EventBus.ts'
-import { request } from '@/utils/RequestBus.ts'
-import type { VueNode } from 'ant-design-vue/es/_util/type'
-import type { Handler } from 'mitt'
-import { sql } from '@codemirror/lang-sql'
-import { SOURCE_EMPTY_ID_PREFIX, SQL_EMPTY_ID_PREFIX } from '@/composable/useNavigator.ts'
-import { ReportsError } from '@/utils/errorHandler/ReportsError.ts'
+import {request} from '@/utils/RequestBus.ts'
+import type {VueNode} from 'ant-design-vue/es/_util/type'
+import type {Handler} from 'mitt'
+import {sql} from '@codemirror/lang-sql'
+import {SOURCE_EMPTY_ID_PREFIX, SQL_EMPTY_ID_PREFIX} from '@/composable/useNavigator.ts'
+import {ReportsError} from '@/utils/errorHandler/ReportsError.ts'
 import AddDatasource from '@/assets/icon/AddDatasource.vue'
 import SQLSmall from '@/assets/icon/SQLSmall.vue'
 import SQLBiger from '@/assets/icon/SQLBiger.vue'
-import { deleteDatasource } from '@/api/datasoure.ts'
+import {deleteDatasource} from '@/api/datasoure.ts'
 
-let { refreshDatasourceList, data, sqlArray } = useNavigator()
+let {refreshDatasourceList, data, sqlArray} = useNavigator()
 // 导航栏宽度 从home主页来
-let { navigatorWidth } = defineProps(['navigatorWidth'])
+let {navigatorWidth} = defineProps(['navigatorWidth'])
 let router: Router | undefined = inject<Router>('router')
 // 调用钩子拿到导航栏数据
 refreshDatasourceList()
@@ -68,7 +68,7 @@ let newLabel = ref('数据源')
 let createDatasourceFlag = ref(1)
 
 let createStore = useCreateStore()
-let { createDatasource, createSQL, createReports } = storeToRefs(createStore)
+let {createDatasource, createSQL, createReports} = storeToRefs(createStore)
 
 // 当前的数据名称
 let currentDataName = ref<string | undefined>(undefined)
@@ -117,7 +117,7 @@ async function addDataSource(event: Event) {
     Modal.confirm({
       title: '确认' + behaviour + dataName + '吗？',
       content:
-        '点击确认将保存' + crtDataName + '数据。取消则返回继续' + crtBehaviour + crtDataName + '。',
+          '点击确认将保存' + crtDataName + '数据。取消则返回继续' + crtBehaviour + crtDataName + '。',
       okText: '确认',
       cancelText: '取消',
       onOk: async (reject) => {
@@ -202,31 +202,31 @@ async function addSQL(key: string | undefined, event?: Event) {
     // 执行完 保存之前的函数 和 保存 之后再跳转页面
     let label = '查询(' + createSQLFlag.value + ')'
     let sqlKey = SQL_EMPTY_ID_PREFIX + createSQLFlag.value
-    let item = items.filter(a=>a?.key==key)[0];
+    let item = items.filter(a => a?.key == key)[0];
     let dbId;
-    if (item != null && 'dbIdList' in item){
-      dbId = item.dbIdList[0]  as string;
+    if (item != null && 'dbIdList' in item) {
+      dbId = item.dbIdList[0] as string;
     }
 
     if (router != null && key != undefined) {
       router
-        .push({
-          name: 'toCreateSQL',
-          query: {
-            key: key,
-            sqlName: label,
-            dbId: dbId,
-          },
-        })
-        .then(() => {
-          // 添加树形下拉数据 sql字段中
-          createSQL.value = true
-          createSQLFlag.value += 1
-          // 添加下这个数据
-          sqlArray.push({ key: sqlKey, label: label })
-          selectedKeys.value = [sqlKey]
-          openKeys.value = [SQL_MENU]
-        })
+          .push({
+            name: 'toCreateSQL',
+            query: {
+              key: key,
+              sqlName: label,
+              dbId: dbId,
+            },
+          })
+          .then(() => {
+            // 添加树形下拉数据 sql字段中
+            createSQL.value = true
+            createSQLFlag.value += 1
+            // 添加下这个数据
+            sqlArray.push({key: sqlKey, label: label})
+            selectedKeys.value = [sqlKey]
+            openKeys.value = [SQL_MENU]
+          })
     }
   }
 
@@ -241,63 +241,63 @@ async function addSQL(key: string | undefined, event?: Event) {
       // 这里表示原本有数据（由crtDataName、crtBehaviour 当前的数据 和行为确定）正在新增或者编辑，同时点击新增或者编辑 SQL。并且选中了要添加sql的数据源的key
 
       modalContent =
-        '点击确认将保存' + crtDataName + '数据。取消则返回继续' + crtBehaviour + crtDataName + '。'
+          '点击确认将保存' + crtDataName + '数据。取消则返回继续' + crtBehaviour + crtDataName + '。'
     } else if (crtDataName != undefined || crtBehaviour != undefined) {
       // 上面的 else if == crtDataName crtBehaviour 不为空 并且 key 为空
       // 这里表示原本有数据（由crtDataName、crtBehaviour 当前的数据 和行为确定）正在新增或者编辑，同时点击新增或者编辑 SQL。没有选中数据源
       modalWidth = '600px'
       modalContent = () => (
-        <>
-          <p>{'请选择数据源！'}</p>
-          <p>
-            {'点击确认将保存' +
-              crtDataName +
-              '数据。取消则返回继续' +
-              crtBehaviour +
-              crtDataName +
-              '。'}
-          </p>
-          <a-select
-            options={datasourceSelectOption.value}
-            style={{ width: '300px' }}
-            v-model={[choiceDatasource.value, 'value']}
-            placeholder="选择数据源"
-          ></a-select>
+          <>
+            <p>{'请选择数据源！'}</p>
+            <p>
+              {'点击确认将保存' +
+                  crtDataName +
+                  '数据。取消则返回继续' +
+                  crtBehaviour +
+                  crtDataName +
+                  '。'}
+            </p>
+            <a-select
+                options={datasourceSelectOption.value}
+                style={{width: '300px'}}
+                v-model={[choiceDatasource.value, 'value']}
+                placeholder="选择数据源"
+            ></a-select>
 
-          {choiceDatasourceShow.value ? (
-            <span style={{ marginLeft: '10px' }}>
+            {choiceDatasourceShow.value ? (
+                <span style={{marginLeft: '10px'}}>
               {' '}
-              <CloseCircleOutlined style={{ color: 'red' }} />
+                  <CloseCircleOutlined style={{color: 'red'}}/>
               请选择正确的数据源！
             </span>
-          ) : (
-            <span></span>
-          )}
-        </>
+            ) : (
+                <span></span>
+            )}
+          </>
       )
     } else {
       // else 只剩下： (crtDataName == undefined && crtBehaviour == undefined) && ( key == undefined || key == ''))
       // 这里表示没有数据正在新增或者编辑，，同时点击新增或者编辑 SQL。没有选中数据源
       modalWidth = '600px'
       modalContent = () => (
-        <>
-          <p>{'请选择数据源，点击取消则返回。'}</p>
-          <a-select
-            options={datasourceSelectOption.value}
-            style={{ width: '300px' }}
-            v-model={[choiceDatasource.value, 'value']}
-            placeholder="选择数据源"
-          ></a-select>
-          {choiceDatasourceShow.value ? (
-            <span style={{ marginLeft: '10px' }}>
+          <>
+            <p>{'请选择数据源，点击取消则返回。'}</p>
+            <a-select
+                options={datasourceSelectOption.value}
+                style={{width: '300px'}}
+                v-model={[choiceDatasource.value, 'value']}
+                placeholder="选择数据源"
+            ></a-select>
+            {choiceDatasourceShow.value ? (
+                <span style={{marginLeft: '10px'}}>
               {' '}
-              <CloseCircleOutlined style={{ color: 'red' }} />
+                  <CloseCircleOutlined style={{color: 'red'}}/>
               请选择正确的数据源！
             </span>
-          ) : (
-            <span></span>
-          )}
-        </>
+            ) : (
+                <span></span>
+            )}
+          </>
       )
     }
 
@@ -367,29 +367,30 @@ function removeDatasource(key: string, event: Event) {
         content: '删除数据源后，不可回退且与之关联的SQL以及数仓数据将无法使用，请谨慎操作！',
         okText: '确认删除',
         cancelText: '取消',
-        onCancel: () => {},
+        onCancel: () => {
+        },
         onOk: async (reject) => {
           deleteDatasource(key)
-            .then((response) => {
-              if (response.code != 0) {
+              .then((response) => {
+                if (response.code != 0) {
+                  throw new ReportsError(
+                      '删除数据源时发生错误，请联系管理员！',
+                      'source:delete:error',
+                      String(response.error),
+                  )
+                } else {
+                  removeSourceItem()
+                }
+              })
+              .catch((reason) => {
+                // 主动调用模态框的reject 关闭弹框
+                reject()
                 throw new ReportsError(
-                  '删除数据源时发生错误，请联系管理员！',
-                  'source:delete:error',
-                  String(response.error),
+                    '删除数据源时发生错误，请联系管理员！',
+                    'source:delete:error',
+                    String(reason),
                 )
-              }else {
-                removeSourceItem()
-              }
-            })
-            .catch((reason) => {
-              // 主动调用模态框的reject 关闭弹框
-              reject()
-              throw new ReportsError(
-                '删除数据源时发生错误，请联系管理员！',
-                'source:delete:error',
-                String(reason),
-              )
-            })
+              })
         },
       })
     } else {
@@ -434,10 +435,10 @@ function removeSQL(key: string, event: Event) {
 function checkSQLConfig(key: string, event: Event) {
   event.stopPropagation();
 
-  if(router != null && key != '') {
+  if (router != null && key != '') {
     router.push({
       name: 'toEditSQL',
-      query:{
+      query: {
         sqlId: key,
       }
     })
@@ -506,8 +507,8 @@ async function checkAndSaveData(dataName?: string, behaviour?: string) {
       error = new ReportsError('发生错误，请联系管理员！', 'save')
     }
   } else if (
-    (crtDataName != undefined || crtBehaviour != undefined) &&
-    checkAndSaveFun == undefined
+      (crtDataName != undefined || crtBehaviour != undefined) &&
+      checkAndSaveFun == undefined
   ) {
     console.log('未找到保存前检查函数和保存函数')
     // 未找到处理函数
@@ -553,6 +554,15 @@ function initCheckAndSaveFunction() {
   checkAndSaveFunctionArray.push(sqlSave)
 }
 
+const addReport = (event: Event) => {
+  console.log('新建仪表板')
+  if (router != null) {
+    router.push({
+      name: 'toReportsCreator',
+    })
+  }
+}
+
 watch(openKeys, (val) => {
   console.log('openKeys', val)
 })
@@ -578,7 +588,7 @@ onMounted(() => {
       for (let i = 0; i < items.length; i++) {
         let item = items[i]
         if (datasourceSelectOption.value != null && item != null && 'label' in item) {
-          datasourceSelectOption.value[i] = { value: item.key, label: item.label }
+          datasourceSelectOption.value[i] = {value: item.key, label: item.label}
         }
       }
     }
@@ -645,13 +655,13 @@ onUnmounted(() => {
 </script>
 <template>
   <a-menu
-    id="mainMenu"
-    v-model:openKeys="openKeys"
-    v-model:selectedKeys="selectedKeys"
-    :style="{ width: navigatorWidth }"
-    mode="inline"
-    :inlineIndent="10"
-    @click="handleClick"
+      id="mainMenu"
+      v-model:openKeys="openKeys"
+      v-model:selectedKeys="selectedKeys"
+      :style="{ width: navigatorWidth }"
+      mode="inline"
+      :inlineIndent="10"
+      @click="handleClick"
   >
     <!--    数据源菜单-->
     <a-sub-menu :key="DATASOURCE_CONFIG_MENU" class="datasourceClass">
@@ -659,36 +669,36 @@ onUnmounted(() => {
         <span>数据源</span>
         <a-tooltip title="新建数据源">
           <a-button
-            @click="addDataSource"
-            size="small"
-            :style="{ float: 'right', top: '8px', width: '36px' }"
-            class="datasourceCreateBtn"
+              @click="addDataSource"
+              size="small"
+              :style="{ float: 'right', top: '8px', width: '36px' }"
+              class="datasourceCreateBtn"
           >
             <template #icon>
-              <AddDatasource />
+              <AddDatasource/>
             </template>
           </a-button>
         </a-tooltip>
       </template>
       <template #icon>
-        <database-outlined />
+        <database-outlined/>
       </template>
 
       <a-menu-item
-        v-for="(myItem, index) in items"
-        :key="String(myItem?.key)"
-        @click="showDatasourceViewer(myItem, $event)"
-        @mouseenter="datasourceShowButton[index] = true"
-        @mouseleave="datasourceShowButton[index] = false"
+          v-for="(myItem, index) in items"
+          :key="String(myItem?.key)"
+          @click="showDatasourceViewer(myItem, $event)"
+          @mouseenter="datasourceShowButton[index] = true"
+          @mouseleave="datasourceShowButton[index] = false"
       >
         <span v-if="myItem !== null && 'label' in myItem">{{ myItem.label }}</span>
         <a-button-group
-          v-if="
+            v-if="
             datasourceShowButton[index] &&
             myItem != null &&
             !String(myItem.key).startsWith(SOURCE_EMPTY_ID_PREFIX)
           "
-          :style="{
+            :style="{
             display: 'inline-flex',
             justifyContent: 'space-between',
             position: 'absolute',
@@ -699,7 +709,7 @@ onUnmounted(() => {
           <a-tooltip title="创建SQL">
             <a-button size="small" @click="addSQL(myItem?.key as string, $event)">
               <template #icon>
-                <SQLBiger />
+                <SQLBiger/>
               </template>
             </a-button>
           </a-tooltip>
@@ -707,7 +717,7 @@ onUnmounted(() => {
           <a-tooltip title="删除数据源">
             <a-button size="small" @click="removeDatasource(myItem?.key as string, $event)">
               <template #icon>
-                <DeleteOutlined />
+                <DeleteOutlined/>
               </template>
             </a-button>
           </a-tooltip>
@@ -715,7 +725,7 @@ onUnmounted(() => {
           <a-tooltip title="查看/编辑数据源配置">
             <a-button size="small" @click="checkDatasourceConfig(myItem?.key as string, $event)">
               <template #icon>
-                <EditOutlined />
+                <EditOutlined/>
               </template>
             </a-button>
           </a-tooltip>
@@ -723,7 +733,7 @@ onUnmounted(() => {
           <a-tooltip title="查看数据">
             <a-button size="small" @click="checkDatasourceData(myItem?.key as string, $event)">
               <template #icon>
-                <TableOutlined />
+                <TableOutlined/>
               </template>
             </a-button>
           </a-tooltip>
@@ -737,38 +747,38 @@ onUnmounted(() => {
         <span>SQL</span>
         <a-tooltip title="新建sql">
           <a-button
-            @click="addSQL(undefined, $event)"
-            size="small"
-            :style="{ float: 'right', top: '8px', width: '36px' }"
-            class="sqlCreateBtn"
+              @click="addSQL(undefined, $event)"
+              size="small"
+              :style="{ float: 'right', top: '8px', width: '36px' }"
+              class="sqlCreateBtn"
           >
             <template #icon>
-              <SQLBiger />
+              <SQLBiger/>
             </template>
           </a-button>
         </a-tooltip>
       </template>
       <template #icon>
-        <bar-chart-outlined />
+        <bar-chart-outlined/>
       </template>
 
       <a-menu-item
-        v-if="sqlArray !== null && sqlArray.length > 0"
-        v-for="(subItem, index) in sqlArray"
-        @click="showSQLDetail(subItem?.key as string, $event)"
-        :key="String(subItem?.key)"
-        @mouseenter="sqlShowButton[index] = true"
-        @mouseleave="sqlShowButton[index] = false"
+          v-if="sqlArray !== null && sqlArray.length > 0"
+          v-for="(subItem, index) in sqlArray"
+          @click="showSQLDetail(subItem?.key as string, $event)"
+          :key="String(subItem?.key)"
+          @mouseenter="sqlShowButton[index] = true"
+          @mouseleave="sqlShowButton[index] = false"
       >
         <span v-if="subItem !== null && 'label' in subItem">{{ subItem.label }}</span>
 
         <a-button-group
-          v-if="
+            v-if="
             sqlShowButton[index] &&
             subItem != null &&
             !String(subItem.key).startsWith(SQL_EMPTY_ID_PREFIX)
           "
-          :style="{
+            :style="{
             display: 'inline-flex',
             justifyContent: 'space-between',
             position: 'absolute',
@@ -779,7 +789,7 @@ onUnmounted(() => {
           <a-tooltip title="删除SQL">
             <a-button size="small" @click="removeSQL(subItem?.key as string, $event)">
               <template #icon>
-                <DeleteOutlined />
+                <DeleteOutlined/>
               </template>
             </a-button>
           </a-tooltip>
@@ -787,7 +797,7 @@ onUnmounted(() => {
           <a-tooltip title="查看/编辑SQL配置">
             <a-button size="small" @click="checkSQLConfig(subItem?.key as string, $event)">
               <template #icon>
-                <EditOutlined />
+                <EditOutlined/>
               </template>
             </a-button>
           </a-tooltip>
@@ -795,7 +805,7 @@ onUnmounted(() => {
           <a-tooltip title="查看SQL数据">
             <a-button size="small" @click="checkSQLData(subItem?.key as string, $event)">
               <template #icon>
-                <TableOutlined />
+                <TableOutlined/>
               </template>
             </a-button>
           </a-tooltip>
@@ -803,11 +813,23 @@ onUnmounted(() => {
       </a-menu-item>
     </a-sub-menu>
 
-    <a-sub-menu :key="REPORTS_MENU">
+    <a-sub-menu :key="REPORTS_MENU" class="ReportMenuClass">
       <template #title>
         <span>
-          <bar-chart-outlined />
+          <bar-chart-outlined/>
           <span>仪表板</span>
+          <a-tooltip title="新建仪表板">
+          <a-button
+              @click="addReport($event)"
+              size="small"
+              :style="{ float: 'right', top: '8px', width: '36px' }"
+              class="reportCreateBtn"
+          >
+            <template #icon>
+              <SQLBiger/>
+            </template>
+          </a-button>
+        </a-tooltip>
         </span>
       </template>
     </a-sub-menu>
@@ -815,7 +837,8 @@ onUnmounted(() => {
 </template>
 <style scoped>
 .sqlCreateBtn,
-.datasourceCreateBtn {
+.datasourceCreateBtn,
+.reportCreateBtn {
   display: none;
 }
 
@@ -824,6 +847,10 @@ onUnmounted(() => {
 }
 
 .datasourceClass:hover .datasourceCreateBtn {
+  display: inline-block;
+}
+
+.ReportMenuClass:hover .reportCreateBtn {
   display: inline-block;
 }
 </style>
