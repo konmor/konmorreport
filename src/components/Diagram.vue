@@ -18,7 +18,7 @@
 </template>
 <script lang="ts">
 export default {
-  name: 'myDraggableA',
+  name: 'Diagram',
 }
 </script>
 <script setup lang="ts">

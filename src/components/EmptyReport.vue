@@ -5,13 +5,17 @@ export default {
 </script>
 <script setup lang="ts">
 
-import MyDraggableA from "@/test/A.vue";
+import Diagram from "@/components/Diagram.vue";
 </script>
 
 <template>
   <a-layout :style="{height:'100%'}">
     <a-layout-sider :style="{border:'1px solid black',height:'100%',backgroundColor:'transparent'}">
-      <myDraggableA/>
+      <div class="diagramContainer">
+        <span class="diagramTitle">图表</span>
+        <Diagram/>
+      </div>
+
     </a-layout-sider>
     <a-layout-content :style="{border:'1px solid black',height:'100%',
     backgroundColor:'transparent',marginLeft:'8px',overflowY:'auto',overflowX:'hidden'}">
@@ -33,5 +37,14 @@ import MyDraggableA from "@/test/A.vue";
   background: #3574d3;
   border: 1px solid red;
   min-height: 150px;
+  margin: 1px;
+}
+
+.diagramContainer .diagramTitle {
+  font-size: 1em;
+  display: inline-block;
+  padding: 10px 0 8px 14px;
+  background-color: #a7e88e;
+  width: 100%;
 }
 </style>
