@@ -6,6 +6,7 @@
         :list="Array.of(item)"
         animation="200"
         item-key="name"
+        @end="testEnd"
         class="allDiagramIconClass">
       <template #item="{element}">
         <div class="diagramIcon">
@@ -29,7 +30,9 @@ import type {DiagramIconComponent} from "@/assets/diagram-icon/type/diagramIcon.
 
 const allDiagramIcon = reactive<Array<DiagramIconComponent>>(DiagramIconFactory.all);
 
-
+const testEnd = (evt:Event)=>{
+  console.log('end test',evt)
+}
 </script>
 
 <style scoped>
@@ -75,7 +78,7 @@ const allDiagramIcon = reactive<Array<DiagramIconComponent>>(DiagramIconFactory.
 .diagramContainer .allDiagramIconClass:hover .diagramIcon .component {
   color: #fff;
   transition: transform 0.4s ease; /*, font-size 0.4s ease*/
-  transform: scale(1.2);
+  transform: scale(1.5);
   /*font-size: 36px;*/
 }
 </style>
