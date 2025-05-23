@@ -1,14 +1,15 @@
 <template>
   <div class="diagramContainer">
     <draggable
-        v-for="(item,index) in allDiagramIcon"
-        :group="{pull:'clone', put:false,name:item.meta.name}"
-        :list="Array.of(item)"
-        animation="200"
-        item-key="name"
-        @end="testEnd"
-        class="allDiagramIconClass">
-      <template #item="{element}">
+      v-for="(item, index) in allDiagramIcon"
+      :group="{ pull: 'clone', put: false, name: 'diagram' }"
+      :list="Array.of(item)"
+      animation="200"
+      item-key="name"
+      @end="testEnd"
+      class="allDiagramIconClass"
+    >
+      <template #item="{ element }">
         <div class="diagramIcon">
           <component :is="element.component" class="component"></component>
           <span class="component-title">{{ element.meta.title }}</span>
@@ -23,15 +24,15 @@ export default {
 }
 </script>
 <script setup lang="ts">
-import {reactive, ref} from 'vue';
-import draggable from 'vuedraggable';
-import * as DiagramIconFactory from "@/assets/diagram-icon/factory.ts";
-import type {DiagramIconComponent} from "@/assets/diagram-icon/type/diagramIcon.ts";
+import { reactive, ref } from 'vue'
+import draggable from 'vuedraggable'
+import * as DiagramIconFactory from '@/assets/diagram-icon/factory.ts'
+import type { DiagramIconComponent } from '@/assets/diagram-icon/type/diagramIcon.ts'
 
-const allDiagramIcon = reactive<Array<DiagramIconComponent>>(DiagramIconFactory.all);
+const allDiagramIcon = reactive<Array<DiagramIconComponent>>(DiagramIconFactory.all)
 
-const testEnd = (evt:Event)=>{
-  console.log('end test',evt)
+const testEnd = (evt: Event) => {
+  console.log('end test', evt)
 }
 </script>
 
@@ -51,7 +52,6 @@ const testEnd = (evt:Event)=>{
   width: 6.5em;
 }
 
-
 .diagramContainer .allDiagramIconClass .diagramIcon {
   display: flex;
   flex-direction: column;
@@ -70,7 +70,7 @@ const testEnd = (evt:Event)=>{
   margin-top: 0.5em;
 }
 
-.diagramContainer .allDiagramIconClass:hover .diagramIcon{
+.diagramContainer .allDiagramIconClass:hover .diagramIcon {
   border-radius: 4px;
   background-color: #85c647;
 }
