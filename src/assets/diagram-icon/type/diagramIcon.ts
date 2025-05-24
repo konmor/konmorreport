@@ -1,6 +1,6 @@
 import type {DefineComponent} from "vue";
 
-export interface DiagramIconComponent {
+export interface IconComponent {
     component: DefineComponent,
     meta: {
         instance: {
@@ -11,4 +11,8 @@ export interface DiagramIconComponent {
         description?: string,
         title?: string,
     }
+}
+
+export interface DiagramIconComponent extends IconComponent{
+
 }

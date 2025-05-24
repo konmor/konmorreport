@@ -1,0 +1,22 @@
+<template>
+  <icon>
+    <template #component="{ fill, height, width, style }">
+      <svg
+        viewBox="0 0 1024 1024"
+        xmlns="http://www.w3.org/2000/svg"
+        :width="width"
+        :height="height"
+        :style="style"
+      >
+        <path
+          d="M544 576a32 32 0 0 1 32 32v33.728A316.736 316.736 0 0 0 518.4 768H416a32 32 0 0 1 0-64H512v-64H416a32 32 0 0 1-32-32v-128a32 32 0 0 1 32-32h128a32 32 0 0 1 0 64H448v64h96zM896 320H128v640h411.008a317.568 317.568 0 0 0 38.4 64H64a64 64 0 0 1-64-64V128a64 64 0 0 1 64-64h64v128a64 64 0 0 0 64 64h64a64 64 0 0 0 64-64V64h384v128a64 64 0 0 0 64 64h64a64 64 0 0 0 64-64V64h64a64 64 0 0 1 64 64v449.472a316.288 316.288 0 0 0-128-59.008V320z m-128-128V0h64v192h-64zM192 192V0h64v192H192z m608 384A224 224 0 1 1 576 800 224 224 0 0 1 800 576z m-32 224a32 32 0 0 0 32 32h128a32 32 0 0 0 0-64H832v-96a32 32 0 0 0-64 0v128z"
+          :fill="fill"
+        />
+      </svg>
+    </template>
+  </icon>
+</template>
+
+<script setup lang="ts">
+import Icon from '@ant-design/icons-vue'
+</script>

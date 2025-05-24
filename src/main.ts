@@ -1,12 +1,13 @@
-import {type ComponentPublicInstance, createApp, handleError} from 'vue'
+import { type ComponentPublicInstance, createApp, handleError } from 'vue'
 import App from './App.vue'
 import router from '@/router'
 import Antd from 'ant-design-vue'
 import 'ant-design-vue/dist/reset.css'
-import {createPinia} from 'pinia'
-import {initErrorHandler} from '@/utils/errorHandler/HandlerError.ts'
-import registerCustomIcon from "@/assets/Register.ts";
-import * as DiagramIconFactory from "@/assets/diagram-icon/factory.ts";
+import { createPinia } from 'pinia'
+import { initErrorHandler } from '@/utils/errorHandler/HandlerError.ts'
+import registerCustomIcon from '@/assets/Register.ts'
+import * as DiagramIconFactory from '@/assets/diagram-icon/factory.ts'
+import * as FilterFactory from '@/assets/filter-icon/factory.ts'
 
 let app = createApp(App)
 let pinia = createPinia()
@@ -15,12 +16,14 @@ app.use(Antd)
 app.use(pinia)
 
 // 初始化全局错误处理
-initErrorHandler(app);
+initErrorHandler(app)
 
 // 注册自定义图标
-registerCustomIcon(app);
+registerCustomIcon(app)
 
 // 初始化所有报表图标
-DiagramIconFactory.init();
+DiagramIconFactory.initDiagrams()
+// 初始化所有的报表选择器
+FilterFactory.initFilter()
 
 app.mount('#app')

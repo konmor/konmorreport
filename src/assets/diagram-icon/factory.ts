@@ -1,4 +1,4 @@
-import type {DiagramIconComponent} from "@/assets/diagram-icon/type/diagramIcon.ts";
+import type { DiagramIconComponent, IconComponent } from '@/assets/diagram-icon/type/diagramIcon.ts'
 import {
     TableOutlined,
     PieChartOutlined,
@@ -9,12 +9,12 @@ import {
     DashboardOutlined
 } from '@ant-design/icons-vue';
 import {getUuid} from "ant-design-vue/es/vc-notification/HookNotification";
-import Tag from "@/assets/icon/Tag.vue";
-import Tab from "@/assets/icon/Tab.vue";
+import Tag from "@/assets/diagram-icon/Tag.vue";
+import Tab from "@/assets/diagram-icon/Tab.vue";
 
 export let all: Array<DiagramIconComponent>;
 
-export function init(icons?: Array<DiagramIconComponent>) {
+export function initDiagrams(icons?: Array<DiagramIconComponent>) {
     if (icons) {
         all = icons;
     } else {

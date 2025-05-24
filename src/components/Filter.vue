@@ -1,12 +1,12 @@
 <template>
   <draggable
-      :group="{ pull: 'clone', put: false, name: 'diagram' }"
-      :sort="false"
-      :list="allDiagramIcon"
-      animation="200"
-      item-key="name"
-      :clone="cloneComponent"
-      class="diagramContainer"
+    :group="{ pull: 'clone', put: false, name: 'filter' }"
+    :sort="false"
+    :list="allFilterIcon"
+    animation="200"
+    item-key="name"
+    :clone="cloneComponent"
+    class="diagramContainer"
   >
     <template #item="{ element }">
       <div class="diagram">
@@ -18,19 +18,19 @@
 </template>
 <script lang="ts">
 export default {
-  name: 'Diagram',
+  name: 'Filter',
 }
 </script>
 <script setup lang="ts">
 import {reactive, ref} from 'vue'
 import draggable from 'vuedraggable'
-import * as DiagramIconFactory from '@/assets/diagram-icon/factory.ts'
-import type { DiagramIconComponent, IconComponent } from '@/assets/diagram-icon/type/diagramIcon.ts'
+import * as FilterIconFactory from '@/assets/filter-icon/factory.ts'
+import type { FilterIconComponent } from '@/assets/filter-icon/type/filter.ts'
 
-const allDiagramIcon = reactive<Array<DiagramIconComponent>>(DiagramIconFactory.all)
+const allFilterIcon = reactive<Array<FilterIconComponent>>(FilterIconFactory.all)
 
-const cloneComponent = (original: DiagramIconComponent) => {
-  return {value: original.meta.type, xSpan: 3, ySpan: 4};
+const cloneComponent = (original: FilterIconComponent) => {
+  return {value: original.meta.type, xSpan: 5, ySpan: 2};
 }
 
 </script>
