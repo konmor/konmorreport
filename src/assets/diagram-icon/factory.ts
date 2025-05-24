@@ -5,9 +5,12 @@ import {
     BarChartOutlined,
     DotChartOutlined,
     LineChartOutlined,
-    RadarChartOutlined
+    RadarChartOutlined,
+    DashboardOutlined
 } from '@ant-design/icons-vue';
 import {getUuid} from "ant-design-vue/es/vc-notification/HookNotification";
+import Tag from "@/assets/icon/Tag.vue";
+import Tab from "@/assets/icon/Tab.vue";
 
 export let all: Array<DiagramIconComponent>;
 
@@ -40,7 +43,19 @@ export function init(icons?: Array<DiagramIconComponent>) {
             {
                 component: RadarChartOutlined,
                 meta: {instance: {id: getUuid()}, type: 'radarChart', name: 'radarChart', title: '雷达图'}
-            }
+            },
+            {
+                component: DashboardOutlined,
+                meta: {instance: {id: getUuid()}, type: 'guage', name: 'guage', title: '仪表'}
+            },
+            {
+                component: Tag,
+                meta: {instance: {id: getUuid()}, type: 'tag', name: 'tag', title: '标签'}
+            },
+            {
+                component: Tab,
+                meta: {instance: {id: getUuid()}, type: 'tab', name: 'tab', title: '页签'}
+            },
         ]
 
     }
