@@ -7,6 +7,7 @@ export default {
 import Diagram from '@/components/Diagram.vue'
 import draggable from 'vuedraggable'
 import { reactive } from 'vue'
+import A from "@/test/A.vue";
 
 function generateRandomBrightColor() {
   var r = Math.floor(Math.random() * 256) + 50 // 控制增加的值为50
