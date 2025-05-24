@@ -5,7 +5,7 @@
       :list="allDiagramIcon"
       animation="200"
       item-key="name"
-      @end="testEnd"
+      :clone="cloneComponent"
       class="diagramContainer"
   >
     <template #item="{ element }">
@@ -29,9 +29,10 @@ import type {DiagramIconComponent} from '@/assets/diagram-icon/type/diagramIcon.
 
 const allDiagramIcon = reactive<Array<DiagramIconComponent>>(DiagramIconFactory.all)
 
-const testEnd = (evt: Event) => {
-  console.log('end test', evt)
+const cloneComponent = (original: DiagramIconComponent) => {
+  return {value: original.meta.type, xSpan: 3, ySpan: 4};
 }
+
 </script>
 
 <style scoped>
@@ -47,7 +48,7 @@ const testEnd = (evt: Event) => {
   align-items: center;
   height: 100%;
   width: 100%;
-  cursor: pointer;
+  cursor: move;
   padding-top: 10px;
 }
 

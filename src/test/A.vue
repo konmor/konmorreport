@@ -1,157 +1,89 @@
 <template>
-  <div class="msg">{{ state.message }}</div>
-  <div class="itxst">
-    <div class="group">
-      <draggable
-          :sort="true"
-          :list="state.modules.arr1"
-          ghost-class="ghost"
-          handle=".move"
-          filter=".forbid"
-          :force-fallback="true"
-          chosen-class="chosenClass"
-          animation="300"
-          group="itxst"
-          :move="onMove"
-          @onSort="onSortA"
-      >
-        <template #item="{ element }">
-          <div class="item move">
-            <label class="move">{{ element.name }}</label>
-            <span
-                v-html="element.name == 'A组' ? 'www.itxst.com' : '内容....'"
-            ></span>
-          </div>
-        </template>
-      </draggable>
-    </div>
-    <div class="group">
-      <draggable
-          :list="state.modules.arr2"
-          ghost-class="ghost"
-          handle=".move"
-          filter=".forbid"
-          :force-fallback="true"
-          chosen-class="chosenClass"
-          animation="300"
-          group="itxst"
-          :onSort="onSortB"
-          :move="onMove"
-      >
-        <template #item="{ element }">
-          <div class="item move">
-            <label class="move">{{ element.name }}</label>
-            <span>内容....</span>
-          </div>
-        </template>
-      </draggable>
-    </div>
+  <div class="drag-container">
+    <h3>源列表（可拖拽）</h3>
+    <draggable
+        v-model:list="sourceList"
+        :group="{ name: 'shared', pull: 'clone', put: false }"
+        :clone="cloneItem"
+        item-key="id"
+    >
+      <template #item="{ element }">
+        <div class="drag-item">{{ element.name }}</div>
+      </template>
+    </draggable>
+
+    <h3>目标列表（有条件接收）</h3>
+    <draggable
+        v-model:list="targetList"
+        group="shared"
+        item-key="id"
+        @move="onMove"
+        @add="onAdd"
+    >
+      <template #item="{ element }">
+        <div class="drag-item">{{ element.name }}</div>
+      </template>
+    </draggable>
   </div>
 </template>
+
 <script setup>
-import {ref, reactive} from "vue";
-//导入draggable组件(这里用的是VUE的setup语法糖)
-import draggable from "vuedraggable";
+import {ref} from 'vue'
+import draggable from 'vuedraggable'
 
-const state = reactive({
-  message: "A组只能往B组，不允许排序",
-  modules: {
-    arr1: [
-      {name: "A组", id: 1, disabledPark: true},
-      {name: "C#", id: 2},
-      {name: "Java", id: 3},
-      {name: "PHP", id: 4},
-    ],
-    arr2: [
-      {name: "B组", id: 5},
-      {name: "员工", id: 6},
-      {name: "报表", id: 7},
-      {name: "库存", id: 8},
-    ],
-  },
-});
-const onSortA = (e, originalEvent) => {
-};
-//当插入、移除、改变位置时会触发该事件
-const onSortB = (e) => {
-  console.log(e);
-  state.message = JSON.stringify(state.modules.arr2);
-};
+// 源数据
+const sourceList = ref([
+  {id: 1, name: '图表1'},
+  {id: 2, name: '表格1'}
+])
 
-const onMove = (e, originalEvent) => {
-  //不允许停靠到A组的第一个元素
-  if (e.relatedContext.element.disabledPark == true) {
-    state.message = "不允许停靠到A组的第一个元素";
-    setTimeout(function () {
-      state.message = "A组只能往B组，不允许排序";
-    }, 2000);
-    return false;
+// 目标数据
+const targetList = ref([])
+
+// 克隆函数（源列表拖拽时复制一份）
+function cloneItem(item) {
+  return {...item}
+}
+
+// 移动时判断是否允许放入
+function onMove(evt, originalEvent) {
+  const draggedItem = evt.draggedContext.element
+  const type = draggedItem.name
+
+  // 示例：如果目标列表中已存在相同名字的组件，则不允许添加
+  const exists = targetList.value.some(i => i.name === type)
+  if (exists) {
+    alert('该组件已存在，不能重复添加！')
+    return false // 阻止添加
   }
 
-  return true;
-};
+  // 示例：根据名称过滤不允许添加的类型
+  if (type.includes('禁止')) {
+    alert('此类组件不允许添加！')
+    return false
+  }
+
+  return false // 允许添加
+}
+
+// 添加成功后触发（可选）
+function onAdd(evt) {
+  console.log('添加成功:', targetList)
+}
 </script>
-<style>
-body {
-  padding: 0px;
-  margin: 0px;
-  background-color: #f1f1f1;
-}
 
-.msg {
-  padding: 10px 20px 0px 20px;
-}
-
-.itxst {
-  background-color: #f1f1f1;
+<style scoped>
+.drag-container {
   display: flex;
+  justify-content: space-around;
   padding: 20px;
 }
 
-.group {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-content: center;
-  width: 46%;
-  margin-right: 20px;
-}
-
-.item {
-  border: solid 1px #ddd;
-  padding: 0px;
-  text-align: left;
-  background-color: #fff;
-  margin-bottom: 10px;
-  display: flex;
-  height: 36px;
-  user-select: none;
-}
-
-.item > label {
-  padding: 6px 10px;
-  color: #333;
-}
-
-.item > label:hover {
+.drag-item {
+  padding: 10px;
+  margin: 5px 0;
+  background-color: #f0f0f0;
+  border-radius: 4px;
   cursor: move;
-}
-
-.item > span {
-  padding: 6px 10px;
-  color: #666;
-}
-
-.ghost {
-  border: solid 1px rgb(19, 41, 239) !important;
-}
-
-.chosenClass {
-  opacity: 1;
-  border: solid 1px red;
-}
-
-.fallbackClass {
-  background-color: aquamarine;
 }
 </style>

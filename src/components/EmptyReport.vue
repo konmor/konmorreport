@@ -6,7 +6,7 @@ export default {
 <script setup lang="ts">
 import Diagram from '@/components/Diagram.vue'
 import draggable from 'vuedraggable'
-import { reactive } from 'vue'
+import {reactive} from 'vue'
 import A from "@/test/A.vue";
 
 function generateRandomBrightColor() {
@@ -16,52 +16,116 @@ function generateRandomBrightColor() {
   return 'rgb(' + r + ', ' + g + ', ' + b + ')'
 }
 
-const testDown = (event: MouseEvent) => {
-  console.log('testDown', event)
-}
-const testUp = (event: MouseEvent) => {
-  console.log('testUp', event)
-}
-const testMove = (event: MouseEvent) => {
-  console.log('testMove', event)
-}
-const items = reactive<{ value: number|any; x?: number; y?: number; xSpan?: number; ySpan?: number }[]>(
-  [],
+
+const items = reactive<{ value: number | any; index: number; xSpan?: number; ySpan?: number }[]>(
+    [
+      {
+        "value": 1,
+        "index": 1,
+        "xSpan": 9,
+        "ySpan": 5
+      },
+      {
+        "value": "radarChart",
+        "index": 4,
+        "xSpan": 3,
+        "ySpan": 4
+      },
+      {
+        "value": "radarChart",
+        "index": 4,
+        "xSpan": 5,
+        "ySpan": 6
+      },
+      {
+        "value": "dotChart",
+        "index": 4,
+        "xSpan": 5,
+        "ySpan": 6
+      },
+      {
+        "value": "pieChart",
+        "index": 4,
+        "xSpan": 5,
+        "ySpan": 6
+      },
+      {
+        "value": 0,
+        "index": 0,
+        "xSpan": 4,
+        "ySpan": 4
+      },
+      {
+        "value": 2,
+        "index": 2,
+        "xSpan": 1,
+        "ySpan": 1
+      },
+      {
+        "value": 4,
+        "index": 4,
+        "xSpan": 3,
+        "ySpan": 3
+      },
+      {
+        "value": "radarChart",
+        "index": 4,
+        "xSpan": 3,
+        "ySpan": 4
+      },
+      {
+        "value": "radarChart",
+        "index": 4,
+        "xSpan": 3,
+        "ySpan": 4
+      },
+      {
+        "value": 3,
+        "index": 3,
+        "xSpan": 1,
+        "ySpan": 1
+      },
+      {
+        "value": 5,
+        "index": 5,
+        "xSpan": 1,
+        "ySpan": 1
+      }
+    ]
 )
 
-for (let i = 0; i < 500; i++) {
-  if (i == 1) {
-    items.push({ value: i, x: 2, y: 1, xSpan: 5, ySpan: 1 })
-  } else {
-    items.push({ value: i })
-  }
-}
 
 const endTest = (event: Event) => {
-  console.log('endTest', event,items)
+  console.log('chart end', event, items)
 
 }
 const moveTest = (event: Event) => {
-  console.log('moveTest', event)
+  console.log('chart move', event)
 }
-const addTest = (event:Event)=>{
-  console.log('addTest', event)
+const addTest = (event: Event) => {
+// __draggable_context = {element,index}
+//   console.log('chart add', event.item.__draggable_context.element.meta);
+  console.log(items)
+}
+
+const log = function log(event: Event) {
+  window.console.log(event);
 }
 </script>
 
 <template>
   <a-layout :style="{ height: '100%' }">
     <a-layout-sider
-      :style="{ border: '1px solid black', height: '100%', backgroundColor: 'transparent' }"
+        :style="{ border: '1px solid black', height: '100%', backgroundColor: 'transparent' }"
     >
       <div class="diagramContainer">
         <span class="diagramTitle">图表</span>
         <!--        <Diagram @mousedown="testDown($event)" @mouseup="testUp($event)" @mousemove="testMove($event)"/>-->
-        <Diagram />
+        <Diagram/>
       </div>
     </a-layout-sider>
     <a-layout-content
-      :style="{
+        :style="{
         border: '1px solid black',
         height: '100%',
         backgroundColor: 'transparent',
@@ -73,37 +137,38 @@ const addTest = (event:Event)=>{
       }"
     >
       <draggable
-        :style="{
+          :style="{
           display: 'grid',
           gridTemplateColumns: 'repeat(24,1fr)',
           gridAutoRows: '3em',
           justifyContent: 'center',
+          gridAutoFlow:'row dense',
         }"
-        class="chartContainer"
-        :list="items"
-        :group="{ name: 'outerContainer', pull: false, put: true }"
-        @end="endTest"
-        @move="moveTest"
-        @add="addTest"
-        item-key="value"
-        tag="div"
+          class="chartContainer"
+          :list="items"
+          :group="{ name: 'outerContainer', pull: false, put: true }"
+          animation="500"
+          @end="endTest"
+          @move="moveTest"
+          @add="addTest"
+          @change="log"
+          item-key="value"
+          tag="div"
+
       >
         <template #item="{ element }">
           <div
-            v-if="element.value == 1"
-            :style="{
+              :style="{
               gridRowStart: `span ${element.xSpan}`,
               gridColumnStart: `span ${element.ySpan}`,
               backgroundColor: generateRandomBrightColor(),
             }"
-            class="chart"
-            @click="element.xSpan++;element.ySpan++"
+              class="chart"
+              @click="element.xSpan++;element.ySpan++"
           >
             {{ element.value }}
           </div>
-          <div v-else class="chart" :style="{ backgroundColor: generateRandomBrightColor() }">
-            {{ element.value }}
-          </div>
+
         </template>
       </draggable>
     </a-layout-content>
@@ -111,14 +176,6 @@ const addTest = (event:Event)=>{
 </template>
 
 <style scoped>
-.grid-content {
-  box-sizing: border-box;
-  background: #3574d3;
-  border: 1px solid red;
-  min-height: 150px;
-  margin: 1px;
-}
-
 .diagramContainer .diagramTitle {
   font-size: 1em;
   display: inline-block;
@@ -129,5 +186,6 @@ const addTest = (event:Event)=>{
 
 .chartContainer .chart {
   border: black 1px solid;
+  margin: 1px;
 }
 </style>
