@@ -30,7 +30,7 @@ import type { FilterIconComponent } from '@/assets/filter-icon/type/filter.ts'
 const allFilterIcon = reactive<Array<FilterIconComponent>>(FilterIconFactory.all)
 
 const cloneComponent = (original: FilterIconComponent) => {
-  return {value: original.meta.type, xSpan: 5, ySpan: 2};
+  return {value: original.meta.type, xSpan: 1, ySpan: 3};
 }
 
 </script>
