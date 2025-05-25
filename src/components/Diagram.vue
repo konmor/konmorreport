@@ -1,12 +1,13 @@
 <template>
   <draggable
-      :group="{ pull: 'clone', put: false, name: 'diagram' }"
-      :sort="false"
-      :list="allDiagramIcon"
-      animation="200"
-      item-key="name"
-      :clone="cloneComponent"
-      class="diagramContainer"
+    :group="{ pull: 'clone', put: false, name: 'diagram' }"
+    :sort="false"
+    :list="allDiagramIcon"
+    animation="200"
+    item-key="name"
+    :clone="cloneComponent"
+    drag-class="drag-class"
+    class="diagramContainer"
   >
     <template #item="{ element }">
       <div class="diagram">
@@ -22,21 +23,20 @@ export default {
 }
 </script>
 <script setup lang="ts">
-import {reactive, ref} from 'vue'
+import { reactive, ref } from 'vue'
 import draggable from 'vuedraggable'
 import * as DiagramIconFactory from '@/assets/diagram-icon/factory.ts'
 import type { DiagramIconComponent, IconComponent } from '@/assets/diagram-icon/type/diagramIcon.ts'
+import { getUuid } from 'ant-design-vue/es/vc-notification/HookNotification'
 
 const allDiagramIcon = reactive<Array<DiagramIconComponent>>(DiagramIconFactory.all)
 
 const cloneComponent = (original: DiagramIconComponent) => {
-  return {value: original.meta.type, xSpan: 3, ySpan: 4};
+  return { value: original.meta.type, id: getUuid(), xSpan: 3, ySpan: 4 }
 }
-
 </script>
 
 <style scoped>
-
 .diagramContainer {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

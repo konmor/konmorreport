@@ -6,9 +6,13 @@ export default {
 <script setup lang="ts">
 import Diagram from '@/components/Diagram.vue'
 import draggable from 'vuedraggable'
-import { reactive } from 'vue'
+import { onMounted, onUnmounted, reactive } from 'vue'
 import A from '@/test/A.vue'
 import Filter from '@/components/Filter.vue'
+import { getUuid } from 'ant-design-vue/es/vc-notification/HookNotification'
+// 1. 引入echarts
+import * as echarts from "echarts"
+import { barTemplate } from '@/composable/ChartTemplate.ts'
 
 function generateRandomBrightColor() {
   var r = Math.floor(Math.random() * 256) + 50 // 控制增加的值为50
@@ -17,76 +21,76 @@ function generateRandomBrightColor() {
   return 'rgb(' + r + ', ' + g + ', ' + b + ')'
 }
 
-const items = reactive<{ value: number | any; index: number; xSpan?: number; ySpan?: number }[]>([
+const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number }[]>([
   {
     value: 1,
-    index: 1,
+    id: getUuid(),
     xSpan: 9,
     ySpan: 5,
   },
   {
     value: 'radarChart',
-    index: 4,
+    id: getUuid(),
     xSpan: 3,
     ySpan: 4,
   },
   {
     value: 'radarChart',
-    index: 4,
+    id: getUuid(),
     xSpan: 5,
     ySpan: 6,
   },
   {
     value: 'dotChart',
-    index: 4,
+    id: getUuid(),
     xSpan: 5,
     ySpan: 6,
   },
   {
     value: 'pieChart',
-    index: 4,
+    id: getUuid(),
     xSpan: 5,
     ySpan: 6,
   },
   {
     value: 0,
-    index: 0,
+    id: getUuid(),
     xSpan: 4,
     ySpan: 4,
   },
   {
     value: 2,
-    index: 2,
+    id: getUuid(),
     xSpan: 1,
     ySpan: 1,
   },
   {
     value: 4,
-    index: 4,
+    id: getUuid(),
     xSpan: 3,
     ySpan: 3,
   },
   {
     value: 'radarChart',
-    index: 4,
+    id: getUuid(),
     xSpan: 3,
     ySpan: 4,
   },
   {
     value: 'radarChart',
-    index: 4,
+    id: getUuid(),
     xSpan: 3,
     ySpan: 4,
   },
   {
     value: 3,
-    index: 3,
+    id: getUuid(),
     xSpan: 1,
     ySpan: 1,
   },
   {
     value: 5,
-    index: 5,
+    id: getUuid(),
     xSpan: 1,
     ySpan: 1,
   },
@@ -100,19 +104,65 @@ const moveTest = (event: Event) => {
 }
 const addTest = (event: Event) => {
   // __draggable_context = {element,index}
-  //   console.log('chart add', event.item.__draggable_context.element.meta);
-  console.log(items)
+  console.log('chart add', event, event.item.__draggable_context.element.meta);
+  console.log(items);
 }
 
-const log = function log(event: Event) {
-  window.console.log(event)
+const change = function change(event: Event) {
+  if('added' in event){
+    window.console.log(event['added'])
+    let id = event['added'].element.id;
+    let container = document.getElementById(id);
+    // 2.初始化echarts 挂载的位置
+    let myEcharts = echarts.init(container); // 参数是dom节点
+    // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
+    myEcharts.setOption(barTemplate('test2'))
+
+    let observer = new ResizeObserver(() => {
+      if (myEcharts) myEcharts.resize()
+    })
+    observer.observe(container as Element);
+    observerArray.push(observer);
+  }
 }
+
+let observerArray: ResizeObserver[] = [];
+
+
+onMounted(()=>{
+
+  for (let i = 0; i < items.slice().length; i++) {
+    let container = document.getElementById(items[i].id);
+    // 2.初始化echarts 挂载的位置
+    let myEcharts = echarts.init(container); // 参数是dom节点
+    // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
+    myEcharts.setOption(barTemplate('test1'))
+
+
+    let observer = new ResizeObserver(() => {
+      if (myEcharts) myEcharts.resize()
+    })
+    observer.observe(container as Element);
+    observerArray.push(observer);
+  }
+})
+
+onUnmounted(()=>{
+  observerArray.forEach(item=>{
+    if(item)item.disconnect()
+  })
+})
 </script>
 
 <template>
   <a-layout :style="{ height: '100%' }">
     <a-layout-sider
-      :style="{ border: '1px solid black', height: '100%', backgroundColor: 'transparent' ,overflowY:'auto'}"
+      :style="{
+        border: '1px solid black',
+        height: '100%',
+        backgroundColor: 'transparent',
+        overflowY: 'auto',
+      }"
     >
       <div class="diagramContainer">
         <span class="diagramTitle">图表</span>
@@ -152,21 +202,28 @@ const log = function log(event: Event) {
         @end="endTest"
         @move="moveTest"
         @add="addTest"
-        @change="log"
-        item-key="value"
+        @change="change"
+        item-key="id"
         tag="div"
       >
         <template #item="{ element }">
           <div
+            :id="element.id"
+            :ref="element.id"
             :style="{
               gridRowStart: `span ${element.xSpan}`,
               gridColumnStart: `span ${element.ySpan}`,
-              backgroundColor: generateRandomBrightColor(),
+              /*backgroundColor: generateRandomBrightColor(),*/
             }"
             class="chart"
-            @click="element.xSpan++;element.ySpan++"
+            @click="
+              () => {
+                element.xSpan++
+                element.ySpan++
+              }
+            "
           >
-            {{ element.value }}
+            <!--            {{ element.value }}-->
           </div>
         </template>
       </draggable>

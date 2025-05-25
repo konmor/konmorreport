@@ -22,7 +22,7 @@ export default {
 }
 </script>
 <script setup lang="ts">
-import {reactive, ref} from 'vue'
+import { reactive, ref } from 'vue'
 import draggable from 'vuedraggable'
 import * as FilterIconFactory from '@/assets/filter-icon/factory.ts'
 import type { FilterIconComponent } from '@/assets/filter-icon/type/filter.ts'
@@ -30,13 +30,11 @@ import type { FilterIconComponent } from '@/assets/filter-icon/type/filter.ts'
 const allFilterIcon = reactive<Array<FilterIconComponent>>(FilterIconFactory.all)
 
 const cloneComponent = (original: FilterIconComponent) => {
-  return {value: original.meta.type, xSpan: 1, ySpan: 3};
+  return { value: original.meta.type, xSpan: 1, ySpan: 3 }
 }
-
 </script>
 
 <style scoped>
-
 .diagramContainer {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -72,4 +70,8 @@ const cloneComponent = (original: FilterIconComponent) => {
   transition: transform 0.4s ease; /*, font-size 0.4s ease*/
   transform: scale(1.5);
 }
+
+
+
+
 </style>
