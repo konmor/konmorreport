@@ -15,6 +15,7 @@ import YearMonthBetween from '@/assets/filter-icon/YearMonthBetween.vue'
 import TreeSelect from '@/assets/filter-icon/TreeSelect.vue'
 
 import type { FilterIconComponent } from '@/assets/filter-icon/type/filter.ts'
+import {shallowRef} from "vue";
 
 export let all: Array<FilterIconComponent>
 
@@ -25,43 +26,43 @@ export function initFilter(icons?: Array<FilterIconComponent>) {
     // 使用默认的
     all = [
       {
-        component: Input,
+        component: shallowRef(Input),
         meta: { instance: { id: getUuid() }, type: 'input', name: 'input', title: '输入框' },
       },
       {
-        component: Select,
+        component:  shallowRef(Select),
         meta: { instance: { id: getUuid() }, type: 'select', name: 'select', title: '下拉选择框' },
       },
       {
-        component: TreeSelect,
+        component:  shallowRef(TreeSelect),
         meta: { instance: { id: getUuid() }, type: 'treeSelect', name: 'treeSelect', title: '下拉树选择' },
       },
       {
-        component: CheckBox,
+        component:  shallowRef(CheckBox),
         meta: { instance: { id: getUuid() }, type: 'checkBox', name: 'checkBox', title: '复选框' },
       },
       {
-        component: Switch,
+        component:  shallowRef(Switch),
         meta: { instance: { id: getUuid() }, type: 'switch', name: 'switch', title: '开关' },
       },
       {
-        component: SliderBar,
+        component:  shallowRef(SliderBar),
         meta: { instance: { id: getUuid() }, type: 'sliderBar', name: 'sliderBar', title: '滑块' },
       },
       {
-        component: Date,
+        component:  shallowRef(Date),
         meta: { instance: { id: getUuid() }, type: 'date', name: 'date', title: '日期' },
       },
       {
-        component: DateTime,
+        component:  shallowRef(DateTime),
         meta: { instance: { id: getUuid() }, type: 'dateTime', name: 'dateTime', title: '时间' },
       },
       {
-        component: Year,
+        component:  shallowRef(Year),
         meta: { instance: { id: getUuid() }, type: 'year', name: 'year', title: '年份选择器' },
       },
       {
-        component: YearAndMonth,
+        component:  shallowRef(YearAndMonth),
         meta: {
           instance: { id: getUuid() },
           type: 'yearAndMonth',
@@ -70,7 +71,7 @@ export function initFilter(icons?: Array<FilterIconComponent>) {
         },
       },
       {
-        component: Quarter,
+        component:  shallowRef(Quarter),
         meta: {
           instance: { id: getUuid() },
           type: 'quarter',
@@ -79,7 +80,7 @@ export function initFilter(icons?: Array<FilterIconComponent>) {
         },
       },
       {
-        component: DateBetween,
+        component:  shallowRef(DateBetween),
         meta: {
           instance: { id: getUuid() },
           type: 'dateBetween',
@@ -89,7 +90,7 @@ export function initFilter(icons?: Array<FilterIconComponent>) {
       },
 
       {
-        component: YearMonthBetween,
+        component:  shallowRef(YearMonthBetween),
         meta: {
           instance: { id: getUuid() },
           type: 'yearAndMonthBetween',

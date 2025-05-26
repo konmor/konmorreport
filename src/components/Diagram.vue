@@ -23,7 +23,7 @@ export default {
 }
 </script>
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive } from 'vue'
 import draggable from 'vuedraggable'
 import * as DiagramIconFactory from '@/assets/diagram-icon/factory.ts'
 import type { DiagramIconComponent, IconComponent } from '@/assets/diagram-icon/type/diagramIcon.ts'

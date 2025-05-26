@@ -1,4 +1,4 @@
-import type { DiagramIconComponent, IconComponent } from '@/assets/diagram-icon/type/diagramIcon.ts'
+import type {DiagramIconComponent, IconComponent} from '@/assets/diagram-icon/type/diagramIcon.ts'
 import {
     TableOutlined,
     PieChartOutlined,
@@ -11,6 +11,7 @@ import {
 import {getUuid} from "ant-design-vue/es/vc-notification/HookNotification";
 import Tag from "@/assets/diagram-icon/Tag.vue";
 import Tab from "@/assets/diagram-icon/Tab.vue";
+import {shallowRef} from "vue";
 
 export let all: Array<DiagramIconComponent>;
 
@@ -49,11 +50,11 @@ export function initDiagrams(icons?: Array<DiagramIconComponent>) {
                 meta: {instance: {id: getUuid()}, type: 'guage', name: 'guage', title: '仪表'}
             },
             {
-                component: Tag,
+                component: shallowRef(Tag),
                 meta: {instance: {id: getUuid()}, type: 'tag', name: 'tag', title: '标签'}
             },
             {
-                component: Tab,
+                component: shallowRef(Tab),
                 meta: {instance: {id: getUuid()}, type: 'tab', name: 'tab', title: '页签'}
             },
         ]
