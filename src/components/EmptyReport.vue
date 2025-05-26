@@ -7,7 +7,7 @@ export default {
 import Diagram from '@/components/Diagram.vue'
 import draggable from 'vuedraggable'
 import CloseCircleOutlined from '@ant-design/icons-vue/CloseCircleOutlined'
-import {onMounted, onUnmounted, reactive} from 'vue'
+import {nextTick, onMounted, onUnmounted, reactive, ref} from 'vue'
 import A from '@/test/A.vue'
 import Filter from '@/components/Filter.vue'
 import {getUuid} from 'ant-design-vue/es/vc-notification/HookNotification'
@@ -16,6 +16,7 @@ import * as echarts from "echarts"
 import {barTemplate} from '@/composable/ChartTemplate.ts'
 import {Modal,} from 'ant-design-vue'
 import useNavigator from "@/composable/useNavigator.ts";
+import B from "@/test/B.vue";
 
 
 function generateRandomBrightColor() {
@@ -162,16 +163,17 @@ onMounted(() => {
     observerArray.push(observer);
   }
 
-  // 渲染
-
 })
 
 onUnmounted(() => {
   observerArray.forEach(item => {
     if (item) item.disconnect()
   })
+
+  // 关闭图表渲染 todo
 })
 
+let chartContainer = ref();
 const selectData = reactive<{
   open: boolean,
   ok: (reject: any) => void,
@@ -184,7 +186,24 @@ const selectData = reactive<{
     if (selectData.selected == null) {
       selectData.showError = true;
     } else {
+      // 关闭数据（、sql）选择框
       selectData.open = false;
+      // 打开图表配置模态框
+      chartData.open = true;
+
+      // 保证已经渲染完毕
+      nextTick(()=>{
+        // 开始渲染图表
+        // let container = document.getElementById('chartContainer');
+        let container = chartContainer.value;
+        // 2.初始化echarts 挂载的位置
+        let myEcharts = echarts.init(container); // 参数是dom节点
+        // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
+        myEcharts.setOption(barTemplate('test1'))
+      })
+
+
+
     }
   },
   selected: '',
@@ -195,68 +214,17 @@ const selectData = reactive<{
 });
 
 
+const chartData = reactive<{ open: boolean, ok: (reject: any) => void }>({
+  open: false,
+  ok: (reject: any) => {
+    chartData.open = false;
+  },
+});
+
 </script>
 
 <template>
-  <a-layout :style="{ height: '100%' }">
-    <a-layout-content
-        :style="{
-        border: '1px solid black',
-        height: '100%',
-        backgroundColor: 'transparent',
-        marginLeft: '8px',
-        overflowY: 'auto',
-        overflowX: 'hidden',
-
-        /*alignContent:'center'*/
-      }"
-    >
-      <draggable
-          :style="{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(24,1fr)',
-          gridAutoRows: '3em',
-          justifyContent: 'center',
-          gridAutoFlow: 'row dense',
-        }"
-          class="chartContainer"
-          :list="items"
-          :group="{ name: 'outerContainer', pull: false, put: true }"
-          animation="500"
-          @end="endTest"
-          @move="moveTest"
-          @add="addTest"
-          @change="change"
-          item-key="id"
-          tag="div"
-      >
-        <template #item="{ element }">
-          <div
-              :id="element.id"
-              :style="{
-              gridRowStart: `span ${element.xSpan}`,
-              gridColumnStart: `span ${element.ySpan}`,
-              /*backgroundColor: generateRandomBrightColor(),*/
-            }"
-              class="chart"
-              @click="
-              () => {
-                element.xSpan++
-                element.ySpan++
-              }
-            "
-          >
-            <!--            {{ element.value }}-->
-          </div>
-        </template>
-      </draggable>
-
-      <!-- 图形配置模态框-->
-      <a-modal>
-
-      </a-modal>
-
-    </a-layout-content>
+  <a-layout :style="{ height: '100%',width: '100%'}">
     <a-layout-sider
         :style="{
         border: '1px solid black',
@@ -293,6 +261,80 @@ const selectData = reactive<{
         </span>
       </a-modal>
     </a-layout-sider>
+
+    <a-layout-content
+        :style="{
+        border: '1px solid black',
+        height: '100%',
+        width: '100%',
+        backgroundColor: 'transparent',
+        marginLeft: '8px',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+
+        /*alignContent:'center'*/
+      }"
+    >
+      <draggable
+          :style="{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(24,1fr)',
+          gridAutoRows: '3em',
+          justifyContent: 'center',
+          gridAutoFlow: 'row dense',
+        }"
+          class="chartIconContainer"
+          :list="items"
+          :group="{ name: 'outerContainer', pull: false, put: true }"
+          animation="500"
+          @end="endTest"
+          @move="moveTest"
+          @add="addTest"
+          @change="change"
+          item-key="id"
+          tag="div"
+      >
+        <template #item="{ element }">
+          <div
+              :id="element.id"
+              :style="{
+              gridRowStart: `span ${element.xSpan}`,
+              gridColumnStart: `span ${element.ySpan}`,
+              /*backgroundColor: generateRandomBrightColor(),*/
+            }"
+              class="chart"
+              @click="
+              () => {
+                element.xSpan++
+                element.ySpan++
+              }
+            "
+          >
+            <!--            {{ element.value }}-->
+          </div>
+        </template>
+      </draggable>
+      <!-- 图形配置模态框-->
+      <a-modal v-model:open="chartData.open" @ok="chartData.ok" ok-text="确认"
+               cancel-text="取消" :style="{backgroundColor:'transparent'}"
+               width="100%"
+               wrap-class-name="full-modal">
+        <template #title><span>配置图表</span></template>
+
+        <a-layout :style="{height: '100%',width: '100%',backgroundColor:'transparent'}">
+          <a-layout-sider :style="{height: '100%',width: '100%',backgroundColor:'transparent'}">hello</a-layout-sider>
+
+          <a-layout-content
+              :style="{height: '100%',width: '100%',backgroundColor:'transparent',border:'1px solid black'}">
+            <div id="chartContainer" ref="chartContainer" :style="{height:'100%'}"></div>
+          </a-layout-content>
+
+          <a-layout-sider :style="{height: '100%',width: '100%',backgroundColor:'transparent'}">world</a-layout-sider>
+        </a-layout>
+      </a-modal>
+
+    </a-layout-content>
+
   </a-layout>
 </template>
 
@@ -313,8 +355,27 @@ const selectData = reactive<{
   width: 100%;
 }
 
-.chartContainer .chart {
+.chartIconContainer .chart {
   border: black 1px solid;
   margin: 1px;
 }
+
+:global(.full-modal .ant-modal) {
+  max-width: 100%;
+  top: 0;
+  padding-bottom: 0;
+  margin: 0;
+}
+
+:global(.full-modal .ant-modal-content) {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh);
+}
+
+:global(.full-modal .ant-modal-body) {
+  flex: 1;
+
+}
+
 </style>

@@ -48,7 +48,7 @@ function closeFolder() {
       :locale="zhCN"
   >
   </a-config-provider>
-  <a-layout id="reports">
+  <a-layout id="reports" :style="{ height: '100%' }">
     <a-layout-sider
         v-model:collapsed="collapsed"
         theme="light"
@@ -59,7 +59,7 @@ function closeFolder() {
       <!--      导航栏-->
       <Navigator/>
     </a-layout-sider>
-    <a-layout>
+    <a-layout :style="{height:'100%'}">
       <!--主体上面-->
       <a-layout-header
           class="header"
