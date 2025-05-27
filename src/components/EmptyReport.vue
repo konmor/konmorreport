@@ -219,8 +219,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   tooltip: {
     show: true,
     // item 数据图像触发显示 axis 坐标范围内都会触发
-    trigger: 'item',
-
+    trigger: 'axis',
     // 坐标指示器  type ：line 显示一个实线、 shadow 阴影效果 、cross 十字准心
     // 其中 line、shadow 需要在 `trigger: "axis"` 下生效 ， cross 都会生效
     axisPointer: {
@@ -476,6 +475,16 @@ onBeforeUnmount(() => {
 
             </div>
 
+            <div class="chart-group">
+              <div class="chart-item">
+                <span class="label-right" style="width: 72px;">坐标轴指示器</span>
+                <a-radio-group size="small" button-style="solid" v-model:value="tempChartOption.tooltip.axisPointer.type">
+                  <a-radio-button value="cross"><span>交叉</span></a-radio-button>
+                  <a-radio-button value="shadow"><span>阴影</span></a-radio-button>
+                  <a-radio-button value="line"><span>竖线</span></a-radio-button>
+                </a-radio-group>
+              </div>
+            </div>
 
           </a-layout-sider>
         </a-layout>

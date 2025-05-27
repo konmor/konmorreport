@@ -1,0 +1,27 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <!-- 模糊阴影滤镜 -->
+    <defs>
+        <filter id="shadowBlur" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="8" result="blur"/>
+            <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+
+    <!-- 模拟 tooltip shadow 区域 -->
+    <path
+            d="M40,10 L80,10 L80,90 L40,90 Z"
+            fill="red"
+            fill-opacity="0.3"
+            filter="url(#shadowBlur)"
+    />
+
+    <!-- 可选：加上一条指针线 -->
+    <line x1="60" y1="10" x2="60" y2="90"
+          stroke="gray"
+          stroke-width="1"
+          stroke-dasharray="4,2"
+    />
+</svg>
