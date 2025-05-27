@@ -23,14 +23,15 @@ import Icon from '@ant-design/icons-vue'
 import Left from '@/assets/icon/Left.vue'
 import Center from '@/assets/icon/Center.vue'
 import Right from '@/assets/icon/Right.vue'
-import TopLeft from "@/assets/icon/legend/TopLeft.vue";
-import TopCenter from "@/assets/icon/legend/TopCenter.vue";
-import TopRight from "@/assets/icon/legend/TopRight.vue";
-import LeftCenter from "@/assets/icon/legend/LeftCenter.vue";
-import RightCenter from "@/assets/icon/legend/RightCenter.vue";
-import BottomLeft from "@/assets/icon/legend/BottomLeft.vue";
-import BotomCenter from "@/assets/icon/legend/BotomCenter.vue";
-import BottomRight from "@/assets/icon/legend/BottomRight.vue";
+import TopLeft from '@/assets/icon/legend/TopLeft.vue'
+import TopCenter from '@/assets/icon/legend/TopCenter.vue'
+import TopRight from '@/assets/icon/legend/TopRight.vue'
+import LeftCenter from '@/assets/icon/legend/LeftCenter.vue'
+import RightCenter from '@/assets/icon/legend/RightCenter.vue'
+import BottomLeft from '@/assets/icon/legend/BottomLeft.vue'
+import BotomCenter from '@/assets/icon/legend/BotomCenter.vue'
+import BottomRight from '@/assets/icon/legend/BottomRight.vue'
+import Position from '@/assets/icon/legend/Position.vue'
 
 function generateRandomBrightColor() {
   var r = Math.floor(Math.random() * 256) + 50 // 控制增加的值为50
@@ -217,6 +218,8 @@ let tempTopConfig = reactive({
   gridTop: '2%',
 })
 
+let legendPosition = ref('topCenter')
+
 const calculateTopConfig = (titleShow: boolean, legendShow: boolean) => {
   if (titleShow) {
     if (legendShow) {
@@ -246,11 +249,11 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   },
   grid: {
     top: '7%',
-    right:'2',
-    left:'2',
-    bottom:'2%',
+    right: '2',
+    left: '2',
+    bottom: '2%',
     show: true,
-    containLabel:true,
+    containLabel: true,
   },
   tooltip: {
     show: true,
@@ -266,8 +269,8 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     show: true,
     orient: 'horizontal', // vertical | horizontal
     top: '3%',
-    left:'right',
-    type:'scroll'
+    left: 'right',
+    type: 'scroll',
   },
   xAxis: {
     data: ['张三', '李四', '王五', '福六'],
@@ -304,22 +307,26 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       name: '到手薪资4',
       type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
       data: [6000, 4800, 3100, 600],
-    },{
+    },
+    {
       // 关键数据内容
       name: '到手薪资5',
       type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
       data: [6000, 4800, 3100, 600],
-    },{
+    },
+    {
       // 关键数据内容
       name: '到手薪资6',
       type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
       data: [6000, 4800, 3100, 600],
-    },{
+    },
+    {
       // 关键数据内容
       name: '到手薪资7',
       type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
       data: [6000, 4800, 3100, 600],
-    },{
+    },
+    {
       // 关键数据内容
       name: '到手薪资8',
       type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
@@ -330,7 +337,8 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       name: '到手薪资9',
       type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
       data: [6000, 4800, 3100, 600],
-    },{
+    },
+    {
       // 关键数据内容
       name: '到手薪资10',
       type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
@@ -473,7 +481,8 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       name: 'y',
       type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
       data: [6000, 4800, 3100, 600],
-    },{
+    },
+    {
       // 关键数据内容
       name: 'z',
       type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
@@ -836,34 +845,67 @@ onBeforeUnmount(() => {
                 </div>
               </div>
 
-              <div class="legend-position" style="display: flex;align-items: center;height: 80px;justify-content: space-between;margin-top: 2px">
-                <span class="label-right" style="width: 24px;font-size: 12px;height: 14px;line-height: 14px;align-self:flex-start ">位置</span>
-                <a-radio-group class="legend-position-control" size="small">
-                  <a-radio-button class="btn top left"><TopLeft/></a-radio-button>
-                  <a-radio-button class="btn top center"><TopCenter/></a-radio-button>
-                  <a-radio-button class="btn top right"><TopRight/></a-radio-button>
-                  <a-radio-button class="btn middle left"><LeftCenter/></a-radio-button>
-                  <a-radio-button class="btn middle center active">a</a-radio-button>
-                  <a-radio-button class="btn middle right"><RightCenter/></a-radio-button>
-                  <a-radio-button class="btn bottom left"><BottomLeft/></a-radio-button>
-                  <a-radio-button class="btn bottom center"><BotomCenter/></a-radio-button>
-                  <a-radio-button class="btn bottom right"><BottomRight/></a-radio-button>
-                </a-radio-group>
+              <div
+                class="legend-position">
+                <span
+                  class="label-right"
+                  style="
+                    width: 24px;
+                    font-size: 12px;
+                    height: 14px;
+                    line-height: 14px;
+                    align-self: flex-start;
+                  "
+                  >位置</span
+                >
+                <div class="legend-position-container">
+                  <a-radio-group
+                    class="legend-position-control"
+                    size="small"
+                    button-style="solid"
+                    v-model:value="legendPosition"
+                  >
+                    <a-radio-button class="btn top left" value="topLeft">
+                      <TopLeft />
+                    </a-radio-button>
+                    <a-radio-button class="btn top center" value="topCenter">
+                      <TopCenter />
+                    </a-radio-button>
+                    <a-radio-button class="btn top right" value="topRight">
+                      <TopRight />
+                    </a-radio-button>
+                    <a-radio-button class="btn middle left" value="leftCenter">
+                      <LeftCenter />
+                    </a-radio-button>
+                    <a-radio-button class="btn middle center" disabled> <Position/></a-radio-button>
+                    <a-radio-button class="btn middle right" value="rightCenter">
+                      <RightCenter />
+                    </a-radio-button>
+                    <a-radio-button class="btn bottom left" value="bottomLeft">
+                      <BottomLeft />
+                    </a-radio-button>
+                    <a-radio-button class="btn bottom center" value="bottomCenter">
+                      <BotomCenter />
+                    </a-radio-button>
+                    <a-radio-button class="btn bottom right" value="bottomRight">
+                      <BottomRight />
+                    </a-radio-button>
+                  </a-radio-group>
+                </div>
 
-<!--                <div  class="legend-position-control">
-                  <TopLeft/>
-                 <TopCenter/>
-                  <TopRight/>
-                  <LeftCenter/>
-                  <a-button class="btn middle center active">a</a-button>
-                 <RightCenter/>
-                  <BottomLeft/>
-                  <BotomCenter/>
-                 <BottomRight/>
-                </div>-->
+                <!--                <div  class="legend-position-control">
+                                  <TopLeft/>
+                                 <TopCenter/>
+                                  <TopRight/>
+                                  <LeftCenter/>
+                                  <a-button class="btn middle center active">a</a-button>
+                                 <RightCenter/>
+                                  <BottomLeft/>
+                                  <BotomCenter/>
+                                 <BottomRight/>
+                                </div>-->
               </div>
             </div>
-
           </a-layout-sider>
         </a-layout>
       </a-modal>
@@ -872,28 +914,65 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.legend-position .legend-position-control{
+.legend-position {
+  display: flex;
+  align-items: center;
+  height: 72px;
+  justify-content: space-between;
+  margin-top: 2px;
+}
+
+.legend-position .legend-position-container {
+  width: 140px;
+  display: flex;
+  align-items: center;
+  height: 72px;
+}
+
+.legend-position .legend-position-container .legend-position-control {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  width: 140px;
-  height: 81px;
+  width: 120px;
+  height: 72px;
 }
+
 /* 控制按钮位置 */
-.btn{
-  height: 100%;
-  line-height: 27px;
+.legend-position .legend-position-container .legend-position-control .btn {
+  line-height: 24px;
+  height: 24px;
+  width: 40px;
+  border-radius: 0;
 }
-.left {
-  padding-left: 8px;
+
+.legend-position .legend-position-container .legend-position-control .left {
+  padding-left: 6px;
+  margin-left: 1px;
 }
-.center {
+
+.legend-position .legend-position-container .legend-position-control .center {
   text-align: center;
 }
 
-.right {
-  position: relative;
-  right: 8px;
+.legend-position .legend-position-container .legend-position-control .right {
+  padding-left: 20px;
+}
+
+.legend-position .legend-position-container .legend-position-control .btn.top.left {
+  border-top-left-radius: 4px;
+  margin-left: 0;
+}
+
+.legend-position .legend-position-container .legend-position-control .btn.top.right {
+  border-top-right-radius: 4px;
+}
+
+.legend-position .legend-position-container .legend-position-control .btn.bottom.left {
+  border-bottom-left-radius: 4px;
+}
+
+.legend-position .legend-position-container .legend-position-control .btn.bottom.right {
+  border-bottom-right-radius: 4px;
 }
 
 .diagramContainer .diagramTitle {

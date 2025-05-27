@@ -9,7 +9,7 @@
         :style="style"
       >
         <path d="M256 64h768v128H256zM256 448h768v128H256zM256 832h768v128H256z" :fill="fill" />
-        <path d="M0 256h128v512H0z" :fill="fill" />
+        <path d="M0 256h128v512H0z"  fill="black" />
       </svg>
     </template>
   </icon>

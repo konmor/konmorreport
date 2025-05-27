@@ -8,7 +8,7 @@
         :height="height"
         :style="style"
       >
-        <path d="M512 64h512v128H512z" :fill="fill" />
+        <path d="M512 64h512v128H512z"  fill="black" />
         <path d="M0 448h1024v128H0zM0 832h1024v128H0z" :fill="fill" />
       </svg>
     </template>
