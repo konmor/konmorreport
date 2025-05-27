@@ -7,23 +7,30 @@ export default {
 import Diagram from '@/components/Diagram.vue'
 import draggable from 'vuedraggable'
 import CloseCircleOutlined from '@ant-design/icons-vue/CloseCircleOutlined'
-import {nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref} from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref } from 'vue'
 import A from '@/test/A.vue'
 import Filter from '@/components/Filter.vue'
-import {getUuid} from 'ant-design-vue/es/vc-notification/HookNotification'
+import { getUuid } from 'ant-design-vue/es/vc-notification/HookNotification'
 // 1. 引入echarts
-import * as echarts from "echarts"
-import {barTemplate} from '@/composable/ChartTemplate.ts'
-import {Modal,} from 'ant-design-vue'
-import useNavigator from "@/composable/useNavigator.ts";
-import B from "@/test/B.vue";
-import type {EChartsType} from "echarts";
-import type {ECBasicOption} from "echarts/types/dist/shared";
-import Icon from "@ant-design/icons-vue";
-import Left from "@/assets/icon/Left.vue";
-import Center from "@/assets/icon/Center.vue";
-import Right from "@/assets/icon/Right.vue";
-
+import * as echarts from 'echarts'
+import { barTemplate } from '@/composable/ChartTemplate.ts'
+import { Modal } from 'ant-design-vue'
+import useNavigator from '@/composable/useNavigator.ts'
+import B from '@/test/B.vue'
+import type { EChartsType } from 'echarts'
+import type { ECBasicOption } from 'echarts/types/dist/shared'
+import Icon from '@ant-design/icons-vue'
+import Left from '@/assets/icon/Left.vue'
+import Center from '@/assets/icon/Center.vue'
+import Right from '@/assets/icon/Right.vue'
+import TopLeft from "@/assets/icon/legend/TopLeft.vue";
+import TopCenter from "@/assets/icon/legend/TopCenter.vue";
+import TopRight from "@/assets/icon/legend/TopRight.vue";
+import LeftCenter from "@/assets/icon/legend/LeftCenter.vue";
+import RightCenter from "@/assets/icon/legend/RightCenter.vue";
+import BottomLeft from "@/assets/icon/legend/BottomLeft.vue";
+import BotomCenter from "@/assets/icon/legend/BotomCenter.vue";
+import BottomRight from "@/assets/icon/legend/BottomRight.vue";
 
 function generateRandomBrightColor() {
   var r = Math.floor(Math.random() * 256) + 50 // 控制增加的值为50
@@ -114,107 +121,136 @@ const moveTest = (event: Event) => {
   console.log('chart move', event)
 }
 
-const {sqlArray, refreshDatasourceList} = useNavigator();
-refreshDatasourceList();
-
+const { sqlArray, refreshDatasourceList } = useNavigator()
+refreshDatasourceList()
 
 const addTest = (event: Event) => {
   // __draggable_context = {element,index}
-  console.log('chart add', event, event.item.__draggable_context.element.meta);
-  console.log(items);
+  console.log('chart add', event, event.item.__draggable_context.element.meta)
+  console.log(items)
   // 添加元素后展示模态框
   // 一 选择数据源
-  selectData.open = true;
+  selectData.open = true
   // 二 开始配置
-
 }
 
-let chartArray: EChartsType[] = [];
+let chartArray: EChartsType[] = []
 
 const change = function change(event: Event) {
   // 监听添加事件
   if ('added' in event) {
     window.console.log(event['added'])
-    let id = event['added'].element.id;
-    let container = document.getElementById(id);
+    let id = event['added'].element.id
+    let container = document.getElementById(id)
     // 2.初始化echarts 挂载的位置
-    let myEcharts = echarts.init(container); // 参数是dom节点
+    let myEcharts = echarts.init(container) // 参数是dom节点
     // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
     myEcharts.setOption(barTemplate('test2'))
 
-    chartArray.push(myEcharts);
+    chartArray.push(myEcharts)
 
     let observer = new ResizeObserver(() => {
       if (myEcharts) myEcharts.resize()
     })
-    observer.observe(container as Element);
-    observerArray.push(observer);
+    observer.observe(container as Element)
+    observerArray.push(observer)
   }
 }
 
-let observerArray: ResizeObserver[] = [];
-
+let observerArray: ResizeObserver[] = []
 
 onMounted(() => {
-
   // 渲染图表
   for (let i = 0; i < items.slice().length; i++) {
-    let container = document.getElementById(items[i].id);
+    let container = document.getElementById(items[i].id)
     // 2.初始化echarts 挂载的位置
-    let myEcharts = echarts.init(container); // 参数是dom节点
+    let myEcharts = echarts.init(container) // 参数是dom节点
     // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
     myEcharts.setOption(barTemplate('test1'))
-    chartArray.push(myEcharts);
+    chartArray.push(myEcharts)
 
     let observer = new ResizeObserver(() => {
       if (myEcharts) myEcharts.resize()
     })
-    observer.observe(container as Element);
-    observerArray.push(observer);
+    observer.observe(container as Element)
+    observerArray.push(observer)
   }
-
 
   // 代码调试，后续删除 todo
   // 开始渲染图表
   // let container = document.getElementById('chartContainer');
-  let container = chartContainer.value;
+  let container = chartContainer.value
   // 2.初始化echarts 挂载的位置
-  let myEcharts = echarts.init(container); // 参数是dom节点
-  tempChart = myEcharts;
+  let myEcharts = echarts.init(container) // 参数是dom节点
+  tempChart = myEcharts
   // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
   myEcharts.setOption(tempChartOption)
 
   let observer = new ResizeObserver(() => {
     if (myEcharts) myEcharts.resize()
   })
-  tempObserver = observer;
-  observer.observe(container as Element);
-
+  tempObserver = observer
+  observer.observe(container as Element)
 })
 
 onUnmounted(() => {
-  observerArray.forEach(item => {
+  observerArray.forEach((item) => {
     if (item) item.disconnect()
   })
 
-  if(tempObserver!=null){
-    tempObserver.disconnect();
+  if (tempObserver != null) {
+    tempObserver.disconnect()
   }
 })
 
-let chartContainer = ref();
-let tempChart: EChartsType;
-let tempObserver: ResizeObserver;
+let chartContainer = ref()
+let tempChart: EChartsType
+let tempObserver: ResizeObserver
+
+/**
+ * legend
+ * 当标题展示时 grid.top 7%  标题打开、
+ */
+let tempTopConfig = reactive({
+  titleTop: '2',
+  legendTop: '2',
+  gridTop: '2%',
+})
+
+const calculateTopConfig = (titleShow: boolean, legendShow: boolean) => {
+  if (titleShow) {
+    if (legendShow) {
+      tempTopConfig.legendTop = '3%'
+      tempTopConfig.gridTop = '7%'
+    } else {
+      tempTopConfig.gridTop = '4%'
+    }
+  } else {
+    if (legendShow) {
+      tempTopConfig.legendTop = '2'
+      tempTopConfig.gridTop = '4%'
+    } else {
+      tempTopConfig.gridTop = '2%'
+    }
+  }
+  return tempTopConfig
+}
 
 let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   // 标题属性
   title: {
     text: '測試',
     left: 'left',
-    show: true
+    show: true,
+    top: '2',
   },
   grid: {
-    top: 38,
+    top: '7%',
+    right:'2',
+    left:'2',
+    bottom:'2%',
+    show: true,
+    containLabel:true,
   },
   tooltip: {
     show: true,
@@ -225,6 +261,13 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     axisPointer: {
       type: 'cross',
     },
+  },
+  legend: {
+    show: true,
+    orient: 'horizontal', // vertical | horizontal
+    top: '3%',
+    left:'right',
+    type:'scroll'
   },
   xAxis: {
     data: ['张三', '李四', '王五', '福六'],
@@ -244,81 +287,295 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
       data: [6000, 4800, 3100, 600],
     },
+    {
+      // 关键数据内容
+      name: '到手薪资2',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: '到手薪资3',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: '到手薪资4',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },{
+      // 关键数据内容
+      name: '到手薪资5',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },{
+      // 关键数据内容
+      name: '到手薪资6',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },{
+      // 关键数据内容
+      name: '到手薪资7',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },{
+      // 关键数据内容
+      name: '到手薪资8',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: '到手薪资9',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },{
+      // 关键数据内容
+      name: '到手薪资10',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: '到手薪资11',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: '到手薪资12',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: '到手薪资13',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'a',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'b',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'c',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'd',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'e',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'f',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'g',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'h',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'i',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'j',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'k',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'l',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'm',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'n',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'o',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'p',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'q',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'r',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'x',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'y',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },{
+      // 关键数据内容
+      name: 'z',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'n1',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'n2',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'n3',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
+    {
+      // 关键数据内容
+      name: 'n4',
+      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
+      data: [6000, 4800, 3100, 600],
+    },
   ],
-});
+})
 
 const selectData = reactive<{
-  open: boolean,
-  ok: (reject: any) => void,
-  selected: string,
-  data: any[],
-  showError: boolean,
+  open: boolean
+  ok: (reject: any) => void
+  selected: string
+  data: any[]
+  showError: boolean
 }>({
   open: false,
   ok: (reject: any) => {
     if (selectData.selected == null) {
-      selectData.showError = true;
+      selectData.showError = true
     } else {
       // 关闭数据（、sql）选择框
-      selectData.open = false;
+      selectData.open = false
       // 打开图表配置模态框
-      chartData.open = true;
+      chartData.open = true
 
       // 保证已经渲染完毕
       nextTick(() => {
         // 开始渲染图表
         // let container = document.getElementById('chartContainer');
-        let container = chartContainer.value;
+        let container = chartContainer.value
         // 2.初始化echarts 挂载的位置
-        let myEcharts = echarts.init(container); // 参数是dom节点
-        tempChart = myEcharts;
+        let myEcharts = echarts.init(container) // 参数是dom节点
+        tempChart = myEcharts
         // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
         myEcharts.setOption(tempChartOption)
 
         let observer = new ResizeObserver(() => {
           if (myEcharts) myEcharts.resize()
         })
-        tempObserver = observer;
-        observer.observe(container as Element);
+        tempObserver = observer
+        observer.observe(container as Element)
       })
-
-
     }
   },
   selected: '',
-  data: sqlArray != null && sqlArray.length > 0 ? sqlArray.map(item => {
-    return {value: item?.key, label: item?.label}
-  }) : [{label: '测试选项-1', value: 'key1'}],
+  data:
+    sqlArray != null && sqlArray.length > 0
+      ? sqlArray.map((item) => {
+          return { value: item?.key, label: item?.label }
+        })
+      : [{ label: '测试选项-1', value: 'key1' }],
   showError: false,
-});
+})
 
-
-const chartData = reactive<{ open: boolean, ok: (reject: any) => void }>({
+const chartData = reactive<{ open: boolean; ok: (reject: any) => void }>({
   open: false,
   ok: (reject: any) => {
-    chartData.open = false;
+    chartData.open = false
   },
-});
+})
 
 onBeforeUnmount(() => {
   if (chartArray != null && chartArray.length > 0) {
-    chartArray.forEach(item => {
+    chartArray.forEach((item) => {
       if (item) item.dispose()
     })
-
   }
 
   if (tempChart) {
     tempChart.dispose()
   }
 })
-
 </script>
 
 <template>
-  <a-layout :style="{ height: '100%',width: '100%'}">
+  <a-layout :style="{ height: '100%', width: '100%' }">
     <a-layout-sider
-        :style="{
+      :style="{
         border: '1px solid black',
         height: '100%',
         backgroundColor: 'transparent',
@@ -328,34 +585,39 @@ onBeforeUnmount(() => {
       <div class="diagramContainer">
         <span class="diagramTitle">图表</span>
         <!--        <Diagram @mousedown="testDown($event)" @mouseup="testUp($event)" @mousemove="testMove($event)"/>-->
-        <Diagram/>
+        <Diagram />
       </div>
 
       <div class="filterContainer">
         <span class="filterTitle">过滤器</span>
-        <Filter/>
+        <Filter />
       </div>
 
       <!-- 图表绑定的数据 选择择模态框-->
-      <a-modal v-model:open="selectData.open" title="请选择需要渲染的数据！" @ok="selectData.ok" ok-text="确认"
-               cancel-text="取消">
+      <a-modal
+        v-model:open="selectData.open"
+        title="请选择需要渲染的数据！"
+        @ok="selectData.ok"
+        ok-text="确认"
+        cancel-text="取消"
+      >
         <a-select
-            v-model:value="selectData.selected"
-            placeholder="请选择数据!"
-            :options="selectData.data"
-            :style="{width: '60%'}"
-            allowClear
+          v-model:value="selectData.selected"
+          placeholder="请选择数据!"
+          :options="selectData.data"
+          :style="{ width: '60%' }"
+          allowClear
         >
         </a-select>
-        <span :style="{marginLeft: '10px'}" v-if="selectData.showError">
-        <CloseCircleOutlined :style="{color: 'red'}"/>
-        请选择正确的数据！
+        <span :style="{ marginLeft: '10px' }" v-if="selectData.showError">
+          <CloseCircleOutlined :style="{ color: 'red' }" />
+          请选择正确的数据！
         </span>
       </a-modal>
     </a-layout-sider>
 
     <a-layout-content
-        :style="{
+      :style="{
         border: '1px solid black',
         height: '100%',
         width: '100%',
@@ -368,34 +630,34 @@ onBeforeUnmount(() => {
       }"
     >
       <draggable
-          :style="{
+        :style="{
           display: 'grid',
           gridTemplateColumns: 'repeat(24,1fr)',
           gridAutoRows: '3em',
           justifyContent: 'center',
           gridAutoFlow: 'row dense',
         }"
-          class="chartIconContainer"
-          :list="items"
-          :group="{ name: 'outerContainer', pull: false, put: true }"
-          animation="500"
-          @end="endTest"
-          @move="moveTest"
-          @add="addTest"
-          @change="change"
-          item-key="id"
-          tag="div"
+        class="chartIconContainer"
+        :list="items"
+        :group="{ name: 'outerContainer', pull: false, put: true }"
+        animation="500"
+        @end="endTest"
+        @move="moveTest"
+        @add="addTest"
+        @change="change"
+        item-key="id"
+        tag="div"
       >
         <template #item="{ element }">
           <div
-              :id="element.id"
-              :style="{
+            :id="element.id"
+            :style="{
               gridRowStart: `span ${element.xSpan}`,
               gridColumnStart: `span ${element.ySpan}`,
               /*backgroundColor: generateRandomBrightColor(),*/
             }"
-              class="chart"
-              @click="
+            class="chart"
+            @click="
               () => {
                 element.xSpan++
                 element.ySpan++
@@ -407,95 +669,233 @@ onBeforeUnmount(() => {
         </template>
       </draggable>
       <!-- 图形配置模态框-->
-      <a-modal open="true" @ok="chartData.ok" ok-text="确认"
-               cancel-text="取消" :style="{backgroundColor:'transparent'}"
-               width="100%"
-               wrap-class-name="full-modal">
+      <a-modal
+        open="true"
+        @ok="chartData.ok"
+        ok-text="确认"
+        cancel-text="取消"
+        :style="{ backgroundColor: 'transparent' }"
+        width="100%"
+        wrap-class-name="full-modal"
+      >
         <template #title><span>配置图表</span></template>
 
-        <a-layout :style="{height: '100%',width: '100%',backgroundColor:'transparent'}">
-          <a-layout-sider :style="{height: '100%',width: '100%',backgroundColor:'transparent'}">hello</a-layout-sider>
+        <a-layout :style="{ height: '100%', width: '100%', backgroundColor: 'transparent' }">
+          <a-layout-sider :style="{ height: '100%', width: '100%', backgroundColor: 'transparent' }"
+            >hello
+          </a-layout-sider>
 
           <a-layout>
             <a-layout-header
-                :style="{backgroundColor:'transparent',border:'1px solid black',height:'15%'}">
+              :style="{ backgroundColor: 'transparent', border: '1px solid black', height: '15%' }"
+            >
               <div>hello world</div>
             </a-layout-header>
             <a-layout-content
-                :style="{height: '100%',width: '100%',backgroundColor:'transparent',border:'1px solid black'}">
-
-              <div id="chartContainer" ref="chartContainer" :style="{height:'100%'}"></div>
+              :style="{
+                height: '100%',
+                width: '100%',
+                backgroundColor: 'transparent',
+                border: '1px solid black',
+              }"
+            >
+              <div id="chartContainer" ref="chartContainer" :style="{ height: '100%' }"></div>
             </a-layout-content>
           </a-layout>
 
-
           <a-layout-sider
-              :style="{height: '100%',backgroundColor:'transparent',borderBottom:'1px solid black',borderTop:'1px solid black'}"
-              width="240px">
-
+            :style="{
+              height: '100%',
+              backgroundColor: 'transparent',
+              borderBottom: '1px solid black',
+              borderTop: '1px solid black',
+            }"
+            width="240px"
+          >
+            <!--            标题控制-->
             <div class="chart-group">
-              <a-input v-show="false" v-model:value="tempChartOption.title.id" placeholder="组件唯一id"></a-input>
+              <a-input
+                v-show="false"
+                v-model:value="tempChartOption.title.id"
+                placeholder="组件唯一id"
+              ></a-input>
 
               <div class="chart-item">
-                <span class="label-right" style="width: 48px;">标题</span>
+                <span class="label-right" style="width: 48px">标题</span>
                 <div
-                    :style="{display:'flex',alignItems:'center',height:'28px',width:'140px',lineHeight:'28px',justifyContent:'space-between'}">
-                  <a-switch v-model:checked="tempChartOption.title.show"
-                            @change="()=>{
-                              if(tempChartOption.title.show){
-                                tempChart.setOption({title:{show:tempChartOption.title.show},grid:{top:48}});
-                              }else {
-                                tempChart.setOption({title:{show:tempChartOption.title.show},grid:{top:20}});
-                              }
-                            }"></a-switch>
-                  <a-radio-group v-model:value="tempChartOption.title.left" :disabled="!tempChartOption.title.show"
-                                 button-style="solid"
-                                 size="small"
-                                 @change="tempChart.setOption({title:{left:tempChartOption.title.left}})">
+                  :style="{
+                    display: 'flex',
+                    alignItems: 'center',
+                    height: '28px',
+                    width: '140px',
+                    lineHeight: '28px',
+                    justifyContent: 'space-between',
+                  }"
+                >
+                  <a-switch
+                    v-model:checked="tempChartOption.title.show"
+                    @change="
+                      () => {
+                        let { gridTop, legendTop, titleTop } = calculateTopConfig(
+                          tempChartOption.title.show,
+                          tempChartOption.legend.show,
+                        )
+                        tempChart.setOption({
+                          title: { show: tempChartOption.title.show, top: titleTop },
+                          grid: { top: gridTop },
+                          legend: { top: legendTop },
+                        })
+                      }
+                    "
+                  ></a-switch>
+                  <a-radio-group
+                    v-model:value="tempChartOption.title.left"
+                    :disabled="!tempChartOption.title.show"
+                    button-style="solid"
+                    size="small"
+                    @change="tempChart.setOption({ title: { left: tempChartOption.title.left } })"
+                  >
                     <a-radio-button value="left">
-                      <Left/>
+                      <Left />
                     </a-radio-button>
                     <a-radio-button value="center">
-                      <Center/>
+                      <Center />
                     </a-radio-button>
                     <a-radio-button value="right">
-                      <Right/>
+                      <Right />
                     </a-radio-button>
                   </a-radio-group>
                 </div>
               </div>
 
-              <div class="chart-item" style="margin-top:2px ">
-                <span class="label-right" style="width: 24px;">名称</span>
-                <a-input v-model:value="tempChartOption.title.text" placeholder="图表名称" allow-clear
-                         :disabled="!tempChartOption.title.show"
-                         size="small" :style="{width:'140px',height:'28px',fontSize:'12px'}"
-                         @change="tempChart.setOption({title:{text:tempChartOption.title.text}})"></a-input>
+              <div class="chart-item" style="margin-top: 2px">
+                <span class="label-right" style="width: 24px">名称</span>
+                <a-input
+                  v-model:value="tempChartOption.title.text"
+                  placeholder="图表名称"
+                  allow-clear
+                  :disabled="!tempChartOption.title.show"
+                  size="small"
+                  :style="{ width: '140px', height: '28px', fontSize: '12px' }"
+                  @change="tempChart.setOption({ title: { text: tempChartOption.title.text } })"
+                ></a-input>
               </div>
-
             </div>
 
             <div class="chart-group">
               <div class="chart-item">
-                <span class="label-right" style="width: 72px;">坐标轴指示器</span>
-                <a-radio-group size="small" button-style="solid" v-model:value="tempChartOption.tooltip.axisPointer.type">
-                  <a-radio-button value="cross"><span>交叉</span></a-radio-button>
-                  <a-radio-button value="shadow"><span>阴影</span></a-radio-button>
-                  <a-radio-button value="line"><span>竖线</span></a-radio-button>
+                <span class="label-right" style="width: 72px">坐标轴指示器</span>
+                <a-tooltip title="鼠标挪入图表中可查看效果！">
+                  <a-radio-group
+                    size="small"
+                    button-style="solid"
+                    v-model:value="tempChartOption.tooltip.axisPointer.type"
+                    @change="
+                      tempChart.setOption({
+                        tooltip: {
+                          axisPointer: { type: tempChartOption.tooltip.axisPointer.type },
+                        },
+                      })
+                    "
+                  >
+                    <a-radio-button value="cross"><span>交叉</span></a-radio-button>
+                    <a-radio-button value="shadow"><span>阴影</span></a-radio-button>
+                    <a-radio-button value="line"><span>竖线</span></a-radio-button>
+                  </a-radio-group>
+                </a-tooltip>
+              </div>
+            </div>
+            <div class="chart-group">
+              <div class="chart-item">
+                <span class="label-right" style="width: 24px">图例</span>
+                <div
+                  :style="{
+                    width: '140px',
+                    height: '28px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }"
+                >
+                  <a-switch
+                    v-model:checked="tempChartOption.legend.show"
+                    @change="
+                      () => {
+                        let { gridTop, legendTop, titleTop } = calculateTopConfig(
+                          tempChartOption.title.show,
+                          tempChartOption.legend.show,
+                        )
+                        tempChart.setOption({
+                          title: { top: titleTop },
+                          legend: { show: tempChartOption.legend.show, top: legendTop },
+                          grid: { top: gridTop },
+                        })
+                      }
+                    "
+                  ></a-switch>
+                </div>
+              </div>
+
+              <div class="legend-position" style="display: flex;align-items: center;height: 80px;justify-content: space-between;margin-top: 2px">
+                <span class="label-right" style="width: 24px;font-size: 12px;height: 14px;line-height: 14px;align-self:flex-start ">位置</span>
+                <a-radio-group class="legend-position-control" size="small">
+                  <a-radio-button class="btn top left"><TopLeft/></a-radio-button>
+                  <a-radio-button class="btn top center"><TopCenter/></a-radio-button>
+                  <a-radio-button class="btn top right"><TopRight/></a-radio-button>
+                  <a-radio-button class="btn middle left"><LeftCenter/></a-radio-button>
+                  <a-radio-button class="btn middle center active">a</a-radio-button>
+                  <a-radio-button class="btn middle right"><RightCenter/></a-radio-button>
+                  <a-radio-button class="btn bottom left"><BottomLeft/></a-radio-button>
+                  <a-radio-button class="btn bottom center"><BotomCenter/></a-radio-button>
+                  <a-radio-button class="btn bottom right"><BottomRight/></a-radio-button>
                 </a-radio-group>
+
+<!--                <div  class="legend-position-control">
+                  <TopLeft/>
+                 <TopCenter/>
+                  <TopRight/>
+                  <LeftCenter/>
+                  <a-button class="btn middle center active">a</a-button>
+                 <RightCenter/>
+                  <BottomLeft/>
+                  <BotomCenter/>
+                 <BottomRight/>
+                </div>-->
               </div>
             </div>
 
           </a-layout-sider>
         </a-layout>
       </a-modal>
-
     </a-layout-content>
-
   </a-layout>
 </template>
 
 <style scoped>
+.legend-position .legend-position-control{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 140px;
+  height: 81px;
+}
+/* 控制按钮位置 */
+.btn{
+  height: 100%;
+  line-height: 27px;
+}
+.left {
+  padding-left: 8px;
+}
+.center {
+  text-align: center;
+}
+
+.right {
+  position: relative;
+  right: 8px;
+}
+
 .diagramContainer .diagramTitle {
   font-size: 1em;
   display: inline-block;
@@ -533,7 +933,6 @@ onBeforeUnmount(() => {
 
 :global(.full-modal .ant-modal-body) {
   flex: 1;
-
 }
 
 :deep(.ant-form .ant-form-item) {
@@ -559,5 +958,4 @@ onBeforeUnmount(() => {
   height: 14px;
   line-height: 14px;
 }
-
 </style>
