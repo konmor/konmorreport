@@ -260,7 +260,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       show: true
     },
     animation: true,
-    formatter: function (name) {
+    formatter: function (name:string) {
       return echarts.format.truncateText(name, 84, '14px Microsoft Yahei', '…');
     }
   },
@@ -301,7 +301,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     type: 'category'
   },
   yAxis: {},
-  series: [{type: 'bar'}, {type: 'bar'}, {type: 'bar'}, {type: 'bar'}]
+  series: [{type: 'bar',}, {type: 'bar'}, {type: 'bar'}, {type: 'bar'}]
 })
 
 const calculatePositionConfig = () => {
@@ -723,7 +723,7 @@ onBeforeUnmount(() => {
               ></a-input>
 
               <div class="chart-item">
-                <span class="label-right" style="width: 48px">标题</span>
+                <span class="label-left" style="width: 48px">标题</span>
                 <div
                     :style="{
                     display: 'flex',
@@ -765,7 +765,7 @@ onBeforeUnmount(() => {
               </div>
 
               <div class="chart-item" style="margin-top: 2px">
-                <span class="label-right" style="width: 24px">名称</span>
+                <span class="label-left" style="width: 24px">名称</span>
                 <a-input
                     v-model:value="tempChartOption.title.text"
                     placeholder="图表名称"
@@ -780,7 +780,7 @@ onBeforeUnmount(() => {
 
             <div class="chart-group">
               <div class="chart-item">
-                <span class="label-right" style="width: 72px">坐标轴指示器</span>
+                <span class="label-left" style="width: 72px">坐标轴指示器</span>
                 <a-tooltip title="鼠标挪入图表中可查看效果！">
                   <a-radio-group
                       size="small"
@@ -803,7 +803,7 @@ onBeforeUnmount(() => {
             </div>
             <div class="chart-group">
               <div class="chart-item">
-                <span class="label-right" style="width: 24px">图例</span>
+                <span class="label-left" style="width: 24px">图例</span>
                 <div
                     :style="{
                     width: '140px',
@@ -829,7 +829,7 @@ onBeforeUnmount(() => {
               <div
                   class="legend-position">
                 <span
-                    class="label-right"
+                    class="label-left"
                     style="
                     width: 24px;
                     font-size: 12px;
@@ -913,7 +913,7 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  width: 120px;
+  width: 140px;
   height: 72px;
 }
 
@@ -921,7 +921,7 @@ onBeforeUnmount(() => {
 .legend-position .legend-position-container .legend-position-control .btn {
   line-height: 24px;
   height: 24px;
-  width: 40px;
+  width: 100%;
   border-radius: 0;
 }
 
@@ -1012,7 +1012,7 @@ onBeforeUnmount(() => {
   justify-content: space-between;
 }
 
-.chart-group .chart-item .label-right {
+.label-left {
   font-size: 12px;
   height: 14px;
   line-height: 14px;
