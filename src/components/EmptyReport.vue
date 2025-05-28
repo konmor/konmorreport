@@ -7,18 +7,18 @@ export default {
 import Diagram from '@/components/Diagram.vue'
 import draggable from 'vuedraggable'
 import CloseCircleOutlined from '@ant-design/icons-vue/CloseCircleOutlined'
-import { nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref } from 'vue'
+import {nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref} from 'vue'
 import A from '@/test/A.vue'
 import Filter from '@/components/Filter.vue'
-import { getUuid } from 'ant-design-vue/es/vc-notification/HookNotification'
+import {getUuid} from 'ant-design-vue/es/vc-notification/HookNotification'
 // 1. 引入echarts
 import * as echarts from 'echarts'
-import { barTemplate } from '@/composable/ChartTemplate.ts'
-import { Modal } from 'ant-design-vue'
+import {barTemplate} from '@/composable/ChartTemplate.ts'
+import {Modal} from 'ant-design-vue'
 import useNavigator from '@/composable/useNavigator.ts'
 import B from '@/test/B.vue'
-import type { EChartsType } from 'echarts'
-import type { ECBasicOption } from 'echarts/types/dist/shared'
+import type {EChartsType} from 'echarts'
+import type {ECBasicOption} from 'echarts/types/dist/shared'
 import Icon from '@ant-design/icons-vue'
 import Left from '@/assets/icon/Left.vue'
 import Center from '@/assets/icon/Center.vue'
@@ -122,7 +122,7 @@ const moveTest = (event: Event) => {
   console.log('chart move', event)
 }
 
-const { sqlArray, refreshDatasourceList } = useNavigator()
+const {sqlArray, refreshDatasourceList} = useNavigator()
 refreshDatasourceList()
 
 const addTest = (event: Event) => {
@@ -220,24 +220,6 @@ let tempTopConfig = reactive({
 
 let legendPosition = ref('topCenter')
 
-const calculateTopConfig = (titleShow: boolean, legendShow: boolean) => {
-  if (titleShow) {
-    if (legendShow) {
-      tempTopConfig.legendTop = '3%'
-      tempTopConfig.gridTop = '7%'
-    } else {
-      tempTopConfig.gridTop = '4%'
-    }
-  } else {
-    if (legendShow) {
-      tempTopConfig.legendTop = '2'
-      tempTopConfig.gridTop = '4%'
-    } else {
-      tempTopConfig.gridTop = '2%'
-    }
-  }
-  return tempTopConfig
-}
 
 let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   // 标题属性
@@ -248,7 +230,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     top: '2',
   },
   grid: {
-    top: '7%',
+    top: '8%',
     right: '2',
     left: '2',
     bottom: '2%',
@@ -268,9 +250,19 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   legend: {
     show: true,
     orient: 'horizontal', // vertical | horizontal
-    top: '3%',
-    left: 'right',
+    top: '3.5%',
+    left: 'center',
     type: 'scroll',
+    tooltip: {
+      show: true
+    },
+    emphasis: {
+      show: true
+    },
+    animation: true,
+    formatter: function (name: string) {
+      return echarts.format.truncateText(name, 84, '14px Microsoft Yahei', '…');
+    },
   },
   xAxis: {
     data: ['张三', '李四', '王五', '福六'],
@@ -280,7 +272,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   series: [
     {
       // 关键数据内容
-      name: '薪水',
+      name: '薪水水水水水',
       type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
       data: [6300, 5200, 3200, 600],
     },
@@ -332,7 +324,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
       data: [6000, 4800, 3100, 600],
     },
-    {
+    /*{
       // 关键数据内容
       name: '到手薪资9',
       type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
@@ -511,9 +503,213 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       name: 'n4',
       type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
       data: [6000, 4800, 3100, 600],
-    },
+    },*/
   ],
 })
+
+const calculatePositionConfig = () => {
+  let option:
+      {
+        legend:
+            {
+              show?: boolean,
+              top?: string,
+              left?: string,
+              right?: string,
+              bottom?: string,
+              orient?: 'horizontal' | 'vertical',
+            },
+        grid: {
+          top?: string,
+          right?: string,
+          left?: string,
+          bottom?: string,
+        },
+        title: {
+          show?: boolean,
+          top?: string,
+          right?: string,
+          left?: string,
+          bottom?: string,
+        }
+      }
+      =
+      {
+        legend: {},
+        grid: {},
+        title: {}
+      };
+
+  let titleShow: boolean = tempChartOption.title.show;
+  let legendShow: boolean = tempChartOption.legend.show;
+
+  // topLeft 、topCenter、topRight、
+  // leftCenter、rightCenter
+  // bottomLeft、bottomCenter、bottomRight
+  if (titleShow) {
+    if (legendShow) {
+      if (legendPosition.value.startsWith('top')) {
+
+        option.grid.top = '8%';
+        option.grid.left = '2';
+        option.grid.right = '2';
+        option.grid.bottom = '2%';
+
+        option.legend.top = '3.5%'
+        option.legend.bottom = undefined;
+
+        option.title.top = '2'
+
+        if (legendPosition.value.endsWith('Left')) {
+          option.legend.left = 'left';
+        } else if (legendPosition.value.endsWith('Center')) {
+          option.legend.left = 'center';
+        } else {
+          option.legend.left = 'right';
+        }
+
+
+      } else if (legendPosition.value.startsWith('bottom')) {
+
+        option.grid.top = '5%';
+        option.grid.left = '2';
+        option.grid.right = '2';
+        option.grid.bottom = '4.5%';
+
+        option.legend.top = undefined;
+        option.legend.bottom = '2';
+
+        option.title.top = '2'
+
+        if (legendPosition.value.endsWith('Left')) {
+          option.legend.left = 'left';
+        } else if (legendPosition.value.endsWith('Center')) {
+          option.legend.left = 'center';
+        } else {
+          option.legend.left = 'right';
+        }
+
+      } else if (legendPosition.value == 'leftCenter') {
+
+        option.grid.top = '5%';
+        option.grid.left = '9%';
+        option.grid.right = '2';
+        option.grid.bottom = '2%';
+
+        option.legend.left = 'left';
+        option.legend.top = '3.5%'
+        option.legend.bottom = undefined;
+
+        option.title.top = '2'
+
+      } else if (legendPosition.value == 'rightCenter') {
+
+        option.grid.top = '5%';
+        option.grid.left = '2';
+        option.grid.right = '9%';
+        option.grid.bottom = '2%';
+
+        option.legend.left = 'right';
+        option.legend.top = '3.5%'
+        option.legend.bottom = undefined;
+
+        option.title.top = '2'
+      } else {
+        console.error('图表定位发生错误')
+      }
+    } else {
+      option.grid.top = '5%';
+      option.grid.left = '2';
+      option.grid.right = '2';
+      option.grid.bottom = '2%';
+
+      option.legend.left = undefined;
+      option.legend.top = undefined;
+      option.legend.bottom = undefined;
+
+      option.title.top = '2'
+    }
+  } else {
+    if (legendShow) {
+      option.title.top = undefined;
+      if (legendPosition.value.startsWith('top')) {
+
+        option.grid.top = '5%';
+        option.grid.left = '2';
+        option.grid.right = '2';
+        option.grid.bottom = '2%';
+
+        option.legend.top = '2'
+        option.legend.bottom = undefined;
+
+        if (legendPosition.value.endsWith('Left')) {
+          option.legend.left = 'left';
+        } else if (legendPosition.value.endsWith('Center')) {
+          option.legend.left = 'center';
+        } else {
+          option.legend.left = 'right';
+        }
+
+
+      } else if (legendPosition.value.startsWith('bottom')) {
+
+        option.grid.top = '2%';
+        option.grid.left = '2';
+        option.grid.right = '2';
+        option.grid.bottom = '4.5%';
+
+        option.legend.top = undefined;
+        option.legend.bottom = '2';
+
+        if (legendPosition.value.endsWith('Left')) {
+          option.legend.left = 'left';
+        } else if (legendPosition.value.endsWith('Center')) {
+          option.legend.left = 'center';
+        } else {
+          option.legend.left = 'right';
+        }
+
+      } else if (legendPosition.value == 'leftCenter') {
+
+        option.grid.top = '2%';
+        option.grid.left = '9%';
+        option.grid.right = '2';
+        option.grid.bottom = '2%';
+
+        option.legend.left = 'left';
+        option.legend.top = '2%'
+        option.legend.bottom = undefined;
+
+      } else if (legendPosition.value == 'rightCenter') {
+
+        option.grid.top = '2%';
+        option.grid.left = '2';
+        option.grid.right = '9%';
+        option.grid.bottom = '2%';
+
+        option.legend.left = 'right';
+        option.legend.top = '2%'
+        option.legend.bottom = undefined;
+
+      } else {
+        console.error('图表定位发生错误')
+      }
+
+    } else {
+      option.grid.top = '2%';
+      option.grid.left = '2';
+      option.grid.right = '2';
+      option.grid.bottom = '2%';
+
+      option.legend.left = undefined;
+      option.legend.top = undefined;
+      option.legend.bottom = undefined;
+
+      option.title.top = undefined;
+    }
+  }
+  return option;
+}
 
 const selectData = reactive<{
   open: boolean
@@ -553,11 +749,11 @@ const selectData = reactive<{
   },
   selected: '',
   data:
-    sqlArray != null && sqlArray.length > 0
-      ? sqlArray.map((item) => {
-          return { value: item?.key, label: item?.label }
-        })
-      : [{ label: '测试选项-1', value: 'key1' }],
+      sqlArray != null && sqlArray.length > 0
+          ? sqlArray.map((item) => {
+            return {value: item?.key, label: item?.label}
+          })
+          : [{label: '测试选项-1', value: 'key1'}],
   showError: false,
 })
 
@@ -584,7 +780,7 @@ onBeforeUnmount(() => {
 <template>
   <a-layout :style="{ height: '100%', width: '100%' }">
     <a-layout-sider
-      :style="{
+        :style="{
         border: '1px solid black',
         height: '100%',
         backgroundColor: 'transparent',
@@ -594,39 +790,39 @@ onBeforeUnmount(() => {
       <div class="diagramContainer">
         <span class="diagramTitle">图表</span>
         <!--        <Diagram @mousedown="testDown($event)" @mouseup="testUp($event)" @mousemove="testMove($event)"/>-->
-        <Diagram />
+        <Diagram/>
       </div>
 
       <div class="filterContainer">
         <span class="filterTitle">过滤器</span>
-        <Filter />
+        <Filter/>
       </div>
 
       <!-- 图表绑定的数据 选择择模态框-->
       <a-modal
-        v-model:open="selectData.open"
-        title="请选择需要渲染的数据！"
-        @ok="selectData.ok"
-        ok-text="确认"
-        cancel-text="取消"
+          v-model:open="selectData.open"
+          title="请选择需要渲染的数据！"
+          @ok="selectData.ok"
+          ok-text="确认"
+          cancel-text="取消"
       >
         <a-select
-          v-model:value="selectData.selected"
-          placeholder="请选择数据!"
-          :options="selectData.data"
-          :style="{ width: '60%' }"
-          allowClear
+            v-model:value="selectData.selected"
+            placeholder="请选择数据!"
+            :options="selectData.data"
+            :style="{ width: '60%' }"
+            allowClear
         >
         </a-select>
         <span :style="{ marginLeft: '10px' }" v-if="selectData.showError">
-          <CloseCircleOutlined :style="{ color: 'red' }" />
+          <CloseCircleOutlined :style="{ color: 'red' }"/>
           请选择正确的数据！
         </span>
       </a-modal>
     </a-layout-sider>
 
     <a-layout-content
-      :style="{
+        :style="{
         border: '1px solid black',
         height: '100%',
         width: '100%',
@@ -639,34 +835,34 @@ onBeforeUnmount(() => {
       }"
     >
       <draggable
-        :style="{
+          :style="{
           display: 'grid',
           gridTemplateColumns: 'repeat(24,1fr)',
           gridAutoRows: '3em',
           justifyContent: 'center',
           gridAutoFlow: 'row dense',
         }"
-        class="chartIconContainer"
-        :list="items"
-        :group="{ name: 'outerContainer', pull: false, put: true }"
-        animation="500"
-        @end="endTest"
-        @move="moveTest"
-        @add="addTest"
-        @change="change"
-        item-key="id"
-        tag="div"
+          class="chartIconContainer"
+          :list="items"
+          :group="{ name: 'outerContainer', pull: false, put: true }"
+          animation="500"
+          @end="endTest"
+          @move="moveTest"
+          @add="addTest"
+          @change="change"
+          item-key="id"
+          tag="div"
       >
         <template #item="{ element }">
           <div
-            :id="element.id"
-            :style="{
+              :id="element.id"
+              :style="{
               gridRowStart: `span ${element.xSpan}`,
               gridColumnStart: `span ${element.ySpan}`,
               /*backgroundColor: generateRandomBrightColor(),*/
             }"
-            class="chart"
-            @click="
+              class="chart"
+              @click="
               () => {
                 element.xSpan++
                 element.ySpan++
@@ -679,29 +875,29 @@ onBeforeUnmount(() => {
       </draggable>
       <!-- 图形配置模态框-->
       <a-modal
-        open="true"
-        @ok="chartData.ok"
-        ok-text="确认"
-        cancel-text="取消"
-        :style="{ backgroundColor: 'transparent' }"
-        width="100%"
-        wrap-class-name="full-modal"
+          open="true"
+          @ok="chartData.ok"
+          ok-text="确认"
+          cancel-text="取消"
+          :style="{ backgroundColor: 'transparent' }"
+          width="100%"
+          wrap-class-name="full-modal"
       >
         <template #title><span>配置图表</span></template>
 
         <a-layout :style="{ height: '100%', width: '100%', backgroundColor: 'transparent' }">
           <a-layout-sider :style="{ height: '100%', width: '100%', backgroundColor: 'transparent' }"
-            >hello
+          >hello
           </a-layout-sider>
 
           <a-layout>
             <a-layout-header
-              :style="{ backgroundColor: 'transparent', border: '1px solid black', height: '15%' }"
+                :style="{ backgroundColor: 'transparent', border: '1px solid black', height: '15%' }"
             >
               <div>hello world</div>
             </a-layout-header>
             <a-layout-content
-              :style="{
+                :style="{
                 height: '100%',
                 width: '100%',
                 backgroundColor: 'transparent',
@@ -713,26 +909,26 @@ onBeforeUnmount(() => {
           </a-layout>
 
           <a-layout-sider
-            :style="{
+              :style="{
               height: '100%',
               backgroundColor: 'transparent',
               borderBottom: '1px solid black',
               borderTop: '1px solid black',
             }"
-            width="240px"
+              width="240px"
           >
             <!--            标题控制-->
             <div class="chart-group">
               <a-input
-                v-show="false"
-                v-model:value="tempChartOption.title.id"
-                placeholder="组件唯一id"
+                  v-show="false"
+                  v-model:value="tempChartOption.title.id"
+                  placeholder="组件唯一id"
               ></a-input>
 
               <div class="chart-item">
                 <span class="label-right" style="width: 48px">标题</span>
                 <div
-                  :style="{
+                    :style="{
                     display: 'flex',
                     alignItems: 'center',
                     height: '28px',
@@ -742,36 +938,30 @@ onBeforeUnmount(() => {
                   }"
                 >
                   <a-switch
-                    v-model:checked="tempChartOption.title.show"
-                    @change="
+                      v-model:checked="tempChartOption.title.show"
+                      @change="
                       () => {
-                        let { gridTop, legendTop, titleTop } = calculateTopConfig(
-                          tempChartOption.title.show,
-                          tempChartOption.legend.show,
-                        )
-                        tempChart.setOption({
-                          title: { show: tempChartOption.title.show, top: titleTop },
-                          grid: { top: gridTop },
-                          legend: { top: legendTop },
-                        })
+                        let option = calculatePositionConfig();
+                        option.title.show = tempChartOption.title.show;
+                        tempChart.setOption(option)
                       }
                     "
                   ></a-switch>
                   <a-radio-group
-                    v-model:value="tempChartOption.title.left"
-                    :disabled="!tempChartOption.title.show"
-                    button-style="solid"
-                    size="small"
-                    @change="tempChart.setOption({ title: { left: tempChartOption.title.left } })"
+                      v-model:value="tempChartOption.title.left"
+                      :disabled="!tempChartOption.title.show"
+                      button-style="solid"
+                      size="small"
+                      @change="tempChart.setOption({ title: { left: tempChartOption.title.left } })"
                   >
                     <a-radio-button value="left">
-                      <Left />
+                      <Left/>
                     </a-radio-button>
                     <a-radio-button value="center">
-                      <Center />
+                      <Center/>
                     </a-radio-button>
                     <a-radio-button value="right">
-                      <Right />
+                      <Right/>
                     </a-radio-button>
                   </a-radio-group>
                 </div>
@@ -780,13 +970,13 @@ onBeforeUnmount(() => {
               <div class="chart-item" style="margin-top: 2px">
                 <span class="label-right" style="width: 24px">名称</span>
                 <a-input
-                  v-model:value="tempChartOption.title.text"
-                  placeholder="图表名称"
-                  allow-clear
-                  :disabled="!tempChartOption.title.show"
-                  size="small"
-                  :style="{ width: '140px', height: '28px', fontSize: '12px' }"
-                  @change="tempChart.setOption({ title: { text: tempChartOption.title.text } })"
+                    v-model:value="tempChartOption.title.text"
+                    placeholder="图表名称"
+                    allow-clear
+                    :disabled="!tempChartOption.title.show"
+                    size="small"
+                    :style="{ width: '140px', height: '28px', fontSize: '12px' }"
+                    @change="tempChart.setOption({ title: { text: tempChartOption.title.text } })"
                 ></a-input>
               </div>
             </div>
@@ -796,10 +986,10 @@ onBeforeUnmount(() => {
                 <span class="label-right" style="width: 72px">坐标轴指示器</span>
                 <a-tooltip title="鼠标挪入图表中可查看效果！">
                   <a-radio-group
-                    size="small"
-                    button-style="solid"
-                    v-model:value="tempChartOption.tooltip.axisPointer.type"
-                    @change="
+                      size="small"
+                      button-style="solid"
+                      v-model:value="tempChartOption.tooltip.axisPointer.type"
+                      @change="
                       tempChart.setOption({
                         tooltip: {
                           axisPointer: { type: tempChartOption.tooltip.axisPointer.type },
@@ -818,7 +1008,7 @@ onBeforeUnmount(() => {
               <div class="chart-item">
                 <span class="label-right" style="width: 24px">图例</span>
                 <div
-                  :style="{
+                    :style="{
                     width: '140px',
                     height: '28px',
                     display: 'flex',
@@ -827,18 +1017,12 @@ onBeforeUnmount(() => {
                   }"
                 >
                   <a-switch
-                    v-model:checked="tempChartOption.legend.show"
-                    @change="
+                      v-model:checked="tempChartOption.legend.show"
+                      @change="
                       () => {
-                        let { gridTop, legendTop, titleTop } = calculateTopConfig(
-                          tempChartOption.title.show,
-                          tempChartOption.legend.show,
-                        )
-                        tempChart.setOption({
-                          title: { top: titleTop },
-                          legend: { show: tempChartOption.legend.show, top: legendTop },
-                          grid: { top: gridTop },
-                        })
+                        let option = calculatePositionConfig();
+                        option.legend.show = tempChartOption.legend.show;
+                        tempChart.setOption(option);
                       }
                     "
                   ></a-switch>
@@ -846,64 +1030,63 @@ onBeforeUnmount(() => {
               </div>
 
               <div
-                class="legend-position">
+                  class="legend-position">
                 <span
-                  class="label-right"
-                  style="
+                    class="label-right"
+                    style="
                     width: 24px;
                     font-size: 12px;
                     height: 14px;
                     line-height: 14px;
                     align-self: flex-start;
                   "
-                  >位置</span
+                >位置</span
                 >
                 <div class="legend-position-container">
                   <a-radio-group
-                    class="legend-position-control"
-                    size="small"
-                    button-style="solid"
-                    v-model:value="legendPosition"
+                      class="legend-position-control"
+                      size="small"
+                      button-style="solid"
+                      v-model:value="legendPosition"
+                      :disabled="!tempChartOption.legend.show"
+                      @change="()=>{
+                        let option = calculatePositionConfig();
+                        option.legend.orient = 'horizontal';
+                        if(legendPosition == 'leftCenter' || legendPosition == 'rightCenter'){
+                          option.legend.orient = 'vertical';
+                        }
+                        tempChart.setOption(option);
+                    }"
                   >
                     <a-radio-button class="btn top left" value="topLeft">
-                      <TopLeft />
+                      <TopLeft/>
                     </a-radio-button>
                     <a-radio-button class="btn top center" value="topCenter">
-                      <TopCenter />
+                      <TopCenter/>
                     </a-radio-button>
                     <a-radio-button class="btn top right" value="topRight">
-                      <TopRight />
+                      <TopRight/>
                     </a-radio-button>
                     <a-radio-button class="btn middle left" value="leftCenter">
-                      <LeftCenter />
+                      <LeftCenter/>
                     </a-radio-button>
-                    <a-radio-button class="btn middle center" disabled> <Position/></a-radio-button>
+                    <a-radio-button class="btn middle center" disabled>
+                      <Position/>
+                    </a-radio-button>
                     <a-radio-button class="btn middle right" value="rightCenter">
-                      <RightCenter />
+                      <RightCenter/>
                     </a-radio-button>
                     <a-radio-button class="btn bottom left" value="bottomLeft">
-                      <BottomLeft />
+                      <BottomLeft/>
                     </a-radio-button>
                     <a-radio-button class="btn bottom center" value="bottomCenter">
-                      <BotomCenter />
+                      <BotomCenter/>
                     </a-radio-button>
                     <a-radio-button class="btn bottom right" value="bottomRight">
-                      <BottomRight />
+                      <BottomRight/>
                     </a-radio-button>
                   </a-radio-group>
                 </div>
-
-                <!--                <div  class="legend-position-control">
-                                  <TopLeft/>
-                                 <TopCenter/>
-                                  <TopRight/>
-                                  <LeftCenter/>
-                                  <a-button class="btn middle center active">a</a-button>
-                                 <RightCenter/>
-                                  <BottomLeft/>
-                                  <BotomCenter/>
-                                 <BottomRight/>
-                                </div>-->
               </div>
             </div>
           </a-layout-sider>

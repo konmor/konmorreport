@@ -1,0 +1,80 @@
+ {
+  color: ['#3398DB'],
+  tooltip: {
+    trigger: 'axis',
+    axisPointer: {
+      type: 'shadow'
+    }
+  },
+  grid: {},
+  xAxis: [
+    {
+      type: 'category',
+      data: [
+        '1',
+        '2',
+        '3',
+        '4',
+        '5',
+        '6',
+        '7'
+      ],
+
+      // 坐标轴的名称
+      name: '哈哈',
+      nameLocation: 'middle',
+      nameTextStyle: {
+        color: 'rgba(232, 28, 28, 1)',
+        fontStyle: 'normal'
+      },
+      position: 'bottom',
+      nameGap: 50, // 离坐标轴的距离
+
+      // 标签是否展示, 宽度、距离
+      axisLabel: {
+        show: true,
+        width: 100,
+        rotate: 0,
+        margin: 18,
+        overflow: 'truncate',
+        formatter: function (value, index) {
+      return value + 'kg';
+    },
+    interval: 0
+    },
+    tooltip: {
+      show: true
+    },
+
+    // 刻度线
+    boundaryGap: true,
+    axisTick: {
+      // 对齐刻度线 在 boundaryGap:true,  条件下
+      // true 对齐，false 不对齐
+      alignWithLabel: true,
+      show: true
+    },
+    // 分割线
+    splitLine: {
+      show: true,
+      lineStyle: {
+        type: 'dotted',
+        width:3
+      }
+    }
+    }
+  ],
+  yAxis: [
+    {
+      type: 'value'
+    }
+  ],
+  series: [
+    {
+      name: '直接访问',
+      type: 'bar',
+      barWidth: '60%',
+      data: [10, 52, 200, 334, 390, 330, 220]
+    }
+  ]
+}
