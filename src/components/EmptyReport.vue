@@ -227,7 +227,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     text: '測試',
     left: 'left',
     show: true,
-    top: '2',
+    top: '2'
   },
   grid: {
     top: '8%',
@@ -235,7 +235,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     left: '2',
     bottom: '2%',
     show: true,
-    containLabel: true,
+    containLabel: true
   },
   tooltip: {
     show: true,
@@ -244,8 +244,8 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     // 坐标指示器  type ：line 显示一个实线、 shadow 阴影效果 、cross 十字准心
     // 其中 line、shadow 需要在 `trigger: "axis"` 下生效 ， cross 都会生效
     axisPointer: {
-      type: 'cross',
-    },
+      type: 'cross'
+    }
   },
   legend: {
     show: true,
@@ -260,251 +260,48 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       show: true
     },
     animation: true,
-    formatter: function (name: string) {
+    formatter: function (name) {
       return echarts.format.truncateText(name, 84, '14px Microsoft Yahei', '…');
-    },
+    }
+  },
+  dataset: {
+    dimensions: ['userName', 'salary1', 'salary2', 'salary3', 'salary4'],
+    source: [
+      {
+        userName: '张三',
+        salary1: 6300,
+        salary2: 5200,
+        salary3: 3200,
+        salary4: 600
+      },
+      {
+        userName: '王五',
+        salary1: 6300,
+        salary2: 5200,
+        salary3: 3200,
+        salary4: 600
+      },
+      {
+        userName: '李四',
+        salary1: 6300,
+        salary2: 5200,
+        salary3: 3200,
+        salary4: 600
+      },
+      {
+        userName: '福六',
+        salary1: 6300,
+        salary2: 5200,
+        salary3: 3200,
+        salary4: 600
+      }
+    ]
   },
   xAxis: {
-    data: ['张三', '李四', '王五', '福六'],
-    type: 'category', // 'category' 类目轴，适用于离散的类目数据。 这个时默认值
+    type: 'category'
   },
   yAxis: {},
-  series: [
-    {
-      // 关键数据内容
-      name: '薪水水水水水',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6300, 5200, 3200, 600],
-    },
-    {
-      // 关键数据内容
-      name: '到手薪资',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: '到手薪资2',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: '到手薪资3',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: '到手薪资4',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: '到手薪资5',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: '到手薪资6',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: '到手薪资7',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: '到手薪资8',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    /*{
-      // 关键数据内容
-      name: '到手薪资9',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: '到手薪资10',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: '到手薪资11',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: '到手薪资12',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: '到手薪资13',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'a',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'b',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'c',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'd',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'e',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'f',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'g',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'h',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'i',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'j',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'k',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'l',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'm',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'n',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'o',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'p',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'q',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'r',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'x',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'y',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'z',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'n1',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'n2',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'n3',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },
-    {
-      // 关键数据内容
-      name: 'n4',
-      type: 'bar', // 表示什么数据类型展示，这里表示使用type ：bar = 柱状图
-      data: [6000, 4800, 3100, 600],
-    },*/
-  ],
+  series: [{type: 'bar'}, {type: 'bar'}, {type: 'bar'}, {type: 'bar'}]
 })
 
 const calculatePositionConfig = () => {
