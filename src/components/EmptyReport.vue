@@ -298,7 +298,46 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     ]
   },
   xAxis: {
-    type: 'category'
+    type: 'category',
+    name:'x轴名称',
+    nameLocation:'center', // start end center/middle
+    nameGap:'8',
+    position: 'bottom', // bottom top 坐标轴的位置
+
+    // 标签是否展示, 宽度、距离
+    axisLabel: {
+      show: true,
+      width: 100,
+      rotate: 0,
+      margin: 18,
+      overflow: 'truncate',
+      interval:0, // 强制显示所有x轴标签信息， 1 表示间隔一个显示 2 表示间隔两个，后续依此类推
+      formatter: function (value:string, index:number) {
+        return value + 'kg';
+        },
+    },
+    tooltip: {
+      show: true // 配合 axisLabel.overflow
+    },
+
+    // 刻度线
+    boundaryGap: true,
+    axisTick: {
+      // 对齐刻度线 在 boundaryGap:true,  条件下
+      // true 对齐，false 不对齐
+      alignWithLabel: true,
+      show: true
+    },
+
+    // 分割线
+    splitLine: {
+      show: true,
+      lineStyle: {
+        type: 'dotted',  // dotted dashed solid
+        width:3
+      }
+    }
+
   },
   yAxis: {},
   series: [{type: 'bar',}, {type: 'bar'}, {type: 'bar'}, {type: 'bar'}]
