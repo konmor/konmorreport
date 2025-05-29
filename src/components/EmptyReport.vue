@@ -828,6 +828,7 @@ onBeforeUnmount(() => {
                   }"
                 >
                   <a-switch
+                      size="small"
                       v-model:checked="tempChartOption.title.show"
                       @change="
                       () => {
@@ -915,6 +916,7 @@ onBeforeUnmount(() => {
                   }"
                 >
                   <a-switch
+                      size="small"
                       v-model:checked="tempChartOption.legend.show"
                       @change="
                       () => {
@@ -1068,6 +1070,7 @@ onBeforeUnmount(() => {
                       <span class="label-left" style="width: 60px">标签</span>
                       <div style="width: 140px; height: 28px; display: flex; align-items: center">
                         <a-switch
+                            size="small"
                             v-model:checked="tempChartOption.xAxis.axisLabel.show"
                             @change="tempChart.setOption({xAxis:{axisLabel:{show:tempChartOption.xAxis.axisLabel.show}}})"
                         ></a-switch>
@@ -1161,13 +1164,13 @@ onBeforeUnmount(() => {
                     <div class="chart-item">
                       <a-radio-group
                           size="small"
-                          button-style="solid"
+                          :style="{height:'28px',lineHeight:'28px'}"
                           v-model:value="tempChartOption.xAxis.axisLabel.interval"
                           @change="tempChart.setOption({xAxis:{axisLabel:{interval:tempChartOption.xAxis.axisLabel.interval}}})"
                           :disabled="!tempChartOption.xAxis.axisLabel.show"
                       >
-                        <a-radio value="auto"><span style="font-size: 12px">自适应</span></a-radio>
-                        <a-radio :value="0"><span style="font-size: 12px">全部标签</span></a-radio>
+                        <a-radio value="auto"><span style="font-size: 12px;height: 28px;line-height: 28px;">自适应</span></a-radio>
+                        <a-radio :value="0"><span style="font-size: 12px;height: 14px;line-height: 14px">全部标签</span></a-radio>
                       </a-radio-group>
                     </div>
 
@@ -1191,6 +1194,7 @@ onBeforeUnmount(() => {
                       <span class="label-left" style="width: 60px">分割线</span>
                       <div style="width: 140px; height: 28px; display: flex; align-items: center">
                         <a-switch
+                            size="small"
                             v-model:checked="tempChartOption.xAxis.splitLine.show"
                             @change="tempChart.setOption({xAxis:{splitLine:{show:tempChartOption.xAxis.splitLine.show}}})"
                         ></a-switch>
@@ -1304,6 +1308,7 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 60px">标签</span>
                     <div style="width: 140px; height: 28px; display: flex; align-items: center">
                       <a-switch
+                          size="small"
                           v-model:checked="tempChartOption.yAxis.axisLabel.show"
                           @change="tempChart.setOption({yAxis:{axisLabel:{show:tempChartOption.yAxis.axisLabel.show}}})"
                       ></a-switch>
@@ -1400,6 +1405,7 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 60px">分割线</span>
                     <div style="width: 140px; height: 28px; display: flex; align-items: center">
                       <a-switch
+                          size="small"
                           v-model:checked="tempChartOption.yAxis.splitLine.show"
                           @change="tempChart.setOption({yAxis:{splitLine:{show:tempChartOption.yAxis.splitLine.show}}})"
                       ></a-switch>
