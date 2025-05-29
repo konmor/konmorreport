@@ -3,12 +3,12 @@ import App from './App.vue'
 import router from '@/router'
 import Antd from 'ant-design-vue'
 import 'ant-design-vue/dist/reset.css'
+import 'perfect-scrollbar/css/perfect-scrollbar.css'
 import { createPinia } from 'pinia'
 import { initErrorHandler } from '@/utils/errorHandler/HandlerError.ts'
 import registerCustomIcon from '@/assets/Register.ts'
 import * as DiagramIconFactory from '@/assets/diagram-icon/factory.ts'
 import * as FilterFactory from '@/assets/filter-icon/factory.ts'
-
 let app = createApp(App)
 let pinia = createPinia()
 app.use(router)
@@ -24,6 +24,5 @@ registerCustomIcon(app)
 // 初始化所有报表图标
 DiagramIconFactory.initDiagrams()
 // 初始化所有的报表选择器
-FilterFactory.initFilter()
-
+FilterFactory.initFilter();
 app.mount('#app')
