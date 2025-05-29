@@ -223,7 +223,7 @@ let xAxisConfigShow = ref('');
 let yAxisConfigShow = ref('');
 
 let legendPosition = ref('topCenter')
-const sliderValue = ref<number>(0)
+
 let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   // 标题属性
   title: {
@@ -993,7 +993,7 @@ onBeforeUnmount(() => {
               <a-collapse v-model:activeKey="xAxisConfigShow" expand-icon-position="end"
                           :style="{border:'none',backgroundColor:'transparent',margin:'0',padding:'0'}"
               >
-                <a-collapse-panel key="1" header="X轴" :style="{border:'none',margin:'0',padding:'0'}">
+                <a-collapse-panel key="1" header="X轴" :style="{border:'none',margin:'0',padding:'0',fontSize:'13px'}">
                     <div class="chart-item">
                       <span class="label-left" style="width: 24px">名称</span>
                       <a-input
@@ -1028,13 +1028,14 @@ onBeforeUnmount(() => {
                     </div>
 
                     <div class="chart-item">
-                      <span class="label-left" style="width: 36px">离X轴</span>
+                      <span class="label-left" style="width: 48px">离坐标轴</span>
 
                       <div
                           :style="{ width: '140px', height: '28px', display: 'flex', alignItems: 'center' }"
                       >
                         <a-input-number
                             size="small"
+                            min="8"
                             :style="{ width: '90px', fontSize: '12px' }"
                             v-model:value="tempChartOption.xAxis.nameGap"
                             addon-after="px"
@@ -1063,7 +1064,7 @@ onBeforeUnmount(() => {
                       </div>
                     </div>
 
-                    <div class="chart-item" style="margin-top: 2px">
+                    <div class="chart-item" style="margin-top: 12px;border-top: 1px solid #e8e8e8;">
                       <span class="label-left" style="width: 60px">标签</span>
                       <div style="width: 140px; height: 28px; display: flex; align-items: center">
                         <a-switch
@@ -1105,7 +1106,7 @@ onBeforeUnmount(() => {
                     </div>
 
                     <div class="chart-item">
-                      <span class="label-left" style="width: 60px">离坐标轴</span>
+                      <span class="label-left" style="width: 48px">离坐标轴</span>
                       <div style="width: 140px; height: 28px; display: flex; align-items: center">
                         <a-input-number
                             size="small"
@@ -1186,7 +1187,7 @@ onBeforeUnmount(() => {
                       </div>
                     </div>
 
-                    <div class="chart-item" style="margin-top: 2px">
+                    <div class="chart-item" style="margin-top: 12px;border-top: 1px solid #e8e8e8;">
                       <span class="label-left" style="width: 60px">分割线</span>
                       <div style="width: 140px; height: 28px; display: flex; align-items: center">
                         <a-switch
@@ -1228,7 +1229,7 @@ onBeforeUnmount(() => {
               <a-collapse v-model:activeKey="yAxisConfigShow" expand-icon-position="end"
                           :style="{border:'none',backgroundColor:'transparent',margin:'0',padding:'0'}"
               >
-                <a-collapse-panel key="1" header="Y轴" :style="{border:'none',margin:'0',padding:'0'}">
+                <a-collapse-panel key="1" header="Y轴" :style="{border:'none',margin:'0',padding:'0',fontSize:'13px'}">
                   <div class="chart-item">
                     <span class="label-left" style="width: 24px">名称</span>
                     <a-input
@@ -1263,13 +1264,14 @@ onBeforeUnmount(() => {
                   </div>
 
                   <div class="chart-item">
-                    <span class="label-left" style="width: 36px">离Y轴</span>
+                    <span class="label-left" style="width: 48px">离坐标轴</span>
 
                     <div
                         :style="{ width: '140px', height: '28px', display: 'flex', alignItems: 'center' }"
                     >
                       <a-input-number
                           size="small"
+                          min="8"
                           :style="{ width: '90px', fontSize: '12px' }"
                           v-model:value="tempChartOption.yAxis.nameGap"
                           addon-after="px"
@@ -1298,7 +1300,7 @@ onBeforeUnmount(() => {
                     </div>
                   </div>
 
-                  <div class="chart-item" style="margin-top: 2px">
+                  <div class="chart-item" style="margin-top: 12px;border-top: 1px solid #e8e8e8;">
                     <span class="label-left" style="width: 60px">标签</span>
                     <div style="width: 140px; height: 28px; display: flex; align-items: center">
                       <a-switch
@@ -1311,6 +1313,7 @@ onBeforeUnmount(() => {
                   <div class="chart-item">
                     <span class="label-left" style="width: 60px">长度</span>
                     <div style="width: 140px; height: 28px; display: flex; align-items: center">
+                      <a-tooltip title="最大值200 最小值 48">
                       <a-input-number
                           size="small"
                           min="48"
@@ -1318,10 +1321,11 @@ onBeforeUnmount(() => {
                           :style="{ width: '108px', fontSize: '12px' }"
                           v-model:value="tempChartOption.yAxis.axisLabel.width"
                           addon-after="px"
-                          @change="tempChart.setOption({yAxis:{axisLabel:{width:tempChartOption.yAxis.axisLabel.width}}})"
+                          @change="tempChart.setOption({yAxis:{axisLabel:{width:tempChartOption.yAxis.axisLabel.width}}});"
                           :disabled="!tempChartOption.yAxis.axisLabel.show"
                       >
                       </a-input-number>
+                      </a-tooltip>
                     </div>
                   </div>
 
@@ -1340,7 +1344,7 @@ onBeforeUnmount(() => {
                   </div>
 
                   <div class="chart-item">
-                    <span class="label-left" style="width: 60px">离坐标轴</span>
+                    <span class="label-left" style="width: 48px">离坐标轴</span>
                     <div style="width: 140px; height: 28px; display: flex; align-items: center">
                       <a-input-number
                           size="small"
@@ -1392,7 +1396,7 @@ onBeforeUnmount(() => {
                     </div>
                   </div>
 
-                  <div class="chart-item" style="margin-top: 2px">
+                  <div class="chart-item" style="margin-top: 12px;border-top: 1px solid #e8e8e8;">
                     <span class="label-left" style="width: 60px">分割线</span>
                     <div style="width: 140px; height: 28px; display: flex; align-items: center">
                       <a-switch
