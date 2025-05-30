@@ -222,7 +222,10 @@ let tempTopConfig = reactive({
 let xAxisConfigShow = ref('');
 let yAxisConfigShow = ref('');
 
-let legendPosition = ref('topCenter')
+let legendPosition = ref('topCenter');
+
+let xAxisNameShow = ref(false);
+let yAxisNameShow = ref(false);
 
 let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   // 标题属性
@@ -336,8 +339,9 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     ],
   },
   xAxis: {
+
     type: 'category',
-    name: 'x轴名称',
+    name: undefined,
     nameLocation: 'center', // start end center/middle
     nameGap: '8',
     position: 'bottom', // bottom top 坐标轴的位置
@@ -380,7 +384,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   yAxis: {
 
     type: 'value',
-    name: 'y轴名称',
+    name: undefined,
     nameLocation: 'end', // start end center/middle
     nameGap: '8',
     position: 'left', // left right 坐标轴的位置
@@ -996,12 +1000,36 @@ onBeforeUnmount(() => {
                           :style="{border:'none',backgroundColor:'transparent',margin:'0',padding:'0'}"
               >
                 <a-collapse-panel key="1" header="X轴" :style="{border:'none',margin:'0',padding:'0',fontSize:'13px'}">
+                  <div class="chart-item">
+                    <span class="label-left" style="width: 24px">名称</span>
+                    <div style="width: 140px;height: 28px;">
+                      <a-switch
+                          size="small"
+                          v-model:checked="xAxisNameShow"
+                          @change="()=>{
+                            if(xAxisNameShow){
+                              if(tempChartOption.xAxis.name!=undefined){
+                                tempChart.setOption({xAxis:{name:tempChartOption.xAxis.name}})
+                              }else {
+                                tempChartOption.xAxis.name = tempChartOption.dataset.dimensions[0];
+                                tempChart.setOption({xAxis:{name:tempChartOption.xAxis.name}})
+                              }
+                            } else {
+                              tempChartOption.xAxis.name = undefined;
+                              tempChart.setOption({xAxis:{name:undefined}})
+                            }
+                          }"
+                      ></a-switch>
+                    </div>
+                  </div>
+
                     <div class="chart-item">
-                      <span class="label-left" style="width: 24px">名称</span>
+                      <span class="label-left"></span>
                       <a-input
                           size="small"
                           :style="{ width: '140px', height: '28px', fontSize: '12px' }"
                           allow-clear
+                          :disabled="!xAxisNameShow"
                           v-model:value="tempChartOption.xAxis.name"
                           @change="tempChart.setOption({xAxis:{name:tempChartOption.xAxis.name}})"
                       ></a-input>
@@ -1013,6 +1041,7 @@ onBeforeUnmount(() => {
                         <a-radio-group
                             size="small"
                             button-style="solid"
+                            :disabled="!xAxisNameShow"
                             v-model:value="tempChartOption.xAxis.nameLocation"
                             @change="tempChart.setOption({xAxis:{nameLocation:tempChartOption.xAxis.nameLocation}})"
                         >
@@ -1039,6 +1068,7 @@ onBeforeUnmount(() => {
                             size="small"
                             min="8"
                             :style="{ width: '90px', fontSize: '12px' }"
+                            :disabled="!xAxisNameShow"
                             v-model:value="tempChartOption.xAxis.nameGap"
                             addon-after="px"
                             @change="tempChart.setOption({xAxis:{nameGap:tempChartOption.xAxis.nameGap}})"
@@ -1236,10 +1266,29 @@ onBeforeUnmount(() => {
                 <a-collapse-panel key="1" header="Y轴" :style="{border:'none',margin:'0',padding:'0',fontSize:'13px'}">
                   <div class="chart-item">
                     <span class="label-left" style="width: 24px">名称</span>
+                    <div style="width: 140px;height: 28px;">
+                      <a-switch
+                          size="small"
+                          v-model:checked="yAxisNameShow"
+                          @change="()=>{
+                            if(yAxisNameShow){
+                                tempChart.setOption({yAxis:{name:tempChartOption.yAxis.name}})
+                            } else {
+                              tempChartOption.yAxis.name = undefined;
+                              tempChart.setOption({yAxis:{name:undefined}})
+                            }
+                          }"
+                      ></a-switch>
+                    </div>
+                  </div>
+
+                  <div class="chart-item">
+                    <span class="label-left"></span>
                     <a-input
                         size="small"
                         :style="{ width: '140px', height: '28px', fontSize: '12px' }"
                         allow-clear
+                        :disabled="!yAxisNameShow"
                         v-model:value="tempChartOption.yAxis.name"
                         @change="tempChart.setOption({yAxis:{name:tempChartOption.yAxis.name}})"
                     ></a-input>
@@ -1251,6 +1300,7 @@ onBeforeUnmount(() => {
                       <a-radio-group
                           size="small"
                           button-style="solid"
+                          :disabled="!yAxisNameShow"
                           v-model:value="tempChartOption.yAxis.nameLocation"
                           @change="tempChart.setOption({yAxis:{nameLocation:tempChartOption.yAxis.nameLocation}})"
                       >
@@ -1277,6 +1327,7 @@ onBeforeUnmount(() => {
                           size="small"
                           min="8"
                           :style="{ width: '90px', fontSize: '12px' }"
+                          :disabled="!yAxisNameShow"
                           v-model:value="tempChartOption.yAxis.nameGap"
                           addon-after="px"
                           @change="tempChart.setOption({yAxis:{nameGap:tempChartOption.yAxis.nameGap}})"
