@@ -490,7 +490,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   },
   series: [
     {
-      id:1,
+      id: '1',
       type: 'bar',
       name: '哈哈哈',
       barMaxWidth: '50',
@@ -517,14 +517,15 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       },
     },
     {
+      id:'2',
       type: 'bar',
       barMaxWidth: '50',
       barMinWidth: '8',
       stack: 'group2',
       stackStrategy: 'samesign',
     },
-    {type: 'bar', barMaxWidth: '50', barMinWidth: '1'},
-    {type: 'bar', barMaxWidth: '50', barMinWidth: '1'},
+    {id:'3',type: 'bar', barMaxWidth: '50', barMinWidth: '1'},
+    {id:'4',type: 'bar', barMaxWidth: '50', barMinWidth: '1'},
   ],
   dataZoom: [
     {
@@ -1614,8 +1615,8 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 48px">系列名称</span>
 
                     <div class="component-right">
-                      <a-input v-model:value="item.name" size="small" :style="{width:'100%',fontSize:'12px'}"
-                      @change="()=>{tempChart.setOption({series:{id:index,name:item.name}})}">
+                      <a-input v-model:value="item.name" size="small" :style="{width:'100%',fontSize:'12px',height:'22px'}"
+                      @change="()=>{tempChart.setOption({series:[{id:item.id,name:item.name}]})}">
 
                       </a-input>
                     </div>
@@ -1626,7 +1627,7 @@ onBeforeUnmount(() => {
 
                     <div class="component-right">
                       <a-select v-model:value="item.type" size="small" @change="(value:string)=>{
-                        tempChart.setOption({series:{id:index,type:value}})
+                        tempChart.setOption({series:{id:item.id,type:value}})
                       }">
                         <a-select-option value="bar">
                           <span class="label-normal">柱状图</span>
@@ -1649,7 +1650,7 @@ onBeforeUnmount(() => {
                                                 item.emphasis.label.show=true;
                                                 item.label.show=false;
                                             }else {
-                                               item.emphasis.label.show=false;
+                                               item.emphasis.label.show=true;
                                                item.label.show=true;
                                             }
                                           }else {
@@ -1657,7 +1658,7 @@ onBeforeUnmount(() => {
                                             item.label.show=false;
                                           }
                                           tempChart.setOption({
-                                          series:{id:index,label:{show:item.label.show},emphasis:{label:{show:item.emphasis.label.show}}}
+                                          series:{id:item.id,label:{show:item.label.show},emphasis:{label:{show:item.emphasis.label.show}}}
                                           })
                                         }">
                         <a-checkbox value='show'><span class="label-normal">显示</span></a-checkbox>
@@ -1672,7 +1673,7 @@ onBeforeUnmount(() => {
                     <div class="component-right">
                       <a-radio-group v-model:value="item.label.position"
                                      size="small"
-                        @change="tempChart.setOption({series:{id:index,label:{position:item.label.position}}})">
+                        @change="tempChart.setOption({series:[{id:item.id,label:{position:item.label.position}}]})">
                         <a-radio-button value='top'><span class="label-normal">顶部</span></a-radio-button>
                         <a-radio-button value="inside"><span class="label-normal">内中</span></a-radio-button>
                         <a-radio-button value="insideBottom"><span class="label-normal">内下</span></a-radio-button>
