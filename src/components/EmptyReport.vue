@@ -548,7 +548,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       label: {
         show: false,
         position: 'top', // top inside insideTop insideBottom
-        rotate: 90, // -90 90
+        rotate: 0, // -90 90
       },
       emphasis: {
         disabled: false,
@@ -563,13 +563,13 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       name: dimensions[2],
       type: 'bar',
       barMaxWidth: '50',
-      barMinWidth: '8',
+      barMinWidth: '1',
       stack: 'group2',
       stackStrategy: 'samesign',
       label: {
         show: false,
         position: 'top', // top inside insideTop insideBottom
-        rotate: 90, // -90 90
+        rotate: 0, // -90 90
       },
       emphasis: {
         disabled: false,
@@ -588,7 +588,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       label: {
         show: false,
         position: 'top', // top inside insideTop insideBottom
-        rotate: 90, // -90 90
+        rotate: 0, // -90 90
       },
       emphasis: {
         disabled: false,
@@ -607,7 +607,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       label: {
         show: false,
         position: 'top', // top inside insideTop insideBottom
-        rotate: 90, // -90 90
+        rotate: 0, // -90 90
       },
       emphasis: {
         disabled: false,
@@ -624,7 +624,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       type: 'inside',
       disabled:true,
       start: 0,
-      end: 30,
+      end: 100,
       xAxisIndex: [0],
     },
     {
@@ -1380,6 +1380,7 @@ onBeforeUnmount(() => {
                         :min="-90"
                         :max="90"
                         :style="{ width: '100%' }"
+                        :step="5"
                         @change="
                           tempChart.setOption({
                             xAxis: {
