@@ -622,6 +622,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     {
       id: 'x0Inside',
       type: 'inside',
+      disabled:true,
       start: 0,
       end: 30,
       xAxisIndex: [0],
@@ -629,11 +630,13 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     {
       id: 'x0Slider',
       type: 'slider',
+      show:false,
       xAxisIndex: [0],
     },
     {
       id: 'y0Inside',
       type: 'inside',
+      disabled:true,
       start: 0,
       end: 100,
       yAxisIndex: [0],
@@ -641,6 +644,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     {
       id: 'y0Slider',
       type: 'slider',
+      show:false,
       yAxisIndex: [0],
     },
   ],
@@ -2122,6 +2126,7 @@ onBeforeUnmount(() => {
                           xZoomShow = false
                           yZoomShow = false
                         }
+
                       }
                     "
                   >
@@ -2138,45 +2143,44 @@ onBeforeUnmount(() => {
                     v-model:value="xZoom"
                     @change="
                       () => {
-                        let x0InsideDisabled=false;
-                        let x0SliderShow=true;
-                      if(xZoom.length>0){
-                        if(xZoom.length==1){
-                          if(xZoom[0]=='inside'){
-                            x0InsideDisabled=false
-                            x0SliderShow=false
-                          }else {
-                            x0InsideDisabled=true
-                            x0SliderShow=true
+                        let x0InsideDisabled = false
+                        let x0SliderShow = true
+                        if (xZoom.length > 0) {
+                          if (xZoom.length == 1) {
+                            if (xZoom[0] == 'inside') {
+                              x0InsideDisabled = false
+                              x0SliderShow = false
+                            } else {
+                              x0InsideDisabled = true
+                              x0SliderShow = true
+                            }
+                          } else {
+                            x0InsideDisabled = false
+                            x0SliderShow = true
                           }
-                        }else {
-                          x0InsideDisabled=false
-                          x0SliderShow=true
+                        } else {
+                          x0InsideDisabled = true
+                          x0SliderShow = false
                         }
-                      }else {
-                        x0InsideDisabled=true
-                        x0SliderShow=false
-
-                      }
 
                         let option = [
                           {
                             id: 'x0Inside',
-                            disabled:x0InsideDisabled,
+                            disabled: x0InsideDisabled,
                           },
                           {
                             id: 'x0Slider',
-                            show:x0SliderShow,
-                          }
+                            show: x0SliderShow,
+                          },
                         ]
-                      for (let i = 0; i < tempChartOption.dataZoom.length; i++) {
-                           if(tempChartOption.dataZoom[i].id == 'x0Inside') {
-                            tempChartOption.dataZoom[i].disabled=x0InsideDisabled;
-                           } else if (tempChartOption.dataZoom[i].id == 'x0Slider'){
-                            tempChartOption.dataZoom[i].show=x0SliderShow;
-                           }
+                        for (let i = 0; i < tempChartOption.dataZoom.length; i++) {
+                          if (tempChartOption.dataZoom[i].id == 'x0Inside') {
+                            tempChartOption.dataZoom[i].disabled = x0InsideDisabled
+                          } else if (tempChartOption.dataZoom[i].id == 'x0Slider') {
+                            tempChartOption.dataZoom[i].show = x0SliderShow
+                          }
                         }
-                        tempChart.setOption({dataZoom:option});
+                        tempChart.setOption({ dataZoom: option })
                       }
                     "
                   >
@@ -2189,75 +2193,84 @@ onBeforeUnmount(() => {
               <div class="chart-item" v-show="xZoomShow">
                 <span class="label-left" style="width: 48px">范围</span>
                 <div class="component-right">
-                  <a-slider v-model:value="xZoomRange" range :style="{ width: '100%' }"
-                  @change="()=>{
-                    let option =
-                    {
-                      id:'x0Inside',
-                      start:xZoomRange[0],
-                      end:xZoomRange[1],
-                    }
-                    tempChart.setOption({dataZoom:option});
+                  <a-slider
+                    v-model:value="xZoomRange"
+                    range
+                    :style="{ width: '100%' }"
+                    :dots="true"
+                    :step="2"
+                    @change="
+                      () => {
+                        let option = {
+                          id: 'x0Inside',
+                          start: xZoomRange[0],
+                          end: xZoomRange[1],
+                        }
+                        tempChart.setOption({ dataZoom: option })
 
-                    for (let i = 0; i < tempChartOption.dataZoom.length; i++) {
-                       if(tempChartOption.dataZoom[i].id =='x0Inside'){
-                         tempChartOption.dataZoom[i].start = xZoomRange[0];
-                         tempChartOption.dataZoom[i].end = xZoomRange[1];
-                         break;
-                       }
-                    }
-
-                  }"></a-slider>
+                        for (let i = 0; i < tempChartOption.dataZoom.length; i++) {
+                          if (tempChartOption.dataZoom[i].id == 'x0Inside') {
+                            tempChartOption.dataZoom[i].start = xZoomRange[0]
+                            tempChartOption.dataZoom[i].end = xZoomRange[1]
+                            break
+                          }
+                        }
+                      }
+                    "
+                  ></a-slider>
                 </div>
               </div>
 
               <div class="chart-item" v-show="yZoomShow">
                 <span class="label-left" style="width: 48px">纵向</span>
                 <div class="component-right">
-                  <a-checkbox-group v-model:value="yZoom"
-                                    @change="
+                  <a-checkbox-group
+                    v-model:value="yZoom"
+                    @change="
                       () => {
-                        let y0InsideDisabled=false;
-                        let y0SliderShow=true;
-                      if(xZoom.length>0){
-                        if(xZoom.length==1){
-                          if(xZoom[0]=='inside'){
-                            y0InsideDisabled=false
-                            y0SliderShow=false
-                          }else {
-                            y0InsideDisabled=true
-                            y0SliderShow=true
+                        let y0InsideDisabled = false
+                        let y0SliderShow = true
+                        if (yZoom.length > 0) {
+                          if (yZoom.length == 1) {
+                            if (yZoom[0] == 'inside') {
+                              y0InsideDisabled = false
+                              y0SliderShow = false
+                            } else {
+                              y0InsideDisabled = true
+                              y0SliderShow = true
+                            }
+                          } else {
+                            y0InsideDisabled = false
+                            y0SliderShow = true
                           }
-                        }else {
-                          y0InsideDisabled=false
-                          y0SliderShow=true
+                        } else {
+                          y0InsideDisabled = true
+                          y0SliderShow = false
                         }
-                      }else {
-                        y0InsideDisabled=true
-                        y0SliderShow=false
-                      }
 
                         let option = [
                           {
                             id: 'y0Inside',
-                            disabled:y0InsideDisabled,
+                            disabled: y0InsideDisabled,
                           },
                           {
                             id: 'y0Slider',
-                            show:y0SliderShow,
-                          }
+                            show: y0SliderShow,
+                          },
                         ]
 
                         for (let i = 0; i < tempChartOption.dataZoom.length; i++) {
-                           if(tempChartOption.dataZoom[i].id == 'y0Inside') {
-                            tempChartOption.dataZoom[i].disabled=y0InsideDisabled;
-                           } else if (tempChartOption.dataZoom[i].id == 'y0Slider'){
-                            tempChartOption.dataZoom[i].show=y0SliderShow;
-                           }
+                          if (tempChartOption.dataZoom[i].id == 'y0Inside') {
+                            tempChartOption.dataZoom[i].disabled = y0InsideDisabled
+                          } else if (tempChartOption.dataZoom[i].id == 'y0Slider') {
+                            tempChartOption.dataZoom[i].show = y0SliderShow
+                          }
                         }
 
-                        tempChart.setOption({dataZoom:option});
-                      }">
+                        tempChart.setOption({ dataZoom: option })
+                      }
+                    "
+                  >
                     <a-checkbox value="inside"><span class="label-normal">内置</span></a-checkbox>
                     <a-checkbox value="silder"><span class="label-normal">滑块</span></a-checkbox>
                   </a-checkbox-group>
@@ -2267,24 +2280,31 @@ onBeforeUnmount(() => {
               <div class="chart-item" v-show="yZoomShow">
                 <span class="label-left" style="width: 48px">范围</span>
                 <div class="component-right">
-                  <a-slider v-model:value="yZoomRange" @change="()=>{
+                  <a-slider
+                    v-model:value="yZoomRange"
+                    range
+                    :style="{ width: '100%' }"
+                    :dots="true"
+                    :step="2"
+                    @change="
+                      () => {
+                        let option = {
+                          id: 'y0Inside',
+                          start: yZoomRange[0],
+                          end: yZoomRange[1],
+                        }
+                        tempChart.setOption({ dataZoom: option })
 
-                    let option =
-                    {
-                      id:'y0Inside',
-                      start:yZoomRange[0],
-                      end:yZoomRange[1],
-                    }
-                    tempChart.setOption({dataZoom:option});
-
-                    for (let i = 0; i < tempChartOption.dataZoom.length; i++) {
-                       if(tempChartOption.dataZoom[i].id =='y0Inside'){
-                         tempChartOption.dataZoom[i].start = yZoomRange[0];
-                         tempChartOption.dataZoom[i].end = yZoomRange[1];
-                         break;
-                       }
-                    }
-                  }" range :style="{ width: '100%' }"></a-slider>
+                        for (let i = 0; i < tempChartOption.dataZoom.length; i++) {
+                          if (tempChartOption.dataZoom[i].id == 'y0Inside') {
+                            tempChartOption.dataZoom[i].start = yZoomRange[0]
+                            tempChartOption.dataZoom[i].end = yZoomRange[1]
+                            break
+                          }
+                        }
+                      }
+                    "
+                  ></a-slider>
                 </div>
               </div>
             </div>
