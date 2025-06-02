@@ -231,7 +231,162 @@ let allSeriesEqual = ref(false);
 
 let allSeriesConfigShow = ref([]);
 
-let seriesLabelShow = ref<('show' | 'hover')[]>([]);
+let seriesLabelShow = ref<'show' | 'hover'>('');
+
+const seriesLabelControl = (item) => {
+  if (seriesLabelShow.value != null && seriesLabelShow.value.length > 0) {
+    if (seriesLabelShow.value == 'hover') {
+      item.emphasis.label.show = true;
+      item.label.show = false;
+    } else if (seriesLabelShow.value == 'show') {
+      item.emphasis.label.show = true;
+      item.label.show = true;
+    }
+  } else {
+    item.emphasis.label.show = false;
+    item.label.show = false;
+  }
+  let temp = {id: item.id, label: {show: item.label.show}, emphasis: {label: {show: item.emphasis.label.show}}};
+  tempChart.setOption({
+    series: temp,
+  })
+};
+
+function transferDataToArray(){
+  let data = [
+    {
+      userName: '张三',
+      salary1: 6300,
+      salary2: 5200,
+      salary3: 3200,
+      salary4: 600,
+    },
+    {
+      userName: '张三a',
+      salary1: 6300,
+      salary2: 5200,
+      salary3: 3200,
+      salary4: 600,
+    },
+    {
+      userName: '张三b',
+      salary1: 6300,
+      salary2: 5200,
+      salary3: 3200,
+      salary4: 600,
+    },
+    {
+      userName: '张三c',
+      salary1: 6300,
+      salary2: 5200,
+      salary3: 3200,
+      salary4: 600,
+    },
+    {
+      userName: '张三d',
+      salary1: 6300,
+      salary2: 5200,
+      salary3: 3200,
+      salary4: 600,
+    },
+    {
+      userName: '张三e',
+      salary1: 6300,
+      salary2: 5200,
+      salary3: 3200,
+      salary4: 600,
+    },
+    {
+      userName: '王五fffdasfsafsfdasfsafa',
+      salary1: 6300,
+      salary2: 5200,
+      salary3: 3200,
+      salary4: 600,
+    },
+    {
+      userName: '李四',
+      salary1: 6300,
+      salary2: 5200,
+      salary3: 3200,
+      salary4: 600,
+    },
+    {
+      userName: '福六',
+      salary1: 6300,
+      salary2: 5200,
+      salary3: 3200,
+      salary4: 600,
+    },
+    {
+      userName: '福六a',
+      salary1: 6300,
+      salary2: 5200,
+      salary3: 3200,
+      salary4: 600,
+    },
+    {
+      userName: '福六b',
+      salary1: 6300,
+      salary2: 5200,
+      salary3: 3200,
+      salary4: 600,
+    },
+    {
+      userName: '福六c',
+      salary1: 6300,
+      salary2: 5200,
+      salary3: 3200,
+      salary4: 600,
+    },
+    {
+      userName: '福六c',
+      salary1: 6300,
+      salary2: 5200,
+      salary3: 3200,
+      salary4: 600,
+    },
+    {
+      userName: '福六d',
+      salary1: 6300,
+      salary2: 5200,
+      salary3: 3200,
+      salary4: 600,
+    },
+    {
+      userName: '福六e',
+      salary1: 6300,
+      salary2: 5200,
+      salary3: 3200,
+      salary4: 600,
+    },
+    {
+      userName: '福六f',
+      salary1: 6300,
+      salary2: 5200,
+      salary3: 3200,
+      salary4: 600,
+    },
+    {
+      userName: '福六h',
+      salary1: 6300,
+      salary2: 5200,
+      salary3: 3200,
+      salary4: 600,
+    },
+    {
+      userName: '福六i',
+      salary1: 6300,
+      salary2: 5200,
+      salary3: 3200,
+      salary4: 600,
+    },
+  ]
+
+  return data.map(item => [item.userName, item.salary1, item.salary2,
+    item.salary3, item.salary4]);
+}
+
+let dimensions = ['userName', 'salary1', 'salary2', 'salary3', 'salary4'];
 
 let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   // 标题属性
@@ -277,135 +432,8 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     },
   },
   dataset: {
-    dimensions: ['userName', 'salary1', 'salary2', 'salary3', 'salary4'],
-    source: [
-      {
-        userName: '张三',
-        salary1: 6300,
-        salary2: 5200,
-        salary3: 3200,
-        salary4: 600,
-      },
-      {
-        userName: '张三a',
-        salary1: 6300,
-        salary2: 5200,
-        salary3: 3200,
-        salary4: 600,
-      },
-      {
-        userName: '张三b',
-        salary1: 6300,
-        salary2: 5200,
-        salary3: 3200,
-        salary4: 600,
-      },
-      {
-        userName: '张三c',
-        salary1: 6300,
-        salary2: 5200,
-        salary3: 3200,
-        salary4: 600,
-      },
-      {
-        userName: '张三d',
-        salary1: 6300,
-        salary2: 5200,
-        salary3: 3200,
-        salary4: 600,
-      },
-      {
-        userName: '张三e',
-        salary1: 6300,
-        salary2: 5200,
-        salary3: 3200,
-        salary4: 600,
-      },
-      {
-        userName: '王五fffdasfsafsfdasfsafa',
-        salary1: 6300,
-        salary2: 5200,
-        salary3: 3200,
-        salary4: 600,
-      },
-      {
-        userName: '李四',
-        salary1: 6300,
-        salary2: 5200,
-        salary3: 3200,
-        salary4: 600,
-      },
-      {
-        userName: '福六',
-        salary1: 6300,
-        salary2: 5200,
-        salary3: 3200,
-        salary4: 600,
-      },
-      {
-        userName: '福六a',
-        salary1: 6300,
-        salary2: 5200,
-        salary3: 3200,
-        salary4: 600,
-      },
-      {
-        userName: '福六b',
-        salary1: 6300,
-        salary2: 5200,
-        salary3: 3200,
-        salary4: 600,
-      },
-      {
-        userName: '福六c',
-        salary1: 6300,
-        salary2: 5200,
-        salary3: 3200,
-        salary4: 600,
-      },
-      {
-        userName: '福六c',
-        salary1: 6300,
-        salary2: 5200,
-        salary3: 3200,
-        salary4: 600,
-      },
-      {
-        userName: '福六d',
-        salary1: 6300,
-        salary2: 5200,
-        salary3: 3200,
-        salary4: 600,
-      },
-      {
-        userName: '福六e',
-        salary1: 6300,
-        salary2: 5200,
-        salary3: 3200,
-        salary4: 600,
-      },
-      {
-        userName: '福六f',
-        salary1: 6300,
-        salary2: 5200,
-        salary3: 3200,
-        salary4: 600,
-      },
-      {
-        userName: '福六h',
-        salary1: 6300,
-        salary2: 5200,
-        salary3: 3200,
-        salary4: 600,
-      },
-      {
-        userName: '福六i',
-        salary1: 6300,
-        salary2: 5200,
-        salary3: 3200,
-        salary4: 600,
-      },
-    ],
+    dimensions: dimensions,
+    source: transferDataToArray() ,
   },
   xAxis: {
 
@@ -492,7 +520,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     {
       id: '1',
       type: 'bar',
-      name: '哈哈哈',
+      name: dimensions[1],
       barMaxWidth: '50',
       barMinWidth: '1',
       stack: 'group1',
@@ -510,31 +538,44 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       },
       emphasis: {
         disabled: false,
-        focus: 'series', // none \ self \ series
+        focus: 'self', // none \ self \ series
         label: {
-          show: true,
+          show: false,
         }
       },
     },
     {
       id:'2',
+      name:dimensions[2],
       type: 'bar',
       barMaxWidth: '50',
       barMinWidth: '8',
       stack: 'group2',
       stackStrategy: 'samesign',
     },
-    {id:'3',type: 'bar', barMaxWidth: '50', barMinWidth: '1'},
-    {id:'4',type: 'bar', barMaxWidth: '50', barMinWidth: '1'},
+    {id:'3',name:dimensions[3],type: 'bar', barMaxWidth: '50', barMinWidth: '1'},
+    {id:'4',name:dimensions[4],type: 'bar', barMaxWidth: '50', barMinWidth: '1'},
   ],
   dataZoom: [
     {
       type: 'inside',
       start: 0,
       end: 30,
+      xAxisIndex: [0],
     },
     {
-      type: 'slider'
+      type: 'slider',
+      xAxisIndex: [0],
+    },
+    {
+      type: 'inside',
+      start: 0,
+      end: 30,
+      yAxisIndex: [0],
+    },
+    {
+      type: 'slider',
+      yAxisIndex: [0],
     }
   ]
 })
@@ -1615,8 +1656,9 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 48px">系列名称</span>
 
                     <div class="component-right">
-                      <a-input v-model:value="item.name" size="small" :style="{width:'100%',fontSize:'12px',height:'22px'}"
-                      @change="()=>{tempChart.setOption({series:[{id:item.id,name:item.name}]})}">
+                      <a-input v-model:value="item.name" size="small"
+                               :style="{width:'100%',fontSize:'12px',height:'22px'}"
+                               @change="()=>{tempChart.setOption({series:[{id:item.id,name:item.name}]})}">
 
                       </a-input>
                     </div>
@@ -1643,27 +1685,12 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 48px">数据标签</span>
 
                     <div class="component-right">
-                      <a-checkbox-group v-model:value="seriesLabelShow"
-                                        @change="()=>{
-                                          if(seriesLabelShow!=null && seriesLabelShow.length>0){
-                                            if(seriesLabelShow.length == 2 || (seriesLabelShow.length == 1 && seriesLabelShow[0] == 'hover')){
-                                                item.emphasis.label.show=true;
-                                                item.label.show=false;
-                                            }else {
-                                               item.emphasis.label.show=true;
-                                               item.label.show=true;
-                                            }
-                                          }else {
-                                            item.emphasis.label.show=false;
-                                            item.label.show=false;
-                                          }
-                                          tempChart.setOption({
-                                          series:{id:item.id,label:{show:item.label.show},emphasis:{label:{show:item.emphasis.label.show}}}
-                                          })
-                                        }">
-                        <a-checkbox value='show'><span class="label-normal">显示</span></a-checkbox>
-                        <a-checkbox value="hover"><span class="label-normal">悬停</span></a-checkbox>
-                      </a-checkbox-group>
+                      <a-radio-group v-model:value="seriesLabelShow"
+                                     size="small"
+                                     @change="seriesLabelControl(item)">
+                        <a-radio-button value='show'><span class="label-normal">常显示</span></a-radio-button>
+                        <a-radio-button value="hover"><span class="label-normal">悬停</span></a-radio-button>
+                      </a-radio-group>
                     </div>
                   </div>
 
@@ -1671,13 +1698,44 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 48px">标签位置</span>
 
                     <div class="component-right">
-                      <a-radio-group v-model:value="item.label.position"
+                      <a-select v-model:value="item.label.position"
+                                size="small"
+                                @change="tempChart.setOption({series:[{id:item.id,label:{position:item.label.position}}]})"
+                                :disabled="seriesLabelShow ==null || seriesLabelShow =='' ">
+                        <a-select-option value='top'><span class="label-normal">顶部</span></a-select-option>
+                        <a-select-option value="inside"><span class="label-normal">内中</span></a-select-option>
+                        <a-select-option value="insideBottom"><span class="label-normal">内下</span></a-select-option>
+                        <a-select-option value="insideTop"><span class="label-normal">内上</span></a-select-option>
+                      </a-select>
+
+                    </div>
+                  </div>
+
+                  <div class="chart-item">
+                    <span class="label-left" style="width: 48px">角度</span>
+
+                    <div class="component-right">
+                      <a-slider
+                          v-model:value="item.label.rotate"
+                          :min="-90"
+                          :max="90"
+                          :style="{ width: '100%' }"
+                          @change="tempChart.setOption({series:{id:item.id,label:{rotate:item.label.rotate}}})"
+                          :disabled="seriesLabelShow ==null || seriesLabelShow =='' ">
+                      </a-slider>
+                    </div>
+                  </div>
+
+                  <div class="chart-item">
+                    <span class="label-left" style="width: 48px">高亮状态</span>
+
+                    <div class="component-right">
+                      <a-radio-group v-model:value="item.emphasis.focus"
                                      size="small"
-                        @change="tempChart.setOption({series:[{id:item.id,label:{position:item.label.position}}]})">
-                        <a-radio-button value='top'><span class="label-normal">顶部</span></a-radio-button>
-                        <a-radio-button value="inside"><span class="label-normal">内中</span></a-radio-button>
-                        <a-radio-button value="insideBottom"><span class="label-normal">内下</span></a-radio-button>
-                        <a-radio-button value="insideTop"><span class="label-normal">内上</span></a-radio-button>
+                                     @change="tempChart.setOption({series:{id:item.id,emphasis:{focus:item.emphasis.focus}}})">
+                        <a-radio-button value='none'><span class="label-normal">无</span></a-radio-button>
+                        <a-radio-button value="series"><span class="label-normal">系列</span></a-radio-button>
+                        <a-radio-button value="self"><span class="label-normal">自身</span></a-radio-button>
                       </a-radio-group>
                     </div>
                   </div>
