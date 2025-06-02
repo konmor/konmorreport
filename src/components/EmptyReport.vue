@@ -252,7 +252,7 @@ const seriesLabelControl = (item) => {
   })
 };
 
-let orient = ref('horizontal'); //horizontal vertical
+let orient = ref(''); //horizontal vertical
 
 function transferDataToArray(){
   let data = [
@@ -1741,7 +1741,7 @@ onBeforeUnmount(() => {
                       <a-select v-model:value="item.label.position"
                                 size="small"
                                 @change="tempChart.setOption({series:[{id:item.id,label:{position:item.label.position}}]})"
-                                :disabled="seriesLabelShow == null || seriesLabelShow =='' ">
+                                :disabled="seriesLabelShow == null || seriesLabelShow[item.id] =='' ">
                         <a-select-option value='top'><span class="label-normal">顶部</span></a-select-option>
                         <a-select-option value="inside"><span class="label-normal">内中</span></a-select-option>
                         <a-select-option value="insideBottom"><span class="label-normal">内下</span></a-select-option>
@@ -1761,7 +1761,7 @@ onBeforeUnmount(() => {
                           :max="90"
                           :style="{ width: '100%' }"
                           @change="tempChart.setOption({series:{id:item.id,label:{rotate:item.label.rotate}}})"
-                          :disabled="seriesLabelShow ==null || seriesLabelShow =='' ">
+                          :disabled="seriesLabelShow ==null || seriesLabelShow[item.id] =='' ">
                       </a-slider>
                     </div>
                   </div>
