@@ -231,14 +231,14 @@ let allSeriesEqual = ref(false);
 
 let allSeriesConfigShow = ref([]);
 
-let seriesLabelShow = ref<'show' | 'hover'>('');
+let seriesLabelShow = ref<Record<string, 'show'|'hover'|''>>({});
 
 const seriesLabelControl = (item) => {
-  if (seriesLabelShow.value != null && seriesLabelShow.value.length > 0) {
-    if (seriesLabelShow.value == 'hover') {
+  if (seriesLabelShow.value[item.id] != null && seriesLabelShow.value[item.id] .length > 0) {
+    if (seriesLabelShow.value[item.id]  == 'hover') {
       item.emphasis.label.show = true;
       item.label.show = false;
-    } else if (seriesLabelShow.value == 'show') {
+    } else if (seriesLabelShow.value[item.id]  == 'show') {
       item.emphasis.label.show = true;
       item.label.show = true;
     }
@@ -251,6 +251,8 @@ const seriesLabelControl = (item) => {
     series: temp,
   })
 };
+
+let orient = ref('horizontal'); //horizontal vertical
 
 function transferDataToArray(){
   let data = [
@@ -538,7 +540,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       },
       emphasis: {
         disabled: false,
-        focus: 'self', // none \ self \ series
+        focus: 'series', // none \ self \ series
         label: {
           show: false,
         }
@@ -552,9 +554,45 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       barMinWidth: '8',
       stack: 'group2',
       stackStrategy: 'samesign',
+      label: {
+        show: false,
+        position: 'top', // top inside insideTop insideBottom
+        rotate: 90, // -90 90
+      },
+      emphasis: {
+        disabled: false,
+        focus: 'series', // none \ self \ series
+        label: {
+          show: false,
+        }
+      },
     },
-    {id:'3',name:dimensions[3],type: 'bar', barMaxWidth: '50', barMinWidth: '1'},
-    {id:'4',name:dimensions[4],type: 'bar', barMaxWidth: '50', barMinWidth: '1'},
+    {id:'3',name:dimensions[3],type: 'bar', barMaxWidth: '50', barMinWidth: '1',
+      label: {
+        show: false,
+        position: 'top', // top inside insideTop insideBottom
+        rotate: 90, // -90 90
+      },
+      emphasis: {
+        disabled: false,
+        focus: 'series', // none \ self \ series
+        label: {
+          show: false,
+        }
+      },},
+    {id:'4',name:dimensions[4],type: 'bar', barMaxWidth: '50', barMinWidth: '1',
+      label: {
+        show: false,
+        position: 'top', // top inside insideTop insideBottom
+        rotate: 90, // -90 90
+      },
+      emphasis: {
+        disabled: false,
+        focus: 'series', // none \ self \ series
+        label: {
+          show: false,
+        }
+      },},
   ],
   dataZoom: [
     {
@@ -570,7 +608,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     {
       type: 'inside',
       start: 0,
-      end: 30,
+      end: 100,
       yAxisIndex: [0],
     },
     {
@@ -1649,8 +1687,10 @@ onBeforeUnmount(() => {
               <a-collapse v-model:activeKey="allSeriesConfigShow" expand-icon-position="end"
                           :style="{border:'none',backgroundColor:'transparent',margin:'0',padding:'0'}">
 
-                <a-collapse-panel :style="{border:'none',margin:'0',padding:'0',fontSize:'13px'}"
-                                  v-for="(item ,index) in tempChartOption.series" :header="item.name" :key="index">
+                <a-collapse-panel :style="{border:'none',marginTop:'8px',padding:'0',fontSize:'13px'}"
+                                  v-for="(item ,index) in tempChartOption.series"
+                                  :header="item.name"
+                                  :key="item.id || index">
 
                   <div class="chart-item">
                     <span class="label-left" style="width: 48px">系列名称</span>
@@ -1685,7 +1725,7 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 48px">数据标签</span>
 
                     <div class="component-right">
-                      <a-radio-group v-model:value="seriesLabelShow"
+                      <a-radio-group v-model:value="seriesLabelShow[item.id]"
                                      size="small"
                                      @change="seriesLabelControl(item)">
                         <a-radio-button value='show'><span class="label-normal">常显示</span></a-radio-button>
@@ -1701,7 +1741,7 @@ onBeforeUnmount(() => {
                       <a-select v-model:value="item.label.position"
                                 size="small"
                                 @change="tempChart.setOption({series:[{id:item.id,label:{position:item.label.position}}]})"
-                                :disabled="seriesLabelShow ==null || seriesLabelShow =='' ">
+                                :disabled="seriesLabelShow == null || seriesLabelShow =='' ">
                         <a-select-option value='top'><span class="label-normal">顶部</span></a-select-option>
                         <a-select-option value="inside"><span class="label-normal">内中</span></a-select-option>
                         <a-select-option value="insideBottom"><span class="label-normal">内下</span></a-select-option>
@@ -1742,6 +1782,15 @@ onBeforeUnmount(() => {
 
                 </a-collapse-panel>
               </a-collapse>
+            </div>
+
+            <div class="chart-group">
+              <div class="chart-item">
+                <span class="label-left" style="width: 48px">横(纵)向</span>
+                <div class="content-right">
+                  <a-checkbox v-model:checked="orient" value="vertical">条形图</a-checkbox>
+                </div>
+              </div>
             </div>
           </a-layout-sider>
         </a-layout>
