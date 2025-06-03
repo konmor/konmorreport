@@ -8,11 +8,24 @@ import Diagram from '@/components/Diagram.vue'
 import draggable from 'vuedraggable'
 import CloseCircleOutlined from '@ant-design/icons-vue/CloseCircleOutlined'
 import 'perfect-scrollbar/css/perfect-scrollbar.css'
-import { nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref } from 'vue'
+import {inject, nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref, toRaw} from 'vue'
 import Filter from '@/components/Filter.vue'
 import { getUuid } from 'ant-design-vue/es/vc-notification/HookNotification'
+import  chalk from '@/echartsThem/chalk.project.json';
+import  dark from '@/echartsThem/dark.project.json'
+import  essos from '@/echartsThem/essos.project.json';
+import  infographic from '@/echartsThem/infographic.project.json';
+import  macarons from '@/echartsThem/macarons.project.json';
+import  purplePassion from '@/echartsThem/purple-passion.project.json';
+import  roma from '@/echartsThem/roma.project.json';
+import  shine from '@/echartsThem/shine.project.json';
+// import  vintage from '@/echartsThem/vintage.project.json';
+import  walden from '@/echartsThem/walden.project.json';
+import  westeros from '@/echartsThem/westeros.project.json';
+import  wonderland from '@/echartsThem/wonderland.project.json';
 // 1. 引入echarts
 import * as echarts from 'echarts'
+
 import { barTemplate } from '@/composable/ChartTemplate.ts'
 import { Modal } from 'ant-design-vue'
 import useNavigator from '@/composable/useNavigator.ts'
@@ -33,14 +46,11 @@ import BotomCenter from '@/assets/icon/legend/BotomCenter.vue'
 import BottomRight from '@/assets/icon/legend/BottomRight.vue'
 import Position from '@/assets/icon/legend/Position.vue'
 import PerfectScrollbar from 'perfect-scrollbar'
+import {themArray} from "@/echartsThem/registerThem.ts";
 
-function generateRandomBrightColor() {
-  var r = Math.floor(Math.random() * 256) + 50 // 控制增加的值为50
-  var g = Math.floor(Math.random() * 256) + 50
-  var b = Math.floor(Math.random() * 256) + 50
-  return 'rgb(' + r + ', ' + g + ', ' + b + ')'
-}
 
+// 主题是否展开
+let themOpen = ref('');
 const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number }[]>([
   {
     value: 1,
@@ -183,10 +193,10 @@ onMounted(() => {
   // let container = document.getElementById('chartContainer');
   let container = chartContainer.value
   // 2.初始化echarts 挂载的位置
-  let myEcharts = echarts.init(container) // 参数是dom节点
+  let myEcharts = echarts.init(container,'wonderland') // 参数是dom节点
   tempChart = myEcharts
   // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
-  myEcharts.setOption(tempChartOption)
+  myEcharts.setOption(toRaw(tempChartOption))
 
   let observer = new ResizeObserver(() => {
     if (myEcharts) myEcharts.resize()
@@ -209,15 +219,6 @@ let chartContainer = ref()
 let tempChart: EChartsType
 let tempObserver: ResizeObserver
 
-/**
- * legend
- * 当标题展示时 grid.top 7%  标题打开、
- */
-let tempTopConfig = reactive({
-  titleTop: '2',
-  legendTop: '2',
-  gridTop: '2%',
-})
 
 let xAxisConfigShow = ref('')
 let yAxisConfigShow = ref('')
@@ -265,9 +266,9 @@ let xZoom = ref<string[]>([])
 
 let yZoom = ref<string[]>([])
 
-let xZoomRange = ref<[number, number]>([20, 50])
+let xZoomRange = ref<[number, number]>([0, 100])
 
-let yZoomRange = ref<[number, number]>([20, 50])
+let yZoomRange = ref<[number, number]>([0, 100])
 
 function transferDataToArray() {
   let data = [
@@ -355,13 +356,7 @@ function transferDataToArray() {
       salary3: 3200,
       salary4: 600,
     },
-    {
-      userName: '福六c',
-      salary1: 6300,
-      salary2: 5200,
-      salary3: 3200,
-      salary4: 600,
-    },
+
     {
       userName: '福六d',
       salary1: 6300,
@@ -442,7 +437,6 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     emphasis: {
       show: true,
     },
-    animation: true,
     formatter: function (name: string) {
       return echarts.format.truncateText(name, 84, '14px Microsoft Yahei', '…')
     },
@@ -831,6 +825,7 @@ const calculatePositionConfig = () => {
   }
   return option
 }
+let pileItems = reactive([]);
 
 const selectData = reactive<{
   open: boolean
@@ -864,7 +859,13 @@ const selectData = reactive<{
           if (myEcharts) myEcharts.resize()
         })
         tempObserver = observer
-        observer.observe(container as Element)
+        observer.observe(container as Element);
+        let size =  tempChartOption.series.length * 8;
+        for (let i = 0; i < size; i++) {
+          pileItems[i] = {}
+        }
+
+
       })
     }
   },
@@ -877,6 +878,17 @@ const selectData = reactive<{
       : [{ label: '测试选项-1', value: 'key1' }],
   showError: false,
 })
+
+
+const changeThem = (themName:string)=>{
+  tempChart.dispose();
+  let container = chartContainer.value;
+  let myEcharts = echarts.init(container,themName) // 参数是dom节点
+  tempChart = myEcharts
+  // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
+  myEcharts.setOption(toRaw(tempChartOption))
+  console.log('myEcharts',themName)
+}
 
 const chartData = reactive<{ open: boolean; ok: (reject: any) => void }>({
   open: false,
@@ -996,7 +1008,7 @@ onBeforeUnmount(() => {
       </draggable>
       <!-- 图形配置模态框-->
       <a-modal
-        open="true"
+        :open="chartData.open"
         @ok="chartData.ok"
         ok-text="确认"
         cancel-text="取消"
@@ -1041,6 +1053,80 @@ onBeforeUnmount(() => {
             width="240px"
             class="viewConfig"
           >
+<!--主题-->
+            <div class="chart-group">
+              <a-collapse
+                  v-model:activeKey="themOpen"
+                  expand-icon-position="end"
+                  :style="{
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  margin: '0',
+                  padding: '0',
+                }"
+              >
+                <a-collapse-panel
+                    key="them"
+                    header="主题"
+                    :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
+                >
+                  <div class="chart-item color-items" v-for="(item,index) in themArray" :key="index"
+                       :style="{backgroundColor:item.theme.backgroundColor,paddingLeft:'6px',
+                       paddingRight:'6px', borderRadius:'3px',
+                       marginTop:'5px',border:'1px solid #eee',
+                       cursor:'pointer'}"
+                      @click="changeThem(item.themeName)">
+                    <div v-for="(colorItem,colorIndex) in (item.theme.color.length>7?7:item.theme.color.length) " class="color-item" :key="colorIndex"
+                         :style="{backgroundColor:item.theme.color[colorIndex],height:'20px',width:'20px',borderRadius:'3px'}" >
+                    </div>
+                  </div>
+                </a-collapse-panel>
+
+              </a-collapse>
+            </div>
+
+            <div class="chart-group">
+              <draggable
+                  :style="{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(24,1fr)',
+                    gridAutoRows: '3em',
+                    justifyContent: 'center',
+                    gridAutoFlow: 'row dense',
+                  }"
+                  class="chartIconContainer"
+                  :list="pileItems"
+                  :group="{ name: 'outerContainer', pull: false, put: true }"
+                  animation="500"
+                  @end="endTest"
+                  @move="moveTest"
+                  @add="addTest"
+                  @change="change"
+                  item-key="id"
+                  tag="div"
+              >
+                <template #item="{ element }">
+                  <div
+                      :id="element.id"
+                      :style="{
+              gridRowStart: `span ${element.xSpan}`,
+              gridColumnStart: `span ${element.ySpan}`,
+              /*backgroundColor: generateRandomBrightColor(),*/
+            }"
+                      class="chart"
+                      @click="
+              () => {
+                element.xSpan++
+                element.ySpan++
+              }
+            ">
+                    <!-- {{ element.value }}-->
+                  </div>
+                </template>
+              </draggable>
+            </div>
+
+
             <!--            标题控制-->
             <div class="chart-group">
               <a-input
@@ -1225,7 +1311,7 @@ onBeforeUnmount(() => {
                 <a-collapse-panel
                   key="1"
                   header="X轴"
-                  :style="{ border: 'none', margin: '0', padding: '0', fontSize: '13px' }"
+                  :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
                 >
                   <div class="chart-item">
                     <span class="label-left" style="width: 24px">名称</span>
@@ -1596,7 +1682,7 @@ onBeforeUnmount(() => {
                 <a-collapse-panel
                   key="1"
                   header="Y轴"
-                  :style="{ border: 'none', margin: '0', padding: '0', fontSize: '13px' }"
+                  :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
                 >
                   <div class="chart-item">
                     <span class="label-left" style="width: 24px">名称</span>
@@ -1921,7 +2007,7 @@ onBeforeUnmount(() => {
                 }"
               >
                 <a-collapse-panel
-                  :style="{ border: 'none', marginTop: '8px', padding: '0', fontSize: '13px' }"
+                  :style="{ border: 'none', marginTop: '8px', padding: '0', fontSize: '12px' }"
                   v-for="(item, index) in tempChartOption.series"
                   :header="item.name"
                   :key="item.id || index"
@@ -2478,4 +2564,5 @@ onBeforeUnmount(() => {
 .viewConfig::-webkit-scrollbar-track {
   background-color: #f0f0f0;
 }
+
 </style>
