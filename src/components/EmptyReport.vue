@@ -860,9 +860,19 @@ const selectData = reactive<{
         })
         tempObserver = observer
         observer.observe(container as Element);
+        // 堆叠配置
+        let colors = themArray.find(item=>item.themeName==currentThem.value)?.theme.color
+        // 4 * 8 32 3*8 = 24
         let size =  tempChartOption.series.length * 8;
+        let minSize = size-8;
+        let count = 1;
         for (let i = 0; i < size; i++) {
-          pileItems[i] = {}
+          if(i<minSize){
+            pileItems[i] = {name:dimensions[count],id: String(count),color:colors[count++]}
+          } else {
+            pileItems[i] = {name:dimensions[count],id:String(count++),color:colors[count++]}
+          }
+
         }
 
 
@@ -879,6 +889,7 @@ const selectData = reactive<{
   showError: false,
 })
 
+let currentThem= ref('customized')
 
 const changeThem = (themName:string)=>{
   tempChart.dispose();
@@ -887,7 +898,7 @@ const changeThem = (themName:string)=>{
   tempChart = myEcharts
   // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
   myEcharts.setOption(toRaw(tempChartOption))
-  console.log('myEcharts',themName)
+  currentThem.value=themName;
 }
 
 const chartData = reactive<{ open: boolean; ok: (reject: any) => void }>({
