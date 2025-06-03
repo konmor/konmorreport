@@ -16,9 +16,10 @@ import vintage from './vintage.project.json';
 import walden from './walden.project.json';
 import westeros from './westeros.project.json';
 import wonderland from './wonderland.project.json';
+import customized from './customized.json';
 import * as echarts from 'echarts';
 
-export let themArray = [chalk, dark, essos, infographic, macarons, purplePassion, roma, shine, vintage, walden, westeros, wonderland];
+export let themArray = [customized,chalk, dark, essos, infographic, macarons, purplePassion, roma, shine, vintage, walden, westeros, wonderland];
 export default function registerThem() {
 
     themArray.forEach(item => {

@@ -8,21 +8,30 @@ import Diagram from '@/components/Diagram.vue'
 import draggable from 'vuedraggable'
 import CloseCircleOutlined from '@ant-design/icons-vue/CloseCircleOutlined'
 import 'perfect-scrollbar/css/perfect-scrollbar.css'
-import {inject, nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref, toRaw} from 'vue'
+import {
+  inject,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  onUnmounted,
+  reactive,
+  ref,
+  toRaw, watch,
+} from 'vue'
 import Filter from '@/components/Filter.vue'
 import { getUuid } from 'ant-design-vue/es/vc-notification/HookNotification'
-import  chalk from '@/echartsThem/chalk.project.json';
-import  dark from '@/echartsThem/dark.project.json'
-import  essos from '@/echartsThem/essos.project.json';
-import  infographic from '@/echartsThem/infographic.project.json';
-import  macarons from '@/echartsThem/macarons.project.json';
-import  purplePassion from '@/echartsThem/purple-passion.project.json';
-import  roma from '@/echartsThem/roma.project.json';
-import  shine from '@/echartsThem/shine.project.json';
+import chalk from '@/echartsThem/chalk.project.json'
+import dark from '@/echartsThem/dark.project.json'
+import essos from '@/echartsThem/essos.project.json'
+import infographic from '@/echartsThem/infographic.project.json'
+import macarons from '@/echartsThem/macarons.project.json'
+import purplePassion from '@/echartsThem/purple-passion.project.json'
+import roma from '@/echartsThem/roma.project.json'
+import shine from '@/echartsThem/shine.project.json'
 // import  vintage from '@/echartsThem/vintage.project.json';
-import  walden from '@/echartsThem/walden.project.json';
-import  westeros from '@/echartsThem/westeros.project.json';
-import  wonderland from '@/echartsThem/wonderland.project.json';
+import walden from '@/echartsThem/walden.project.json'
+import westeros from '@/echartsThem/westeros.project.json'
+import wonderland from '@/echartsThem/wonderland.project.json'
 // 1. 引入echarts
 import * as echarts from 'echarts'
 
@@ -46,11 +55,11 @@ import BotomCenter from '@/assets/icon/legend/BotomCenter.vue'
 import BottomRight from '@/assets/icon/legend/BottomRight.vue'
 import Position from '@/assets/icon/legend/Position.vue'
 import PerfectScrollbar from 'perfect-scrollbar'
-import {themArray} from "@/echartsThem/registerThem.ts";
-
+import { themArray } from '@/echartsThem/registerThem.ts'
 
 // 主题是否展开
-let themOpen = ref('');
+let themOpen = ref('')
+let pileOpen = ref('')
 const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number }[]>([
   {
     value: 1,
@@ -193,7 +202,7 @@ onMounted(() => {
   // let container = document.getElementById('chartContainer');
   let container = chartContainer.value
   // 2.初始化echarts 挂载的位置
-  let myEcharts = echarts.init(container,'wonderland') // 参数是dom节点
+  let myEcharts = echarts.init(container) // 参数是dom节点
   tempChart = myEcharts
   // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
   myEcharts.setOption(toRaw(tempChartOption))
@@ -203,6 +212,13 @@ onMounted(() => {
   })
   tempObserver = observer
   observer.observe(container as Element)
+
+  // 堆叠配置 待删除
+  let colors = themArray.find((item) => item.themeName == currentThem.value)?.theme.color
+  // 4 * 8 32 3*8 = 24
+  for (let i = 0; i < dimensions.length - 1; i++) {
+    pileItems[i] = [{ name: dimensions[i + 1], id: i + 1, color: colors[i] }]
+  }
 })
 
 onUnmounted(() => {
@@ -218,7 +234,6 @@ onUnmounted(() => {
 let chartContainer = ref()
 let tempChart: EChartsType
 let tempObserver: ResizeObserver
-
 
 let xAxisConfigShow = ref('')
 let yAxisConfigShow = ref('')
@@ -616,7 +631,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     {
       id: 'x0Inside',
       type: 'inside',
-      disabled:true,
+      disabled: true,
       start: 0,
       end: 100,
       xAxisIndex: [0],
@@ -624,13 +639,13 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     {
       id: 'x0Slider',
       type: 'slider',
-      show:false,
+      show: false,
       xAxisIndex: [0],
     },
     {
       id: 'y0Inside',
       type: 'inside',
-      disabled:true,
+      disabled: true,
       start: 0,
       end: 100,
       yAxisIndex: [0],
@@ -638,7 +653,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     {
       id: 'y0Slider',
       type: 'slider',
-      show:false,
+      show: false,
       yAxisIndex: [0],
     },
   ],
@@ -825,7 +840,26 @@ const calculatePositionConfig = () => {
   }
   return option
 }
-let pileItems = reactive([]);
+
+let pileItems = reactive([[]])
+
+watch(pileItems,(items)=>{
+
+  let option = {series:[]};
+  for (let i = 0; i < items.length; i++) {
+    let item = items[i];
+    if(item.length!=0){
+      //
+      let stack = 'group'+i;
+      for (let j = 0; j < item.length; j++) {
+        option.series.push({id:item[j].id,name:item[j].name,stack:stack})
+      }
+    }
+  }
+  tempChart.setOption(option);
+})
+
+
 
 const selectData = reactive<{
   open: boolean
@@ -859,23 +893,13 @@ const selectData = reactive<{
           if (myEcharts) myEcharts.resize()
         })
         tempObserver = observer
-        observer.observe(container as Element);
+        observer.observe(container as Element)
         // 堆叠配置
-        let colors = themArray.find(item=>item.themeName==currentThem.value)?.theme.color
+        let colors = themArray.find((item) => item.themeName == currentThem.value)?.theme.color
         // 4 * 8 32 3*8 = 24
-        let size =  tempChartOption.series.length * 8;
-        let minSize = size-8;
-        let count = 1;
-        for (let i = 0; i < size; i++) {
-          if(i<minSize){
-            pileItems[i] = {name:dimensions[count],id: String(count),color:colors[count++]}
-          } else {
-            pileItems[i] = {name:dimensions[count],id:String(count++),color:colors[count++]}
-          }
-
+        for (let i = 0; i < dimensions.length - 1; i++) {
+          pileItems[i] = [{ name: dimensions[i + 1], id: i + 1, color: colors[i] }]
         }
-
-
       })
     }
   },
@@ -889,16 +913,30 @@ const selectData = reactive<{
   showError: false,
 })
 
-let currentThem= ref('customized')
+let currentThem = ref('customized')
 
-const changeThem = (themName:string)=>{
-  tempChart.dispose();
-  let container = chartContainer.value;
-  let myEcharts = echarts.init(container,themName) // 参数是dom节点
+watch(currentThem,(them)=>{
+    let colors = themArray.find(item=>item.themeName==them).theme.color;
+
+  for (let i = 0; i < pileItems.length; i++) {
+    let pileItem = pileItems[i];
+    if(pileItem.length>0){
+      for (let j = 0; j < pileItem.length; j++) {
+        pileItem[j].color= colors[parseInt( pileItem[j].id) - 1];
+      }
+    }
+  }
+
+})
+
+const changeThem = (themName: string) => {
+  tempChart.dispose()
+  let container = chartContainer.value
+  let myEcharts = echarts.init(container, themName) // 参数是dom节点
   tempChart = myEcharts
   // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
   myEcharts.setOption(toRaw(tempChartOption))
-  currentThem.value=themName;
+  currentThem.value = themName
 }
 
 const chartData = reactive<{ open: boolean; ok: (reject: any) => void }>({
@@ -1018,8 +1056,9 @@ onBeforeUnmount(() => {
         </template>
       </draggable>
       <!-- 图形配置模态框-->
+      <!--        :open="chartData.open"-->
       <a-modal
-        :open="chartData.open"
+        open="true"
         @ok="chartData.ok"
         ok-text="确认"
         cancel-text="取消"
@@ -1064,10 +1103,59 @@ onBeforeUnmount(() => {
             width="240px"
             class="viewConfig"
           >
-<!--主题-->
+            <!--主题-->
             <div class="chart-group">
               <a-collapse
-                  v-model:activeKey="themOpen"
+                v-model:activeKey="themOpen"
+                expand-icon-position="end"
+                :style="{
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  margin: '0',
+                  padding: '0',
+                }"
+              >
+                <a-collapse-panel
+                  key="them"
+                  header="主题"
+                  :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
+                >
+                  <div
+                    class="chart-item color-items"
+                    v-for="(item, index) in themArray"
+                    :key="index"
+                    :style="{
+                      backgroundColor: item.theme.backgroundColor,
+                      paddingLeft: '6px',
+                      paddingRight: '6px',
+                      borderRadius: '3px',
+                      marginTop: '5px',
+                      border: '1px solid #eee',
+                      cursor: 'pointer',
+                    }"
+                    @click="changeThem(item.themeName)"
+                  >
+                    <div
+                      v-for="(colorItem, colorIndex) in item.theme.color.length > 7
+                        ? 7
+                        : item.theme.color.length"
+                      class="color-item"
+                      :key="colorIndex"
+                      :style="{
+                        backgroundColor: item.theme.color[colorIndex],
+                        height: '20px',
+                        width: '20px',
+                        borderRadius: '3px',
+                      }"
+                    ></div>
+                  </div>
+                </a-collapse-panel>
+              </a-collapse>
+            </div>
+            <!-- 堆叠 -->
+            <div class="chart-group">
+              <a-collapse
+                  v-model:activeKey="pileOpen"
                   expand-icon-position="end"
                   :style="{
                   border: 'none',
@@ -1078,65 +1166,38 @@ onBeforeUnmount(() => {
               >
                 <a-collapse-panel
                     key="them"
-                    header="主题"
+                    header="堆叠"
                     :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
                 >
-                  <div class="chart-item color-items" v-for="(item,index) in themArray" :key="index"
-                       :style="{backgroundColor:item.theme.backgroundColor,paddingLeft:'6px',
-                       paddingRight:'6px', borderRadius:'3px',
-                       marginTop:'5px',border:'1px solid #eee',
-                       cursor:'pointer'}"
-                      @click="changeThem(item.themeName)">
-                    <div v-for="(colorItem,colorIndex) in (item.theme.color.length>7?7:item.theme.color.length) " class="color-item" :key="colorIndex"
-                         :style="{backgroundColor:item.theme.color[colorIndex],height:'20px',width:'20px',borderRadius:'3px'}" >
-                    </div>
-                  </div>
-                </a-collapse-panel>
 
-              </a-collapse>
-            </div>
-
-            <div class="chart-group">
-              <draggable
+              <div class="pileContainers">
+                <draggable
+                  v-for="item in pileItems"
                   :style="{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(24,1fr)',
-                    gridAutoRows: '3em',
-                    justifyContent: 'center',
-                    gridAutoFlow: 'row dense',
+                    width: '18px',
+                    height: `${pileItems.length * 22.4}px`,
                   }"
-                  class="chartIconContainer"
-                  :list="pileItems"
-                  :group="{ name: 'outerContainer', pull: false, put: true }"
-                  animation="500"
-                  @end="endTest"
-                  @move="moveTest"
-                  @add="addTest"
-                  @change="change"
+                  class="pileContainer"
+                  :list="item"
+                  :group="{ name: 'outerPile', pull: true, put: true }"
+                  animation="800"
                   item-key="id"
                   tag="div"
-              >
-                <template #item="{ element }">
-                  <div
+                >
+                  <template #item="{ element }">
+                    <div
                       :id="element.id"
-                      :style="{
-              gridRowStart: `span ${element.xSpan}`,
-              gridColumnStart: `span ${element.ySpan}`,
-              /*backgroundColor: generateRandomBrightColor(),*/
-            }"
-                      class="chart"
-                      @click="
-              () => {
-                element.xSpan++
-                element.ySpan++
-              }
-            ">
-                    <!-- {{ element.value }}-->
-                  </div>
-                </template>
-              </draggable>
+                      :style="{backgroundColor: element.color}"
+                      class="pileItem"
+                    >
+                      <!-- {{ element.value }}-->
+                    </div>
+                  </template>
+                </draggable>
+              </div>
+              </a-collapse-panel>
+              </a-collapse>
             </div>
-
 
             <!--            标题控制-->
             <div class="chart-group">
@@ -2224,7 +2285,6 @@ onBeforeUnmount(() => {
                           xZoomShow = false
                           yZoomShow = false
                         }
-
                       }
                     "
                   >
@@ -2496,6 +2556,30 @@ onBeforeUnmount(() => {
   margin: 1px;
 }
 
+.pileContainers {
+  display: flex;
+  overflow: auto;
+}
+
+.pileContainer {
+  border: #e8e8e8 1px solid;
+  padding: 1px;
+  margin: 1px;
+  border-radius: 3px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.pileContainer .pileItem {
+  border: 1px #eee solid;
+  border-radius: 3px;
+  height: 1.6em;
+  width: 1em;
+  cursor: move;
+}
+
 :global(.full-modal .ant-modal) {
   max-width: 100%;
   top: 0;
@@ -2563,17 +2647,22 @@ onBeforeUnmount(() => {
   justify-content: space-between;
 }
 
+.pileContainers::-webkit-scrollbar {
+  height: 4px;
+}
+
 .viewConfig::-webkit-scrollbar {
   width: 4px;
 }
 
+.pileContainers::-webkit-scrollbar-thumb,
 .viewConfig::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.3);
   border-radius: 4px;
 }
 
+.pileContainers::-webkit-scrollbar-track,
 .viewConfig::-webkit-scrollbar-track {
   background-color: #f0f0f0;
 }
-
 </style>
