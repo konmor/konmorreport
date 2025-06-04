@@ -20,18 +20,7 @@ import {
 } from 'vue'
 import Filter from '@/components/Filter.vue'
 import { getUuid } from 'ant-design-vue/es/vc-notification/HookNotification'
-import chalk from '@/echartsThem/chalk.project.json'
-import dark from '@/echartsThem/dark.project.json'
-import essos from '@/echartsThem/essos.project.json'
-import infographic from '@/echartsThem/infographic.project.json'
-import macarons from '@/echartsThem/macarons.project.json'
-import purplePassion from '@/echartsThem/purple-passion.project.json'
-import roma from '@/echartsThem/roma.project.json'
-import shine from '@/echartsThem/shine.project.json'
-// import  vintage from '@/echartsThem/vintage.project.json';
-import walden from '@/echartsThem/walden.project.json'
-import westeros from '@/echartsThem/westeros.project.json'
-import wonderland from '@/echartsThem/wonderland.project.json'
+import { BarChartOutlined,LineChartOutlined } from '@ant-design/icons-vue'
 // 1. 引入echarts
 import * as echarts from 'echarts'
 
@@ -179,7 +168,7 @@ const change = function change(event: Event) {
 }
 
 let observerArray: ResizeObserver[] = []
-let configScrollbar: PerfectScrollbar
+
 onMounted(() => {
   // 渲染图表
   for (let i = 0; i < items.slice().length; i++) {
@@ -214,10 +203,10 @@ onMounted(() => {
   observer.observe(container as Element)
 
   // 堆叠配置 待删除
-  let colors = themArray.find((item) => item.themeName == currentThem.value)?.theme.color
+  let colors = currentColors.value
   // 4 * 8 32 3*8 = 24
   for (let i = 0; i < dimensions.length - 1; i++) {
-    pileItems[i] = [{ name: dimensions[i + 1], id: i + 1, color: colors[i] }]
+    stackItems[i] = [{ name: dimensions[i + 1], id: i + 1, color: colors[i] }]
   }
 })
 
@@ -841,9 +830,9 @@ const calculatePositionConfig = () => {
   return option
 }
 
-let pileItems = reactive([[]])
+let stackItems = reactive([[]])
 
-watch(pileItems,(items)=>{
+watch(stackItems,(items)=>{
 
   let option = {series:[]};
   for (let i = 0; i < items.length; i++) {
@@ -857,8 +846,61 @@ watch(pileItems,(items)=>{
     }
   }
   tempChart.setOption(option);
+  if(vertical.value){
+    stackContainerStyle.value.width=stackItems.length * 22.4 +'px';
+    stackContainerStyle.value.height='18px';
+  }else {
+    stackContainerStyle.value.width='18px';
+    stackContainerStyle.value.height=stackItems.length * 22.4 +'px';
+  }
+
 })
 
+let stackContainerStyle = ref({
+  width: '18px',
+  height: stackItems.length * 22.4 +'px',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'flex-end',
+})
+
+let stackItemStyle = ref({
+  height: '1.6em',
+  width: '1em',
+})
+
+let stackContainersStyle = ref({
+  display: 'flex',
+  flexDirection: 'row',
+  overflow: 'auto',
+})
+
+watch(vertical,()=>{
+if(vertical.value){
+  stackContainerStyle.value = {
+    width: stackItems.length * 22.4 +'px',
+    height: '18px',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+  }
+  stackItemStyle.value.width = '1.6em'
+  stackItemStyle.value.height = '1em'
+  stackContainersStyle.value.flexDirection = 'column'
+}else {
+  stackContainerStyle.value = {
+    width: '18px',
+    height: stackItems.length * 22.4 +'px',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+  }
+  stackItemStyle.value.width = '1em'
+  stackItemStyle.value.height = '1.6em'
+
+  stackContainersStyle.value.flexDirection = 'row'
+}
+})
 
 
 const selectData = reactive<{
@@ -895,10 +937,10 @@ const selectData = reactive<{
         tempObserver = observer
         observer.observe(container as Element)
         // 堆叠配置
-        let colors = themArray.find((item) => item.themeName == currentThem.value)?.theme.color
+        let colors = currentColors.value
         // 4 * 8 32 3*8 = 24
         for (let i = 0; i < dimensions.length - 1; i++) {
-          pileItems[i] = [{ name: dimensions[i + 1], id: i + 1, color: colors[i] }]
+          stackItems[i] = [{ name: dimensions[i + 1], id: i + 1, color: colors[i] }]
         }
       })
     }
@@ -914,15 +956,16 @@ const selectData = reactive<{
 })
 
 let currentThem = ref('customized')
+let currentColors = ref(themArray.find(item=>item.themeName==currentThem.value).theme.color)
 
 watch(currentThem,(them)=>{
-    let colors = themArray.find(item=>item.themeName==them).theme.color;
+  currentColors.value = themArray.find(item=>item.themeName==them).theme.color;
 
-  for (let i = 0; i < pileItems.length; i++) {
-    let pileItem = pileItems[i];
-    if(pileItem.length>0){
-      for (let j = 0; j < pileItem.length; j++) {
-        pileItem[j].color= colors[parseInt( pileItem[j].id) - 1];
+  for (let i = 0; i < stackItems.length; i++) {
+    let stackItem = stackItems[i];
+    if(stackItem.length>0){
+      for (let j = 0; j < stackItem.length; j++) {
+        stackItem[j].color= currentColors.value[parseInt( stackItem[j].id) - 1];
       }
     }
   }
@@ -1170,14 +1213,12 @@ onBeforeUnmount(() => {
                     :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
                 >
 
-              <div class="pileContainers">
+              <div class="stackContainers"
+              :style="stackContainersStyle">
                 <draggable
-                  v-for="item in pileItems"
-                  :style="{
-                    width: '18px',
-                    height: `${pileItems.length * 22.4}px`,
-                  }"
-                  class="pileContainer"
+                  v-for="item in stackItems"
+                  :style="stackContainerStyle"
+                  class="stackContainer"
                   :list="item"
                   :group="{ name: 'outerPile', pull: true, put: true }"
                   animation="800"
@@ -1187,9 +1228,10 @@ onBeforeUnmount(() => {
                   <template #item="{ element }">
                     <div
                       :id="element.id"
-                      :style="{backgroundColor: element.color}"
-                      class="pileItem"
-                    >
+                      :style="{backgroundColor: element.color,
+                               height: stackItemStyle.height,
+                               width: stackItemStyle.width,}"
+                      class="stackItem">
                       <!-- {{ element.value }}-->
                     </div>
                   </template>
@@ -2081,9 +2123,23 @@ onBeforeUnmount(() => {
                 <a-collapse-panel
                   :style="{ border: 'none', marginTop: '8px', padding: '0', fontSize: '12px' }"
                   v-for="(item, index) in tempChartOption.series"
-                  :header="item.name"
+
                   :key="item.id || index"
                 >
+                  <template #header>
+                    <div :style="{display:'flex',justifyContent:'space-between'}">
+                      <span>
+                     {{item.name}}
+                      </span>
+                      <span v-if="item.type =='bar'">
+                        <BarChartOutlined :style="{color: currentColors[index]}"/>
+                      </span>
+                      <span v-else-if="item.type =='line'">
+                        <LineChartOutlined :style="{color: currentColors[index]}"/>
+                      </span>
+                    </div>
+
+                  </template>
                   <div class="chart-item">
                     <span class="label-left" style="width: 48px">系列名称</span>
 
@@ -2556,27 +2612,16 @@ onBeforeUnmount(() => {
   margin: 1px;
 }
 
-.pileContainers {
-  display: flex;
-  overflow: auto;
-}
-
-.pileContainer {
+.stackContainer {
   border: #e8e8e8 1px solid;
   padding: 1px;
   margin: 1px;
   border-radius: 3px;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
 }
 
-.pileContainer .pileItem {
+.stackContainer .stackItem {
   border: 1px #eee solid;
   border-radius: 3px;
-  height: 1.6em;
-  width: 1em;
   cursor: move;
 }
 
