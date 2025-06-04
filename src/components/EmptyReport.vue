@@ -400,6 +400,8 @@ function transferDataToArray() {
 
   return data.map((item) => [item.userName, item.salary1, item.salary2, item.salary3, item.salary4])
 }
+let yAxisInterval = ref(false);
+let xAxisInterval = ref(false);
 
 let dimensions = ['userName', 'salary1', 'salary2', 'salary3', 'salary4']
 
@@ -459,15 +461,15 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     // 标签是否展示, 宽度、距离
     axisLabel: {
       show: true,
-      width: 100,
+      width: 48,
       rotate: 0,
       margin: 18,
       overflow: 'truncate',
       ellipsis: '…',
       interval: 'auto', // 强制显示所有x轴标签信息， 1 表示间隔一个显示 2 表示间隔两个，后续依此类推
-      formatter: function (value: string, index: number) {
+/*      formatter: function (value: string, index: number) {
         return value
-      },
+      },*/
     },
     tooltip: {
       show: true, // 配合 axisLabel.overflow
@@ -501,15 +503,15 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     // 标签是否展示, 宽度、距离
     axisLabel: {
       show: true,
-      width: 100,
+      width: 48,
       rotate: 0,
       margin: 8,
       overflow: 'truncate',
       ellipsis: '…',
       interval: 'auto', // 类目轴有效
-      formatter: function (value: string, index: number) {
+/*      formatter: function (value: string, index: number) {
         return value
-      },
+      },*/
     },
     tooltip: {
       show: true, // 配合 axisLabel.overflow
@@ -1552,27 +1554,6 @@ onBeforeUnmount(() => {
                   </div>
 
                   <div class="chart-item">
-                    <span class="label-left" style="width: 60px">长度</span>
-                    <div class="component-right">
-                      <a-input-number
-                        size="small"
-                        min="48"
-                        max="200"
-                        :style="{ width: '100%', fontSize: '12px' }"
-                        v-model:value="tempChartOption.xAxis.axisLabel.width"
-                        addon-after="px"
-                        @change="
-                          tempChart.setOption({
-                            xAxis: { axisLabel: { width: tempChartOption.xAxis.axisLabel.width } },
-                          })
-                        "
-                        :disabled="!tempChartOption.xAxis.axisLabel.show"
-                      >
-                      </a-input-number>
-                    </div>
-                  </div>
-
-                  <div class="chart-item">
                     <span class="label-left" style="width: 60px">角度</span>
                     <div class="component-right">
                       <a-slider
@@ -1580,7 +1561,8 @@ onBeforeUnmount(() => {
                         :min="-90"
                         :max="90"
                         :style="{ width: '100%' }"
-                        :step="5"
+                        :dots="true"
+                        :step="15"
                         @change="
                           tempChart.setOption({
                             xAxis: {
@@ -1610,6 +1592,27 @@ onBeforeUnmount(() => {
                           })
                         "
                         :disabled="!tempChartOption.xAxis.axisLabel.show"
+                      >
+                      </a-input-number>
+                    </div>
+                  </div>
+
+                  <div class="chart-item">
+                    <span class="label-left" style="width: 60px">长度</span>
+                    <div class="component-right">
+                      <a-input-number
+                          size="small"
+                          min="48"
+                          max="200"
+                          :style="{ width: '100%', fontSize: '12px' }"
+                          v-model:value="tempChartOption.xAxis.axisLabel.width"
+                          addon-after="px"
+                          @change="
+                          tempChart.setOption({
+                            xAxis: { axisLabel: { width: tempChartOption.xAxis.axisLabel.width } },
+                          })
+                        "
+                          :disabled="!tempChartOption.xAxis.axisLabel.show"
                       >
                       </a-input-number>
                     </div>
@@ -1665,30 +1668,50 @@ onBeforeUnmount(() => {
                   </div>
 
                   <div class="chart-item">
-                    <a-radio-group
-                      size="small"
-                      :style="{ height: '28px', lineHeight: '28px' }"
-                      v-model:value="tempChartOption.xAxis.axisLabel.interval"
-                      @change="
-                        tempChart.setOption({
-                          xAxis: {
-                            axisLabel: { interval: tempChartOption.xAxis.axisLabel.interval },
-                          },
-                        })
-                      "
-                      :disabled="!tempChartOption.xAxis.axisLabel.show"
-                    >
-                      <a-radio value="auto"
-                        ><span style="font-size: 12px; height: 28px; line-height: 28px"
-                          >自适应</span
-                        >
-                      </a-radio>
-                      <a-radio :value="0"
-                        ><span style="font-size: 12px; height: 14px; line-height: 14px"
-                          >全部标签</span
-                        >
-                      </a-radio>
-                    </a-radio-group>
+                    <div style="display: flex;justify-content: flex-start;align-items: center">
+                      <a-checkbox
+                          :disabled="!tempChartOption.xAxis.axisLabel.show "
+                          v-model:checked="xAxisInterval"
+                          @change="()=>{
+                       if(xAxisInterval){
+                         tempChartOption.xAxis.axisLabel.interval = 0
+                          tempChart.setOption({
+                            xAxis: {
+                              axisLabel: { interval: 0 },
+                            },
+                          })
+                       }else {
+                          tempChart.setOption({
+                            xAxis: {
+                              axisLabel: { interval: 'auto' },
+                            },
+                          })
+                       }
+                     }">
+
+                      </a-checkbox>
+                      <span class="label-normal" style="margin-left: 8px">间隔</span>
+                    </div>
+
+
+                    <div class="component-right">
+                      <a-input-number
+                          size="small"
+                          min="0"
+                          max="5"
+                          :style="{ width: '100%', fontSize: '12px',marginLeft:'6px' }"
+                          v-model:value="tempChartOption.xAxis.axisLabel.interval"
+                          addon-after="个标签"
+                          @change="
+                            tempChart.setOption({
+                            xAxis: {
+                              axisLabel: { interval: tempChartOption.xAxis.axisLabel.interval },
+                            },
+                          })
+                          "
+                          :disabled="!tempChartOption.xAxis.axisLabel.show || !xAxisInterval"
+                      ></a-input-number>
+                    </div>
                   </div>
 
                   <div class="chart-item">
@@ -1714,6 +1737,9 @@ onBeforeUnmount(() => {
                       </a-radio-group>
                     </div>
                   </div>
+
+
+
 
                   <div class="chart-item" style="margin-top: 12px; border-top: 1px solid #e8e8e8">
                     <span class="label-left" style="width: 60px">分割线</span>
@@ -1919,37 +1945,14 @@ onBeforeUnmount(() => {
                   </div>
 
                   <div class="chart-item">
-                    <span class="label-left" style="width: 60px">长度</span>
-                    <div class="component-right">
-                      <a-tooltip title="最大值200 最小值 48">
-                        <a-input-number
-                          size="small"
-                          min="48"
-                          max="200"
-                          :style="{ width: '100%', fontSize: '12px' }"
-                          v-model:value="tempChartOption.yAxis.axisLabel.width"
-                          addon-after="px"
-                          @change="
-                            tempChart.setOption({
-                              yAxis: {
-                                axisLabel: { width: tempChartOption.yAxis.axisLabel.width },
-                              },
-                            })
-                          "
-                          :disabled="!tempChartOption.yAxis.axisLabel.show"
-                        >
-                        </a-input-number>
-                      </a-tooltip>
-                    </div>
-                  </div>
-
-                  <div class="chart-item">
                     <span class="label-left" style="width: 60px">角度</span>
                     <div class="component-right">
                       <a-slider
                         v-model:value="tempChartOption.yAxis.axisLabel.rotate"
                         :min="-90"
                         :max="90"
+                        :dots="true"
+                        :step="15"
                         :style="{ width: '100%' }"
                         @change="
                           tempChart.setOption({
@@ -1982,6 +1985,31 @@ onBeforeUnmount(() => {
                         :disabled="!tempChartOption.yAxis.axisLabel.show"
                       >
                       </a-input-number>
+                    </div>
+                  </div>
+
+                  <div class="chart-item">
+                    <span class="label-left" style="width: 60px">长度</span>
+                    <div class="component-right">
+                      <a-tooltip title="最大值200 最小值 48">
+                        <a-input-number
+                            size="small"
+                            min="48"
+                            max="200"
+                            :style="{ width: '100%', fontSize: '12px' }"
+                            v-model:value="tempChartOption.yAxis.axisLabel.width"
+                            addon-after="px"
+                            @change="
+                            tempChart.setOption({
+                              yAxis: {
+                                axisLabel: { width: tempChartOption.yAxis.axisLabel.width },
+                              },
+                            })
+                          "
+                            :disabled="!tempChartOption.yAxis.axisLabel.show"
+                        >
+                        </a-input-number>
+                      </a-tooltip>
                     </div>
                   </div>
 
@@ -2033,6 +2061,54 @@ onBeforeUnmount(() => {
                       </a-input>
                     </div>
                   </div>
+
+                  <div class="chart-item">
+                    <div style="display: flex;justify-content: flex-start;align-items: center">
+                      <a-checkbox
+                          v-model:checked="yAxisInterval"
+                          :disabled="!tempChartOption.yAxis.axisLabel.show "
+                          @change="()=>{
+                       if(yAxisInterval){
+                         tempChartOption.yAxis.axisLabel.interval = 0
+                          tempChart.setOption({
+                            yAxis: {
+                              axisLabel: { interval: 0 },
+                            },
+                          })
+                       }else {
+                          tempChart.setOption({
+                            yAxis: {
+                              axisLabel: { interval: 'auto' },
+                            },
+                          })
+                       }
+                     }">
+
+                      </a-checkbox>
+                      <span class="label-normal" style="margin-left: 8px">间隔</span>
+                    </div>
+
+
+                    <div class="component-right">
+                      <a-input-number
+                          size="small"
+                          min="0"
+                          max="5"
+                          :style="{ width: '100%', fontSize: '12px',marginLeft:'6px' }"
+                          v-model:value="tempChartOption.yAxis.axisLabel.interval"
+                          addon-after="个标签"
+                          @change="
+                            tempChart.setOption({
+                            yAxis: {
+                              axisLabel: { interval: tempChartOption.yAxis.axisLabel.interval },
+                            },
+                          })
+                          "
+                          :disabled="!tempChartOption.yAxis.axisLabel.show || !yAxisInterval"
+                      ></a-input-number>
+                    </div>
+                  </div>
+
 
                   <div class="chart-item" style="margin-top: 12px; border-top: 1px solid #e8e8e8">
                     <span class="label-left" style="width: 60px">分割线</span>
@@ -2240,6 +2316,8 @@ onBeforeUnmount(() => {
                         v-model:value="item.label.rotate"
                         :min="-90"
                         :max="90"
+                        :dots="true"
+                        :step="15"
                         :style="{ width: '100%' }"
                         @change="
                           tempChart.setOption({
@@ -2296,15 +2374,22 @@ onBeforeUnmount(() => {
                           tempChartOption.xAxis.type = 'value'
                           tempChartOption.yAxis.type = 'category'
                           tempChart.setOption({
-                            xAxis: { type: 'value' },
-                            yAxis: { type: 'category' },
+                            xAxis: { type: 'value',axisLabel:tempChartOption.xAxis.axisLabel },
+                            yAxis: { type: 'category',axisLabel:tempChartOption.yAxis.axisLabel },
+                          })
+
+                          // 重新设置下阶段和换行
+                          tempChart.setOption({
+                            xAxis: {
+                              axisLabel: { overflow: tempChartOption.xAxis.axisLabel.overflow },
+                            },
                           })
                         } else {
                           tempChartOption.xAxis.type = 'category'
                           tempChartOption.yAxis.type = 'value'
                           tempChart.setOption({
-                            xAxis: { type: 'category' },
-                            yAxis: { type: 'value' },
+                            xAxis: { type: 'category',axisLabel:tempChartOption.xAxis.axisLabel },
+                            yAxis: { type: 'value',axisLabel:tempChartOption.yAxis.axisLabel },
                           })
                         }
                       }
@@ -2412,7 +2497,7 @@ onBeforeUnmount(() => {
                     range
                     :style="{ width: '100%' }"
                     :dots="true"
-                    :step="2"
+                    :step="5"
                     @change="
                       () => {
                         let option = {
@@ -2499,7 +2584,7 @@ onBeforeUnmount(() => {
                     range
                     :style="{ width: '100%' }"
                     :dots="true"
-                    :step="2"
+                    :step="5"
                     @change="
                       () => {
                         let option = {
@@ -2657,6 +2742,12 @@ onBeforeUnmount(() => {
 
 :deep(.ant-collapse .ant-collapse-item .ant-collapse-content .ant-collapse-content-box) {
   padding: 0;
+}
+
+:deep(.ant-input-number-group-wrapper .ant-input-number-group .ant-input-number-group-addon){
+  font-size: 12px;
+  height: 14px;
+  line-height: 14px;
 }
 
 :deep(.ant-form .ant-form-item) {
