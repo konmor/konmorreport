@@ -239,14 +239,9 @@ let allSeriesConfigShow = ref([])
 let seriesLabelShow = ref<Record<string, 'show' | 'hover' | ''>>({})
 
 const seriesLabelControl = (item) => {
-  if (seriesLabelShow.value[item.id] != null && seriesLabelShow.value[item.id].length > 0) {
-    if (seriesLabelShow.value[item.id] == 'hover') {
-      item.emphasis.label.show = true
-      item.label.show = false
-    } else if (seriesLabelShow.value[item.id] == 'show') {
+  if (seriesLabelShow.value[item.id] != null && seriesLabelShow.value[item.id]) {
       item.emphasis.label.show = true
       item.label.show = true
-    }
   } else {
     item.emphasis.label.show = false
     item.label.show = false
@@ -405,6 +400,84 @@ let xAxisInterval = ref(false);
 
 let dimensions = ['userName', 'salary1', 'salary2', 'salary3', 'salary4']
 
+const changeAllType = (value: string) => {
+    let option = [];
+    for (let i = 0; i < tempChartOption.series.length; i++) {
+      option.push( {id: tempChartOption.series[i].id, type:value});
+      tempChartOption.series[i].type=value;
+    }
+    tempChart.setOption({series:option})
+};
+
+const changAllLabelControl= (item)=>{
+  let checked = seriesLabelShow.value[item.id];
+  let emphasisLabelShow=false;
+  let labelShow=false;
+
+  if (seriesLabelShow.value[item.id] != null && seriesLabelShow.value[item.id]) {
+      emphasisLabelShow = true
+      labelShow = true
+  }
+
+  let option = [];
+  for (let i = 0; i < tempChartOption.series.length; i++) {
+    option.push(
+      {
+        id: tempChartOption.series[i].id,
+      label: { show: labelShow },
+      emphasis: { label: { show: emphasisLabelShow } },
+    });
+
+    tempChartOption.series[i].emphasis.label.show=emphasisLabelShow;
+    tempChartOption.series[i].label.show=labelShow;
+    seriesLabelShow.value[tempChartOption.series[i].id] = checked;
+  }
+  tempChart.setOption({series:option})
+}
+
+const changeAllLabelPosition = (item)=>{
+  let position = item.label.position;
+  let option = [];
+  for (let i = 0; i < tempChartOption.series.length; i++) {
+    option.push(
+      {
+        id: tempChartOption.series[i].id,
+        label: { position: position }
+      });
+
+    tempChartOption.series[i].label.position=position;
+  }
+  tempChart.setOption({series:option});
+}
+
+const changeAllRotate = (item)=>{
+  let  rotate = item.label.rotate;
+  let option = [];
+  for (let i = 0; i < tempChartOption.series.length; i++) {
+    option.push(
+      {
+        id: tempChartOption.series[i].id,
+        label: { rotate: rotate }
+      });
+
+    tempChartOption.series[i].label.rotate=rotate;
+  }
+  tempChart.setOption({series:option});
+}
+
+const changeAllSeriesEmphasis = (item)=>{
+  let focus = item.emphasis.focus;
+  let option = [];
+  for (let i = 0; i < tempChartOption.series.length; i++) {
+    option.push(
+      {
+        id: tempChartOption.series[i].id,
+        emphasis: { focus: focus }
+      });
+    tempChartOption.series[i].emphasis.focus=focus;
+  }
+  tempChart.setOption({series:option});
+}
 let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   // 标题属性
   title: {
@@ -1439,10 +1512,10 @@ onBeforeUnmount(() => {
                           () => {
                             if (xAxisNameShow) {
                               if (tempChartOption.xAxis.name != undefined) {
-                                tempChart.setOption({ xAxis: { name: tempChartOption.xAxis.name } })
+                                tempChart.setOption({ xAxis: { name: tempChartOption.xAxis.name,nameLocation:tempChartOption.xAxis.nameLocation } })
                               } else {
                                 tempChartOption.xAxis.name = tempChartOption.dataset.dimensions[0]
-                                tempChart.setOption({ xAxis: { name: tempChartOption.xAxis.name } })
+                                tempChart.setOption({ xAxis: { name: tempChartOption.xAxis.name,nameLocation:tempChartOption.xAxis.nameLocation } })
                               }
                             } else {
                               tempChartOption.xAxis.name = undefined
@@ -1699,7 +1772,7 @@ onBeforeUnmount(() => {
                           size="small"
                           min="0"
                           max="5"
-                          :style="{ width: '100%', fontSize: '12px',marginLeft:'6px' }"
+                          :style="{ width: '100%', fontSize: '12px' }"
                           v-model:value="tempChartOption.xAxis.axisLabel.interval"
                           addon-after="个标签"
                           @change="
@@ -2085,7 +2158,7 @@ onBeforeUnmount(() => {
                      }">
 
                       </a-checkbox>
-                      <span class="label-normal" style="margin-left: 8px">间隔</span>
+                      <span class="label-normal" style="margin-left: 8px;margin-left: 8px">间隔</span>
                     </div>
 
 
@@ -2094,7 +2167,7 @@ onBeforeUnmount(() => {
                           size="small"
                           min="0"
                           max="5"
-                          :style="{ width: '100%', fontSize: '12px',marginLeft:'6px' }"
+                          :style="{ width: '100%', fontSize: '12px' }"
                           v-model:value="tempChartOption.yAxis.axisLabel.interval"
                           addon-after="个标签"
                           @change="
@@ -2181,7 +2254,14 @@ onBeforeUnmount(() => {
               <div class="chart-item" style="margin-bottom: 8px">
                 <span class="label-left" style="width: 48px">数据系列</span>
                 <div class="component-right">
-                  <a-checkbox v-model:value="allSeriesEqual"
+                  <a-checkbox v-model:checked="allSeriesEqual"
+                              @change="()=>{
+                                if(allSeriesEqual){
+                                allSeriesConfigShow = [tempChartOption.series[0].id  || '0']
+                                }else {
+                                allSeriesConfigShow = []
+                                }
+                              }"
                     ><span style="font-size: 12px">各系列一致</span>
                   </a-checkbox>
                 </div>
@@ -2243,7 +2323,11 @@ onBeforeUnmount(() => {
                         size="small"
                         @change="
                           (value: string) => {
-                            tempChart.setOption({ series: { id: item.id, type: value } })
+                            if(allSeriesEqual){
+                              changeAllType(value);
+                            }else {
+                              tempChart.setOption({ series: { id: item.id, type: value } })
+                            }
                           }
                         "
                       >
@@ -2261,48 +2345,44 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 48px">数据标签</span>
 
                     <div class="component-right">
-                      <a-radio-group
-                        v-model:value="seriesLabelShow[item.id]"
-                        size="small"
-                        @change="seriesLabelControl(item)"
-                      >
-                        <a-radio-button value="show"
-                          ><span class="label-normal">常显示</span></a-radio-button
-                        >
-                        <a-radio-button value="hover"
-                          ><span class="label-normal">悬停</span></a-radio-button
-                        >
-                      </a-radio-group>
-                    </div>
-                  </div>
+                      <a-checkbox v-model:checked="seriesLabelShow[item.id]"
+                                  @change="()=>{
+                          if(allSeriesEqual){
+                            changAllLabelControl(item);
+                          }else {
+                            seriesLabelControl(item)
+                          }
+                        }">
+                        <span class="label-normal">显示</span>
+                      </a-checkbox>
 
-                  <div class="chart-item">
-                    <span class="label-left" style="width: 48px">标签位置</span>
-
-                    <div class="component-right">
                       <a-select
                         v-model:value="item.label.position"
                         size="small"
-                        @change="
-                          tempChart.setOption({
-                            series: [{ id: item.id, label: { position: item.label.position } }],
-                          })
-                        "
+                        @change="()=>{
+                         if(allSeriesEqual){
+                          changeAllLabelPosition(item);
+                          } else{
+                             tempChart.setOption({
+                              series: [{ id: item.id, label: { position: item.label.position } }],
+                            })
+                          }
+                        }"
                         :disabled="
                           seriesLabelShow[item.id] == null || seriesLabelShow[item.id] == ''
                         "
                       >
                         <a-select-option value="top"
-                          ><span class="label-normal">顶部</span></a-select-option
+                        ><span class="label-normal">顶部</span></a-select-option
                         >
                         <a-select-option value="inside"
-                          ><span class="label-normal">内中</span></a-select-option
+                        ><span class="label-normal">内中</span></a-select-option
                         >
                         <a-select-option value="insideBottom"
-                          ><span class="label-normal">内下</span></a-select-option
+                        ><span class="label-normal">内下</span></a-select-option
                         >
                         <a-select-option value="insideTop"
-                          ><span class="label-normal">内上</span></a-select-option
+                        ><span class="label-normal">内上</span></a-select-option
                         >
                       </a-select>
                     </div>
@@ -2320,9 +2400,16 @@ onBeforeUnmount(() => {
                         :step="15"
                         :style="{ width: '100%' }"
                         @change="
-                          tempChart.setOption({
-                            series: { id: item.id, label: { rotate: item.label.rotate } },
-                          })
+                        ()=>{
+                          if(allSeriesEqual){
+                            changeAllRotate(item);
+                          }else {
+                             tempChart.setOption({
+                              series: { id: item.id, label: { rotate: item.label.rotate } },
+                              })
+                          }
+                        }
+
                         "
                         :disabled="
                           seriesLabelShow[item.id] == null || seriesLabelShow[item.id] == ''
@@ -2339,12 +2426,16 @@ onBeforeUnmount(() => {
                       <a-radio-group
                         v-model:value="item.emphasis.focus"
                         size="small"
-                        @change="
-                          tempChart.setOption({
-                            series: { id: item.id, emphasis: { focus: item.emphasis.focus } },
-                          })
-                        "
-                      >
+                        @change="()=>{
+                          if(allSeriesEqual){
+                            changeAllSeriesEmphasis(item);
+                          }else {
+                             tempChart.setOption({
+                              series: { id: item.id, emphasis: { focus: item.emphasis.focus } },
+                            })
+                          }
+                        }
+                        ">
                         <a-radio-button value="none"
                           ><span class="label-normal">无</span></a-radio-button
                         >
