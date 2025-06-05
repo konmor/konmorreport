@@ -723,6 +723,13 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   ],
 })
 
+
+// 图例 开关 上下左右
+// 标题 开关 上
+// x轴名称 开关 左右 中上 中下
+// y轴名称 上 下 左右
+// 缩略图 下 右
+
 const calculatePositionConfig = () => {
   let option: {
     legend: {
