@@ -1588,15 +1588,20 @@ onBeforeUnmount(() => {
                         @change="
                           () => {
                             if (xAxisNameShow) {
-                              if (tempChartOption.xAxis.name != undefined) {
-                                tempChart.setOption({ xAxis: { name: tempChartOption.xAxis.name,nameLocation:tempChartOption.xAxis.nameLocation } })
-                              } else {
-                                tempChartOption.xAxis.name = tempChartOption.dataset.dimensions[0]
-                                tempChart.setOption({ xAxis: { name: tempChartOption.xAxis.name,nameLocation:tempChartOption.xAxis.nameLocation } })
+                              if (tempChartOption.xAxis.name == undefined) {
+                               tempChartOption.xAxis.name = tempChartOption.dataset.dimensions[0];
                               }
+                              let position =  calculateTopPosition();
+                              position.xAxis.name = tempChartOption.xAxis.name;
+                              position.xAxis.nameLocation = tempChartOption.xAxis.nameLocation;
+                              tempChart.setOption(position);
                             } else {
-                              tempChartOption.xAxis.name = undefined
-                              tempChart.setOption({ xAxis: { name: undefined } })
+                              tempChartOption.xAxis.name = undefined;
+
+                              let position =  calculateTopPosition();
+                              position.xAxis.name = tempChartOption.xAxis.name;
+                              position.xAxis.nameLocation = tempChartOption.xAxis.nameLocation;
+                              tempChart.setOption(position);
                             }
                           }
                         "
