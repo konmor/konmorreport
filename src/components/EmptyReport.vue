@@ -484,10 +484,10 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     text: '測試',
     left: 'left',
     show: true,
-    top: '2',
+    top: '1%',
   },
   grid: {
-    top: '8%',
+    top: '10%',
     right: '2',
     left: '2',
     bottom: '90',
@@ -507,7 +507,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   legend: {
     show: true,
     orient: 'horizontal', // vertical | horizontal
-    top: '3.5%',
+    top: '4%',
     left: 'center',
     type: 'scroll',
     tooltip: {
@@ -528,9 +528,8 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     type: 'category',
     name: undefined,
     nameLocation: 'center', // start end center/middle
-    nameGap: '8',
+    nameGap: 8,
     position: 'bottom', // bottom top 坐标轴的位置
-
     // 标签是否展示, 宽度、距离
     axisLabel: {
       show: true,
@@ -723,6 +722,77 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   ],
 })
 
+
+// 上计算 grid 高度
+
+const  calculateTopPosition = ()=>{
+
+  let titleShow: boolean = tempChartOption.title.show;
+  let legendShow: boolean = tempChartOption.legend.show &&
+      legendPosition.value.startsWith('top');
+
+  let nameShow = tempChartOption.xAxis.position == 'top' &&
+      xAxisNameShow.value &&
+      tempChartOption.xAxis.nameLocation == 'center';
+
+  // 表明重叠了
+  let stack  = legendPosition.value.toLowerCase().indexOf(tempChartOption.title.left);
+
+  let title = {top:1,height:3,show:titleShow,child:undefined};
+  let legend = {top:1,height:3,show:legendShow,child:title};
+  let name = {top:1,height:3,show:nameShow,child:legend};
+
+  let titleTop;
+  let legendTop;
+  let nameTop;
+  let gridTop ;
+
+  if(titleShow||legendShow||nameShow){
+    titleTop = calculateTopPositionByChild(title);
+
+    if(titleShow && legendShow && stack == -1){
+      // 没有重叠
+      legendTop = titleTop;
+      nameTop = calculateTopPositionByChild(name)-3;
+    } else {
+      legendTop  = calculateTopPositionByChild(legend);
+      nameTop = calculateTopPositionByChild(name);
+    }
+    gridTop = nameTop + name.height;
+  } else {
+    gridTop = 2;
+  }
+
+  let legendLeft;
+  if(legendPosition.value=='topLeft') {
+    legendLeft = 'left';
+  }else if(legendPosition.value=='topRight') {
+    legendLeft = 'right';
+  }else if(legendPosition.value=='topCenter') {
+    legendLeft = 'center';
+  }
+
+  return {
+    title: {top:titleTop+'%',left:tempChartOption.title.left},
+    legend: {top:legendTop+'%',left:legendLeft},
+    xAxis:{
+      nameGap:nameShow?40:15
+    },
+    grid:{
+      top:gridTop+'%'
+    }
+  }
+}
+
+type TopPosition = {top:number,height:number,show:boolean,child:TopPosition|undefined};
+
+const calculateTopPositionByChild = (position:TopPosition):number=>{
+  if(position.child != undefined){
+    return (position.child.show?position.child.height:0)+calculateTopPositionByChild(position.child);
+  } else {
+    return position.top;
+  }
+}
 
 // 图例 开关 上下左右
 // 标题 开关 上
@@ -1340,7 +1410,7 @@ onBeforeUnmount(() => {
                     v-model:checked="tempChartOption.title.show"
                     @change="
                       () => {
-                        let option = calculatePositionConfig()
+                        let option = calculateTopPosition()
                         option.title.show = tempChartOption.title.show
                         tempChart.setOption(option)
                       }
@@ -1351,7 +1421,7 @@ onBeforeUnmount(() => {
                     :disabled="!tempChartOption.title.show"
                     button-style="solid"
                     size="small"
-                    @change="tempChart.setOption({ title: { left: tempChartOption.title.left } })"
+                    @change="tempChart.setOption(calculateTopPosition())"
                   >
                     <a-radio-button value="left">
                       <Left />
@@ -1422,7 +1492,7 @@ onBeforeUnmount(() => {
                     v-model:checked="tempChartOption.legend.show"
                     @change="
                       () => {
-                        let option = calculatePositionConfig()
+                        let option = calculateTopPosition()
                         option.legend.show = tempChartOption.legend.show
                         tempChart.setOption(option)
                       }
@@ -1452,7 +1522,7 @@ onBeforeUnmount(() => {
                     :disabled="!tempChartOption.legend.show"
                     @change="
                       () => {
-                        let option = calculatePositionConfig()
+                        let option = calculateTopPosition()
                         option.legend.orient = 'horizontal'
                         if (legendPosition == 'leftCenter' || legendPosition == 'rightCenter') {
                           option.legend.orient = 'vertical'
