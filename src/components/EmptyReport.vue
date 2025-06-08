@@ -2,6 +2,8 @@
 export default {
   name: 'EmptyReport',
 }
+
+
 </script>
 <script setup lang="ts">
 import Diagram from '@/components/Diagram.vue'
@@ -16,11 +18,12 @@ import {
   onUnmounted,
   reactive,
   ref,
-  toRaw, watch,
+  toRaw,
+  watch,
 } from 'vue'
 import Filter from '@/components/Filter.vue'
 import { getUuid } from 'ant-design-vue/es/vc-notification/HookNotification'
-import { BarChartOutlined,LineChartOutlined } from '@ant-design/icons-vue'
+import { BarChartOutlined, LineChartOutlined } from '@ant-design/icons-vue'
 // 1. 引入echarts
 import * as echarts from 'echarts'
 
@@ -240,8 +243,8 @@ let seriesLabelShow = ref<Record<string, 'show' | 'hover' | ''>>({})
 
 const seriesLabelControl = (item) => {
   if (seriesLabelShow.value[item.id] != null && seriesLabelShow.value[item.id]) {
-      item.emphasis.label.show = true
-      item.label.show = true
+    item.emphasis.label.show = true
+    item.label.show = true
   } else {
     item.emphasis.label.show = false
     item.label.show = false
@@ -395,88 +398,84 @@ function transferDataToArray() {
 
   return data.map((item) => [item.userName, item.salary1, item.salary2, item.salary3, item.salary4])
 }
-let yAxisInterval = ref(false);
-let xAxisInterval = ref(false);
+let yAxisInterval = ref(false)
+let xAxisInterval = ref(false)
 
 let dimensions = ['userName', 'salary1', 'salary2', 'salary3', 'salary4']
 
 const changeAllType = (value: string) => {
-    let option = [];
-    for (let i = 0; i < tempChartOption.series.length; i++) {
-      option.push( {id: tempChartOption.series[i].id, type:value});
-      tempChartOption.series[i].type=value;
-    }
-    tempChart.setOption({series:option})
-};
+  let option = []
+  for (let i = 0; i < tempChartOption.series.length; i++) {
+    option.push({ id: tempChartOption.series[i].id, type: value })
+    tempChartOption.series[i].type = value
+  }
+  tempChart.setOption({ series: option })
+}
 
-const changAllLabelControl= (item)=>{
-  let checked = seriesLabelShow.value[item.id];
-  let emphasisLabelShow=false;
-  let labelShow=false;
+const changAllLabelControl = (item) => {
+  let checked = seriesLabelShow.value[item.id]
+  let emphasisLabelShow = false
+  let labelShow = false
 
   if (seriesLabelShow.value[item.id] != null && seriesLabelShow.value[item.id]) {
-      emphasisLabelShow = true
-      labelShow = true
+    emphasisLabelShow = true
+    labelShow = true
   }
 
-  let option = [];
+  let option = []
   for (let i = 0; i < tempChartOption.series.length; i++) {
-    option.push(
-      {
-        id: tempChartOption.series[i].id,
+    option.push({
+      id: tempChartOption.series[i].id,
       label: { show: labelShow },
       emphasis: { label: { show: emphasisLabelShow } },
-    });
+    })
 
-    tempChartOption.series[i].emphasis.label.show=emphasisLabelShow;
-    tempChartOption.series[i].label.show=labelShow;
-    seriesLabelShow.value[tempChartOption.series[i].id] = checked;
+    tempChartOption.series[i].emphasis.label.show = emphasisLabelShow
+    tempChartOption.series[i].label.show = labelShow
+    seriesLabelShow.value[tempChartOption.series[i].id] = checked
   }
-  tempChart.setOption({series:option})
+  tempChart.setOption({ series: option })
 }
 
-const changeAllLabelPosition = (item)=>{
-  let position = item.label.position;
-  let option = [];
+const changeAllLabelPosition = (item) => {
+  let position = item.label.position
+  let option = []
   for (let i = 0; i < tempChartOption.series.length; i++) {
-    option.push(
-      {
-        id: tempChartOption.series[i].id,
-        label: { position: position }
-      });
+    option.push({
+      id: tempChartOption.series[i].id,
+      label: { position: position },
+    })
 
-    tempChartOption.series[i].label.position=position;
+    tempChartOption.series[i].label.position = position
   }
-  tempChart.setOption({series:option});
+  tempChart.setOption({ series: option })
 }
 
-const changeAllRotate = (item)=>{
-  let  rotate = item.label.rotate;
-  let option = [];
+const changeAllRotate = (item) => {
+  let rotate = item.label.rotate
+  let option = []
   for (let i = 0; i < tempChartOption.series.length; i++) {
-    option.push(
-      {
-        id: tempChartOption.series[i].id,
-        label: { rotate: rotate }
-      });
+    option.push({
+      id: tempChartOption.series[i].id,
+      label: { rotate: rotate },
+    })
 
-    tempChartOption.series[i].label.rotate=rotate;
+    tempChartOption.series[i].label.rotate = rotate
   }
-  tempChart.setOption({series:option});
+  tempChart.setOption({ series: option })
 }
 
-const changeAllSeriesEmphasis = (item)=>{
-  let focus = item.emphasis.focus;
-  let option = [];
+const changeAllSeriesEmphasis = (item) => {
+  let focus = item.emphasis.focus
+  let option = []
   for (let i = 0; i < tempChartOption.series.length; i++) {
-    option.push(
-      {
-        id: tempChartOption.series[i].id,
-        emphasis: { focus: focus }
-      });
-    tempChartOption.series[i].emphasis.focus=focus;
+    option.push({
+      id: tempChartOption.series[i].id,
+      emphasis: { focus: focus },
+    })
+    tempChartOption.series[i].emphasis.focus = focus
   }
-  tempChart.setOption({series:option});
+  tempChart.setOption({ series: option })
 }
 let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   // 标题属性
@@ -488,9 +487,9 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   },
   grid: {
     top: '10%',
-    right: '2',
-    left: '2',
-    bottom: '90',
+    right: '2%',
+    left: '2%',
+    bottom: '10%',
     show: true,
     containLabel: true,
   },
@@ -539,7 +538,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       overflow: 'truncate',
       ellipsis: '…',
       interval: 'auto', // 强制显示所有x轴标签信息， 1 表示间隔一个显示 2 表示间隔两个，后续依此类推
-/*      formatter: function (value: string, index: number) {
+      /*      formatter: function (value: string, index: number) {
         return value
       },*/
     },
@@ -581,7 +580,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       overflow: 'truncate',
       ellipsis: '…',
       interval: 'auto', // 类目轴有效
-/*      formatter: function (value: string, index: number) {
+      /*      formatter: function (value: string, index: number) {
         return value
       },*/
     },
@@ -722,95 +721,172 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   ],
 })
 
-
 // 计算 grid 高度
 
-interface GridPosition  {
-  [key:string]:{top:number,left:number,right:number,bottom:number};
+interface GridPosition {
+  [key: string]: { top: number; left: number; right: number; bottom: number }
 }
 
+interface ComponentPosition {
+  currentStatus: string
+  position: { top: number; left: number; right: number; bottom: number } | undefined
+  allStatus: GridPosition
+}
+let changeGridPosition = reactive({ top: 0, left: 0, right: 0, bottom: 0 })
 
+let currentGridPosition = reactive({ top: 10, left: 2, right: 2, bottom: 10 })
+
+watch(changeGridPosition, () => {
+  currentGridPosition.top += changeGridPosition.top
+  currentGridPosition.left += changeGridPosition.left
+  currentGridPosition.right += changeGridPosition.right
+  currentGridPosition.bottom += changeGridPosition.bottom
+})
+
+watch(currentGridPosition, () => {
+  tempChart.setOption({
+    grid: {
+      top: currentGridPosition.top + '%',
+      left: currentGridPosition.left + '%',
+      right: currentGridPosition.right + '%',
+      bottom: currentGridPosition.bottom + '%',
+    },
+  })
+})
 // 图例 开关 上下左右
 // 标题 开关 上
 // x轴名称 开关 左右 中上 中下
 // y轴名称 上 下 左右
 // 缩略图 下 右
 const titleGridPosition = {
-  'left':{top:2.5,left:0,right:0,bottom:0},
-  'right':{top:2.5,left:0,right:0,bottom:0},
-  'center':{top:2.5,left:0,right:0,bottom:0},
+  left: { top: 2.5, left: 0, right: 0, bottom: 0 },
+  right: { top: 2.5, left: 0, right: 0, bottom: 0 },
+  center: { top: 2.5, left: 0, right: 0, bottom: 0 },
 } as GridPosition
 
-/**
- * topLeft
- * topCenter
- * topRight
- * leftCenter
- * rightCenter
- * bottomLeft
- * bottomCenter
- * bottomRight
- */
+let currentTitlePosition = ref<ComponentPosition>({
+  currentStatus: 'left',
+  position: undefined,
+  allStatus: titleGridPosition,
+})
+
+function openAndCloseComponent(
+  currentComponentPosition: ComponentPosition,
+  show: boolean,
+) {
+  let top = 0
+  let left = 0
+  let right = 0
+  let bottom = 0;
+  let currentStatus = currentComponentPosition.currentStatus;
+  if (show) {
+    top += currentComponentPosition.allStatus[currentStatus].top
+    left += currentComponentPosition.allStatus[currentStatus].left
+    right += currentComponentPosition.allStatus[currentStatus].right
+    bottom += currentComponentPosition.allStatus[currentStatus].bottom
+  } else {
+    top -= currentComponentPosition.allStatus[currentStatus].top
+    left -= currentComponentPosition.allStatus[currentStatus].left
+    right -= currentComponentPosition.allStatus[currentStatus].right
+    bottom -= currentComponentPosition.allStatus[currentStatus].bottom
+  }
+  return { top, left, right, bottom }
+}
+
+function changeComponentPosition(
+  currentComponentPosition: ComponentPosition,
+  changeStatus: string,
+) {
+    let top = 0
+    let left = 0
+    let right = 0
+    let bottom = 0
+    if (currentComponentPosition.position != undefined) {
+      top = -currentComponentPosition.position.top
+      left = -currentComponentPosition.position.left
+      right = -currentComponentPosition.position.right
+      bottom = -currentComponentPosition.position.bottom
+    } else {
+      top = -currentComponentPosition.allStatus[currentComponentPosition.currentStatus].top
+      left = -currentComponentPosition.allStatus[currentComponentPosition.currentStatus].left
+      right = -currentComponentPosition.allStatus[currentComponentPosition.currentStatus].right
+      bottom = -currentComponentPosition.allStatus[currentComponentPosition.currentStatus].bottom
+    }
+
+    top += currentComponentPosition.allStatus[changeStatus].top
+    left += currentComponentPosition.allStatus[changeStatus].left
+    right += currentComponentPosition.allStatus[changeStatus].right
+    bottom += currentComponentPosition.allStatus[changeStatus].bottom
+
+    currentComponentPosition.currentStatus = changeStatus;
+    return { top, left, right, bottom }
+}
+
 const legendGridPosition = {
-'topLeft':{top:2.5,left:0,right:0,bottom:0},
-'topCenter':{top:2.5,left:0,right:0,bottom:0},
-'topRight':{top:2.5,left:0,right:0,bottom:0},
-'leftCenter':{top:0,left:8,right:0,bottom:0},
-'rightCenter':{top:0,left:0,right:8,bottom:0},
-'bottomLeft':{top:0,left:0,right:0,bottom:2.5},
-'bottomRight':{top:0,left:0,right:0,bottom:2.5},
+  topLeft: { top: 2.5, left: 0, right: 0, bottom: 0 },
+  topCenter: { top: 2.5, left: 0, right: 0, bottom: 0 },
+  topRight: { top: 2.5, left: 0, right: 0, bottom: 0 },
+  leftCenter: { top: 0, left: 8, right: 0, bottom: 0 },
+  rightCenter: { top: 0, left: 0, right: 8, bottom: 0 },
+  bottomLeft: { top: 0, left: 0, right: 0, bottom: 2.5 },
+  bottomRight: { top: 0, left: 0, right: 0, bottom: 2.5 },
+  bottomCenter:{ top: 0, left: 0, right: 0, bottom: 2.5 },
 } as GridPosition
+
+let currentLegendPosition = ref<ComponentPosition>({
+  currentStatus: 'topCenter',
+  position: undefined,
+  allStatus: legendGridPosition,
+});
 
 const xAxisNamePosition = {
-  'left':{top:0,left:3,right:0,bottom:0},
-  'right':{top:0,left:0,right:3,bottom:0},
-  'topCenter':{top:2.5,left:0,right:0,bottom:0},
-  'bottomCenter':{top:0,left:0,right:0,bottom:2.5},
+  left: { top: 0, left: 3, right: 0, bottom: 0 },
+  right: { top: 0, left: 0, right: 3, bottom: 0 },
+  topCenter: { top: 2.5, left: 0, right: 0, bottom: 0 },
+  bottomCenter: { top: 0, left: 0, right: 0, bottom: 2.5 },
 } as GridPosition
 
 const yAxisNamePosition = {
-  'leftTop':{top:2.5,left:0,right:0,bottom:0},
-  'leftCenter':{top:0,left:0,right:0,bottom:0},
-  'leftBottom':{top:0,left:0,right:0,bottom:2.5},
-  'rightTop':{top:2.5,left:0,right:3,bottom:0},
-  'rightCenter':{top:0,left:0,right:0,bottom:0},
-  'rightBottom':{top:0,left:0,right:0,bottom:2.5},
+  leftTop: { top: 2.5, left: 0, right: 0, bottom: 0 },
+  leftCenter: { top: 0, left: 0, right: 0, bottom: 0 },
+  leftBottom: { top: 0, left: 0, right: 0, bottom: 2.5 },
+  rightTop: { top: 2.5, left: 0, right: 3, bottom: 0 },
+  rightCenter: { top: 0, left: 0, right: 0, bottom: 0 },
+  rightBottom: { top: 0, left: 0, right: 0, bottom: 2.5 },
 } as GridPosition
 
 const zoomPosition = {
-  'right':{top:0,left:0,right:6,bottom:0},
-  'bottom':{top:0,left:0,right:0,bottom:6},
+  right: { top: 0, left: 0, right: 6, bottom: 0 },
+  bottom: { top: 0, left: 0, right: 0, bottom: 6 },
 }
 
 let stackItems = reactive([[]])
 
-watch(stackItems,(items)=>{
-
-  let option = {series:[]};
+watch(stackItems, (items) => {
+  let option = { series: [] }
   for (let i = 0; i < items.length; i++) {
-    let item = items[i];
-    if(item.length!=0){
+    let item = items[i]
+    if (item.length != 0) {
       //
-      let stack = 'group'+i;
+      let stack = 'group' + i
       for (let j = 0; j < item.length; j++) {
-        option.series.push({id:item[j].id,name:item[j].name,stack:stack})
+        option.series.push({ id: item[j].id, name: item[j].name, stack: stack })
       }
     }
   }
-  tempChart.setOption(option);
-  if(vertical.value){
-    stackContainerStyle.value.width=stackItems.length * 22.4 +'px';
-    stackContainerStyle.value.height='18px';
-  }else {
-    stackContainerStyle.value.width='18px';
-    stackContainerStyle.value.height=stackItems.length * 22.4 +'px';
+  tempChart.setOption(option)
+  if (vertical.value) {
+    stackContainerStyle.value.width = stackItems.length * 22.4 + 'px'
+    stackContainerStyle.value.height = '18px'
+  } else {
+    stackContainerStyle.value.width = '18px'
+    stackContainerStyle.value.height = stackItems.length * 22.4 + 'px'
   }
-
 })
 
 let stackContainerStyle = ref({
   width: '18px',
-  height: stackItems.length * 22.4 +'px',
+  height: stackItems.length * 22.4 + 'px',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'flex-end',
@@ -827,33 +903,32 @@ let stackContainersStyle = ref({
   overflow: 'auto',
 })
 
-watch(vertical,()=>{
-if(vertical.value){
-  stackContainerStyle.value = {
-    width: stackItems.length * 22.4 +'px',
-    height: '18px',
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-  }
-  stackItemStyle.value.width = '1.6em'
-  stackItemStyle.value.height = '1em'
-  stackContainersStyle.value.flexDirection = 'column'
-}else {
-  stackContainerStyle.value = {
-    width: '18px',
-    height: stackItems.length * 22.4 +'px',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'flex-end',
-  }
-  stackItemStyle.value.width = '1em'
-  stackItemStyle.value.height = '1.6em'
+watch(vertical, () => {
+  if (vertical.value) {
+    stackContainerStyle.value = {
+      width: stackItems.length * 22.4 + 'px',
+      height: '18px',
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'flex-start',
+    }
+    stackItemStyle.value.width = '1.6em'
+    stackItemStyle.value.height = '1em'
+    stackContainersStyle.value.flexDirection = 'column'
+  } else {
+    stackContainerStyle.value = {
+      width: '18px',
+      height: stackItems.length * 22.4 + 'px',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-end',
+    }
+    stackItemStyle.value.width = '1em'
+    stackItemStyle.value.height = '1.6em'
 
-  stackContainersStyle.value.flexDirection = 'row'
-}
+    stackContainersStyle.value.flexDirection = 'row'
+  }
 })
-
 
 const selectData = reactive<{
   open: boolean
@@ -908,20 +983,19 @@ const selectData = reactive<{
 })
 
 let currentThem = ref('customized')
-let currentColors = ref(themArray.find(item=>item.themeName==currentThem.value).theme.color)
+let currentColors = ref(themArray.find((item) => item.themeName == currentThem.value).theme.color)
 
-watch(currentThem,(them)=>{
-  currentColors.value = themArray.find(item=>item.themeName==them).theme.color;
+watch(currentThem, (them) => {
+  currentColors.value = themArray.find((item) => item.themeName == them).theme.color
 
   for (let i = 0; i < stackItems.length; i++) {
-    let stackItem = stackItems[i];
-    if(stackItem.length>0){
+    let stackItem = stackItems[i]
+    if (stackItem.length > 0) {
       for (let j = 0; j < stackItem.length; j++) {
-        stackItem[j].color= currentColors.value[parseInt( stackItem[j].id) - 1];
+        stackItem[j].color = currentColors.value[parseInt(stackItem[j].id) - 1]
       }
     }
   }
-
 })
 
 const changeThem = (themName: string) => {
@@ -1150,9 +1224,9 @@ onBeforeUnmount(() => {
             <!-- 堆叠 -->
             <div class="chart-group">
               <a-collapse
-                  v-model:activeKey="pileOpen"
-                  expand-icon-position="end"
-                  :style="{
+                v-model:activeKey="pileOpen"
+                expand-icon-position="end"
+                :style="{
                   border: 'none',
                   backgroundColor: 'transparent',
                   margin: '0',
@@ -1160,36 +1234,37 @@ onBeforeUnmount(() => {
                 }"
               >
                 <a-collapse-panel
-                    key="them"
-                    header="堆叠"
-                    :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
+                  key="them"
+                  header="堆叠"
+                  :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
                 >
-
-              <div class="stackContainers"
-              :style="stackContainersStyle">
-                <draggable
-                  v-for="item in stackItems"
-                  :style="stackContainerStyle"
-                  class="stackContainer"
-                  :list="item"
-                  :group="{ name: 'outerPile', pull: true, put: true }"
-                  animation="800"
-                  item-key="id"
-                  tag="div"
-                >
-                  <template #item="{ element }">
-                    <div
-                      :id="element.id"
-                      :style="{backgroundColor: element.color,
-                               height: stackItemStyle.height,
-                               width: stackItemStyle.width,}"
-                      class="stackItem">
-                      <!-- {{ element.value }}-->
-                    </div>
-                  </template>
-                </draggable>
-              </div>
-              </a-collapse-panel>
+                  <div class="stackContainers" :style="stackContainersStyle">
+                    <draggable
+                      v-for="item in stackItems"
+                      :style="stackContainerStyle"
+                      class="stackContainer"
+                      :list="item"
+                      :group="{ name: 'outerPile', pull: true, put: true }"
+                      animation="800"
+                      item-key="id"
+                      tag="div"
+                    >
+                      <template #item="{ element }">
+                        <div
+                          :id="element.id"
+                          :style="{
+                            backgroundColor: element.color,
+                            height: stackItemStyle.height,
+                            width: stackItemStyle.width,
+                          }"
+                          class="stackItem"
+                        >
+                          <!-- {{ element.value }}-->
+                        </div>
+                      </template>
+                    </draggable>
+                  </div>
+                </a-collapse-panel>
               </a-collapse>
             </div>
 
@@ -1210,9 +1285,15 @@ onBeforeUnmount(() => {
                     v-model:checked="tempChartOption.title.show"
                     @change="
                       () => {
-                        let option = calculateTopPosition()
-                        option.title.show = tempChartOption.title.show
-                        tempChart.setOption(option)
+                        let option = { title: { show: tempChartOption.title.show } }
+                        tempChart.setOption(option);
+
+                        let { top, left, right, bottom } = openAndCloseComponent(
+                          currentTitlePosition,
+                          tempChartOption.title.show
+                        )
+
+                        Object.assign(changeGridPosition, { top, left, right, bottom })
                       }
                     "
                   ></a-switch>
@@ -1221,7 +1302,12 @@ onBeforeUnmount(() => {
                     :disabled="!tempChartOption.title.show"
                     button-style="solid"
                     size="small"
-                    @change="tempChart.setOption(calculateTopPosition())"
+                    @change="
+                      () => {
+                        let { top, left, right, bottom } = changeComponentPosition(currentTitlePosition,tempChartOption.title.left)
+                        Object.assign(changeGridPosition, { top, left, right, bottom })
+                      }
+                    "
                   >
                     <a-radio-button value="left">
                       <Left />
@@ -1292,9 +1378,17 @@ onBeforeUnmount(() => {
                     v-model:checked="tempChartOption.legend.show"
                     @change="
                       () => {
-                        let option = calculateTopPosition()
-                        option.legend.show = tempChartOption.legend.show
-                        tempChart.setOption(option)
+                        let option = {
+                          legend:{
+                            show:tempChartOption.legend.show
+                          }
+                        }
+                        tempChart.setOption(option);
+
+                      let { top, left, right, bottom } = openAndCloseComponent(currentLegendPosition,tempChartOption.legend.show)
+
+                      Object.assign(changeGridPosition, { top, left, right, bottom });
+
                       }
                     "
                   ></a-switch>
@@ -1322,12 +1416,38 @@ onBeforeUnmount(() => {
                     :disabled="!tempChartOption.legend.show"
                     @change="
                       () => {
-                        let option = calculateTopPosition()
-                        option.legend.orient = 'horizontal'
-                        if (legendPosition == 'leftCenter' || legendPosition == 'rightCenter') {
-                          option.legend.orient = 'vertical'
+                        let thisPosition:{top:string|undefined,left:string|undefined,right:string|undefined,bottom:string|undefined} = {
+                            top:'4%',
+                            left:'center',
+                            right:undefined,
+                            bottom:undefined
                         }
-                        tempChart.setOption(option)
+
+                        // top 和 bottom
+                        if(legendPosition.startsWith('bottom')){
+                          thisPosition.top = undefined;
+                          thisPosition.bottom = '4%';
+                        }
+
+                        // left
+                        if(legendPosition.endsWith('Left') || legendPosition == 'leftCenter'){
+                          thisPosition.left = 'left'
+                        }else if(legendPosition.endsWith('Right')|| legendPosition == 'rightCenter'){
+                           thisPosition.left = 'right'
+                        }
+
+                        let option = {
+                          legend:{
+                            orient:(legendPosition == 'leftCenter' || legendPosition == 'rightCenter')?'vertical':'horizontal',
+                            top:thisPosition.top,
+                            left:thisPosition.left,
+                            bottom:thisPosition.bottom
+                          }
+                        }
+                        tempChart.setOption(option);
+
+                     let { top, left, right, bottom } = changeComponentPosition(currentLegendPosition,legendPosition);
+                     Object.assign(changeGridPosition, { top, left, right, bottom });
                       }
                     "
                   >
@@ -1389,19 +1509,19 @@ onBeforeUnmount(() => {
                           () => {
                             if (xAxisNameShow) {
                               if (tempChartOption.xAxis.name == undefined) {
-                               tempChartOption.xAxis.name = tempChartOption.dataset.dimensions[0];
+                                tempChartOption.xAxis.name = tempChartOption.dataset.dimensions[0]
                               }
-                              let option =  calculateTopPosition();
-                              option.xAxis.name = tempChartOption.xAxis.name;
-                              option.xAxis.nameLocation = tempChartOption.xAxis.nameLocation;
-                              tempChart.setOption(option);
+                              let option = calculateTopPosition()
+                              option.xAxis.name = tempChartOption.xAxis.name
+                              option.xAxis.nameLocation = tempChartOption.xAxis.nameLocation
+                              tempChart.setOption(option)
                             } else {
-                              tempChartOption.xAxis.name = undefined;
+                              tempChartOption.xAxis.name = undefined
 
-                              let option =  calculateTopPosition();
-                              option.xAxis.name = tempChartOption.xAxis.name;
-                              option.xAxis.nameLocation = tempChartOption.xAxis.nameLocation;
-                              tempChart.setOption(option);
+                              let option = calculateTopPosition()
+                              option.xAxis.name = tempChartOption.xAxis.name
+                              option.xAxis.nameLocation = tempChartOption.xAxis.nameLocation
+                              tempChart.setOption(option)
                             }
                           }
                         "
@@ -1478,12 +1598,12 @@ onBeforeUnmount(() => {
                         button-style="solid"
                         v-model:value="tempChartOption.xAxis.position"
                         @change="
-                        ()=>{
-                              let option =  calculateTopPosition();
-                              option.xAxis.position = tempChartOption.xAxis.position
-                              tempChart.setOption(option);
-                        }
-                       "
+                          () => {
+                            let option = calculateTopPosition()
+                            option.xAxis.position = tempChartOption.xAxis.position
+                            tempChart.setOption(option)
+                          }
+                        "
                       >
                         <a-radio-button value="top"
                           ><span style="font-size: 12px">顶部</span></a-radio-button
@@ -1558,18 +1678,18 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 60px">长度</span>
                     <div class="component-right">
                       <a-input-number
-                          size="small"
-                          min="48"
-                          max="200"
-                          :style="{ width: '100%', fontSize: '12px' }"
-                          v-model:value="tempChartOption.xAxis.axisLabel.width"
-                          addon-after="px"
-                          @change="
+                        size="small"
+                        min="48"
+                        max="200"
+                        :style="{ width: '100%', fontSize: '12px' }"
+                        v-model:value="tempChartOption.xAxis.axisLabel.width"
+                        addon-after="px"
+                        @change="
                           tempChart.setOption({
                             xAxis: { axisLabel: { width: tempChartOption.xAxis.axisLabel.width } },
                           })
                         "
-                          :disabled="!tempChartOption.xAxis.axisLabel.show"
+                        :disabled="!tempChartOption.xAxis.axisLabel.show"
                       >
                       </a-input-number>
                     </div>
@@ -1625,48 +1745,49 @@ onBeforeUnmount(() => {
                   </div>
 
                   <div class="chart-item">
-                    <div style="display: flex;justify-content: flex-start;align-items: center">
+                    <div style="display: flex; justify-content: flex-start; align-items: center">
                       <a-checkbox
-                          :disabled="!tempChartOption.xAxis.axisLabel.show "
-                          v-model:checked="xAxisInterval"
-                          @change="()=>{
-                       if(xAxisInterval){
-                         tempChartOption.xAxis.axisLabel.interval = 0
-                          tempChart.setOption({
-                            xAxis: {
-                              axisLabel: { interval: 0 },
-                            },
-                          })
-                       }else {
-                          tempChart.setOption({
-                            xAxis: {
-                              axisLabel: { interval: 'auto' },
-                            },
-                          })
-                       }
-                     }">
-
+                        :disabled="!tempChartOption.xAxis.axisLabel.show"
+                        v-model:checked="xAxisInterval"
+                        @change="
+                          () => {
+                            if (xAxisInterval) {
+                              tempChartOption.xAxis.axisLabel.interval = 0
+                              tempChart.setOption({
+                                xAxis: {
+                                  axisLabel: { interval: 0 },
+                                },
+                              })
+                            } else {
+                              tempChart.setOption({
+                                xAxis: {
+                                  axisLabel: { interval: 'auto' },
+                                },
+                              })
+                            }
+                          }
+                        "
+                      >
                       </a-checkbox>
                       <span class="label-normal" style="margin-left: 8px">间隔</span>
                     </div>
 
-
                     <div class="component-right">
                       <a-input-number
-                          size="small"
-                          min="0"
-                          max="5"
-                          :style="{ width: '100%', fontSize: '12px' }"
-                          v-model:value="tempChartOption.xAxis.axisLabel.interval"
-                          addon-after="个标签"
-                          @change="
-                            tempChart.setOption({
+                        size="small"
+                        min="0"
+                        max="5"
+                        :style="{ width: '100%', fontSize: '12px' }"
+                        v-model:value="tempChartOption.xAxis.axisLabel.interval"
+                        addon-after="个标签"
+                        @change="
+                          tempChart.setOption({
                             xAxis: {
                               axisLabel: { interval: tempChartOption.xAxis.axisLabel.interval },
                             },
                           })
-                          "
-                          :disabled="!tempChartOption.xAxis.axisLabel.show || !xAxisInterval"
+                        "
+                        :disabled="!tempChartOption.xAxis.axisLabel.show || !xAxisInterval"
                       ></a-input-number>
                     </div>
                   </div>
@@ -1694,9 +1815,6 @@ onBeforeUnmount(() => {
                       </a-radio-group>
                     </div>
                   </div>
-
-
-
 
                   <div class="chart-item" style="margin-top: 12px; border-top: 1px solid #e8e8e8">
                     <span class="label-left" style="width: 60px">分割线</span>
@@ -1950,20 +2068,20 @@ onBeforeUnmount(() => {
                     <div class="component-right">
                       <a-tooltip title="最大值200 最小值 48">
                         <a-input-number
-                            size="small"
-                            min="48"
-                            max="200"
-                            :style="{ width: '100%', fontSize: '12px' }"
-                            v-model:value="tempChartOption.yAxis.axisLabel.width"
-                            addon-after="px"
-                            @change="
+                          size="small"
+                          min="48"
+                          max="200"
+                          :style="{ width: '100%', fontSize: '12px' }"
+                          v-model:value="tempChartOption.yAxis.axisLabel.width"
+                          addon-after="px"
+                          @change="
                             tempChart.setOption({
                               yAxis: {
                                 axisLabel: { width: tempChartOption.yAxis.axisLabel.width },
                               },
                             })
                           "
-                            :disabled="!tempChartOption.yAxis.axisLabel.show"
+                          :disabled="!tempChartOption.yAxis.axisLabel.show"
                         >
                         </a-input-number>
                       </a-tooltip>
@@ -2020,52 +2138,54 @@ onBeforeUnmount(() => {
                   </div>
 
                   <div class="chart-item">
-                    <div style="display: flex;justify-content: flex-start;align-items: center">
+                    <div style="display: flex; justify-content: flex-start; align-items: center">
                       <a-checkbox
-                          v-model:checked="yAxisInterval"
-                          :disabled="!tempChartOption.yAxis.axisLabel.show "
-                          @change="()=>{
-                       if(yAxisInterval){
-                         tempChartOption.yAxis.axisLabel.interval = 0
-                          tempChart.setOption({
-                            yAxis: {
-                              axisLabel: { interval: 0 },
-                            },
-                          })
-                       }else {
-                          tempChart.setOption({
-                            yAxis: {
-                              axisLabel: { interval: 'auto' },
-                            },
-                          })
-                       }
-                     }">
-
+                        v-model:checked="yAxisInterval"
+                        :disabled="!tempChartOption.yAxis.axisLabel.show"
+                        @change="
+                          () => {
+                            if (yAxisInterval) {
+                              tempChartOption.yAxis.axisLabel.interval = 0
+                              tempChart.setOption({
+                                yAxis: {
+                                  axisLabel: { interval: 0 },
+                                },
+                              })
+                            } else {
+                              tempChart.setOption({
+                                yAxis: {
+                                  axisLabel: { interval: 'auto' },
+                                },
+                              })
+                            }
+                          }
+                        "
+                      >
                       </a-checkbox>
-                      <span class="label-normal" style="margin-left: 8px;margin-left: 8px">间隔</span>
+                      <span class="label-normal" style="margin-left: 8px; margin-left: 8px"
+                        >间隔</span
+                      >
                     </div>
-
 
                     <div class="component-right">
                       <a-input-number
-                          size="small"
-                          min="0"
-                          max="5"
-                          :style="{ width: '100%', fontSize: '12px' }"
-                          v-model:value="tempChartOption.yAxis.axisLabel.interval"
-                          addon-after="个标签"
-                          @change="
-                            tempChart.setOption({
+                        size="small"
+                        min="0"
+                        max="5"
+                        :style="{ width: '100%', fontSize: '12px' }"
+                        v-model:value="tempChartOption.yAxis.axisLabel.interval"
+                        addon-after="个标签"
+                        @change="
+                          tempChart.setOption({
                             yAxis: {
                               axisLabel: { interval: tempChartOption.yAxis.axisLabel.interval },
                             },
                           })
-                          "
-                          :disabled="!tempChartOption.yAxis.axisLabel.show || !yAxisInterval"
+                        "
+                        :disabled="!tempChartOption.yAxis.axisLabel.show || !yAxisInterval"
                       ></a-input-number>
                     </div>
                   </div>
-
 
                   <div class="chart-item" style="margin-top: 12px; border-top: 1px solid #e8e8e8">
                     <span class="label-left" style="width: 60px">分割线</span>
@@ -2138,14 +2258,17 @@ onBeforeUnmount(() => {
               <div class="chart-item" style="margin-bottom: 8px">
                 <span class="label-left" style="width: 48px">数据系列</span>
                 <div class="component-right">
-                  <a-checkbox v-model:checked="allSeriesEqual"
-                              @change="()=>{
-                                if(allSeriesEqual){
-                                allSeriesConfigShow = [tempChartOption.series[0].id  || '0']
-                                }else {
-                                allSeriesConfigShow = []
-                                }
-                              }"
+                  <a-checkbox
+                    v-model:checked="allSeriesEqual"
+                    @change="
+                      () => {
+                        if (allSeriesEqual) {
+                          allSeriesConfigShow = [tempChartOption.series[0].id || '0']
+                        } else {
+                          allSeriesConfigShow = []
+                        }
+                      }
+                    "
                     ><span style="font-size: 12px">各系列一致</span>
                   </a-checkbox>
                 </div>
@@ -2163,22 +2286,20 @@ onBeforeUnmount(() => {
                 <a-collapse-panel
                   :style="{ border: 'none', marginTop: '8px', padding: '0', fontSize: '12px' }"
                   v-for="(item, index) in tempChartOption.series"
-
                   :key="item.id || index"
                 >
                   <template #header>
-                    <div :style="{display:'flex',justifyContent:'space-between'}">
+                    <div :style="{ display: 'flex', justifyContent: 'space-between' }">
                       <span>
-                     {{item.name}}
+                        {{ item.name }}
                       </span>
-                      <span v-if="item.type =='bar'">
-                        <BarChartOutlined :style="{color: currentColors[index]}"/>
+                      <span v-if="item.type == 'bar'">
+                        <BarChartOutlined :style="{ color: currentColors[index] }" />
                       </span>
-                      <span v-else-if="item.type =='line'">
-                        <LineChartOutlined :style="{color: currentColors[index]}"/>
+                      <span v-else-if="item.type == 'line'">
+                        <LineChartOutlined :style="{ color: currentColors[index] }" />
                       </span>
                     </div>
-
                   </template>
                   <div class="chart-item">
                     <span class="label-left" style="width: 48px">系列名称</span>
@@ -2207,9 +2328,9 @@ onBeforeUnmount(() => {
                         size="small"
                         @change="
                           (value: string) => {
-                            if(allSeriesEqual){
-                              changeAllType(value);
-                            }else {
+                            if (allSeriesEqual) {
+                              changeAllType(value)
+                            } else {
                               tempChart.setOption({ series: { id: item.id, type: value } })
                             }
                           }
@@ -2229,44 +2350,50 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 48px">数据标签</span>
 
                     <div class="component-right">
-                      <a-checkbox v-model:checked="seriesLabelShow[item.id]"
-                                  @change="()=>{
-                          if(allSeriesEqual){
-                            changAllLabelControl(item);
-                          }else {
-                            seriesLabelControl(item)
+                      <a-checkbox
+                        v-model:checked="seriesLabelShow[item.id]"
+                        @change="
+                          () => {
+                            if (allSeriesEqual) {
+                              changAllLabelControl(item)
+                            } else {
+                              seriesLabelControl(item)
+                            }
                           }
-                        }">
+                        "
+                      >
                         <span class="label-normal">显示</span>
                       </a-checkbox>
 
                       <a-select
                         v-model:value="item.label.position"
                         size="small"
-                        @change="()=>{
-                         if(allSeriesEqual){
-                          changeAllLabelPosition(item);
-                          } else{
-                             tempChart.setOption({
-                              series: [{ id: item.id, label: { position: item.label.position } }],
-                            })
+                        @change="
+                          () => {
+                            if (allSeriesEqual) {
+                              changeAllLabelPosition(item)
+                            } else {
+                              tempChart.setOption({
+                                series: [{ id: item.id, label: { position: item.label.position } }],
+                              })
+                            }
                           }
-                        }"
+                        "
                         :disabled="
                           seriesLabelShow[item.id] == null || seriesLabelShow[item.id] == ''
                         "
                       >
                         <a-select-option value="top"
-                        ><span class="label-normal">顶部</span></a-select-option
+                          ><span class="label-normal">顶部</span></a-select-option
                         >
                         <a-select-option value="inside"
-                        ><span class="label-normal">内中</span></a-select-option
+                          ><span class="label-normal">内中</span></a-select-option
                         >
                         <a-select-option value="insideBottom"
-                        ><span class="label-normal">内下</span></a-select-option
+                          ><span class="label-normal">内下</span></a-select-option
                         >
                         <a-select-option value="insideTop"
-                        ><span class="label-normal">内上</span></a-select-option
+                          ><span class="label-normal">内上</span></a-select-option
                         >
                       </a-select>
                     </div>
@@ -2284,16 +2411,15 @@ onBeforeUnmount(() => {
                         :step="15"
                         :style="{ width: '100%' }"
                         @change="
-                        ()=>{
-                          if(allSeriesEqual){
-                            changeAllRotate(item);
-                          }else {
-                             tempChart.setOption({
-                              series: { id: item.id, label: { rotate: item.label.rotate } },
+                          () => {
+                            if (allSeriesEqual) {
+                              changeAllRotate(item)
+                            } else {
+                              tempChart.setOption({
+                                series: { id: item.id, label: { rotate: item.label.rotate } },
                               })
+                            }
                           }
-                        }
-
                         "
                         :disabled="
                           seriesLabelShow[item.id] == null || seriesLabelShow[item.id] == ''
@@ -2310,16 +2436,18 @@ onBeforeUnmount(() => {
                       <a-radio-group
                         v-model:value="item.emphasis.focus"
                         size="small"
-                        @change="()=>{
-                          if(allSeriesEqual){
-                            changeAllSeriesEmphasis(item);
-                          }else {
-                             tempChart.setOption({
-                              series: { id: item.id, emphasis: { focus: item.emphasis.focus } },
-                            })
+                        @change="
+                          () => {
+                            if (allSeriesEqual) {
+                              changeAllSeriesEmphasis(item)
+                            } else {
+                              tempChart.setOption({
+                                series: { id: item.id, emphasis: { focus: item.emphasis.focus } },
+                              })
+                            }
                           }
-                        }
-                        ">
+                        "
+                      >
                         <a-radio-button value="none"
                           ><span class="label-normal">无</span></a-radio-button
                         >
@@ -2349,8 +2477,8 @@ onBeforeUnmount(() => {
                           tempChartOption.xAxis.type = 'value'
                           tempChartOption.yAxis.type = 'category'
                           tempChart.setOption({
-                            xAxis: { type: 'value',axisLabel:tempChartOption.xAxis.axisLabel },
-                            yAxis: { type: 'category',axisLabel:tempChartOption.yAxis.axisLabel },
+                            xAxis: { type: 'value', axisLabel: tempChartOption.xAxis.axisLabel },
+                            yAxis: { type: 'category', axisLabel: tempChartOption.yAxis.axisLabel },
                           })
 
                           // 重新设置下阶段和换行
@@ -2363,8 +2491,8 @@ onBeforeUnmount(() => {
                           tempChartOption.xAxis.type = 'category'
                           tempChartOption.yAxis.type = 'value'
                           tempChart.setOption({
-                            xAxis: { type: 'category',axisLabel:tempChartOption.xAxis.axisLabel },
-                            yAxis: { type: 'value',axisLabel:tempChartOption.yAxis.axisLabel },
+                            xAxis: { type: 'category', axisLabel: tempChartOption.xAxis.axisLabel },
+                            yAxis: { type: 'value', axisLabel: tempChartOption.yAxis.axisLabel },
                           })
                         }
                       }
@@ -2719,7 +2847,7 @@ onBeforeUnmount(() => {
   padding: 0;
 }
 
-:deep(.ant-input-number-group-wrapper .ant-input-number-group .ant-input-number-group-addon){
+:deep(.ant-input-number-group-wrapper .ant-input-number-group .ant-input-number-group-addon) {
   font-size: 12px;
   height: 14px;
   line-height: 14px;
