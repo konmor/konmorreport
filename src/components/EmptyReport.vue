@@ -528,7 +528,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     type: 'category',
     name: undefined,
     nameLocation: 'center', // start end center/middle
-    nameGap: 8,
+    nameGap: 36,
     position: 'bottom', // bottom top 坐标轴的位置
     // 标签是否展示, 宽度、距离
     axisLabel: {
@@ -569,7 +569,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     type: 'value',
     name: undefined,
     nameLocation: 'end', // start end center/middle
-    nameGap: '8',
+    nameGap: 36,
     position: 'left', // left right 坐标轴的位置
 
     // 标签是否展示, 宽度、距离
@@ -723,263 +723,63 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
 })
 
 
-// 上计算 grid 高度
+// 计算 grid 高度
 
-const  calculateTopPosition = ()=>{
-
-  let titleShow: boolean = tempChartOption.title.show;
-  let legendShow: boolean = tempChartOption.legend.show &&
-      legendPosition.value.startsWith('top');
-
-  let nameShow = tempChartOption.xAxis.position == 'top' &&
-      xAxisNameShow.value &&
-      tempChartOption.xAxis.nameLocation == 'center';
-
-  // 表明重叠了
-  let stack  = legendPosition.value.toLowerCase().indexOf(tempChartOption.title.left);
-
-  let title = {top:1,height:3,show:titleShow,child:undefined};
-  let legend = {top:1,height:3,show:legendShow,child:title};
-  let name = {top:1,height:3,show:nameShow,child:legend};
-
-  let titleTop;
-  let legendTop;
-  let nameTop;
-  let gridTop ;
-
-  if(titleShow||legendShow||nameShow){
-    titleTop = calculateTopPositionByChild(title);
-
-    if(titleShow && legendShow && stack == -1){
-      // 没有重叠
-      legendTop = titleTop;
-      nameTop = calculateTopPositionByChild(name)-3;
-    } else {
-      legendTop  = calculateTopPositionByChild(legend);
-      nameTop = calculateTopPositionByChild(name);
-    }
-    gridTop = nameTop + name.height;
-  } else {
-    gridTop = 2;
-  }
-
-  let legendLeft;
-  if(legendPosition.value=='topLeft') {
-    legendLeft = 'left';
-  }else if(legendPosition.value=='topRight') {
-    legendLeft = 'right';
-  }else if(legendPosition.value=='topCenter') {
-    legendLeft = 'center';
-  }
-
-  return {
-    title: {top:titleTop+'%',left:tempChartOption.title.left},
-    legend: {top:legendTop+'%',left:legendLeft},
-    xAxis:{
-      nameGap:nameShow?40:15
-    },
-    grid:{
-      top:gridTop+'%'
-    }
-  }
+interface GridPosition  {
+  [key:string]:{top:number,left:number,right:number,bottom:number};
 }
 
-type TopPosition = {top:number,height:number,show:boolean,child:TopPosition|undefined};
-
-const calculateTopPositionByChild = (position:TopPosition):number=>{
-  if(position.child != undefined){
-    return (position.child.show?position.child.height:0)+calculateTopPositionByChild(position.child);
-  } else {
-    return position.top;
-  }
-}
 
 // 图例 开关 上下左右
 // 标题 开关 上
 // x轴名称 开关 左右 中上 中下
 // y轴名称 上 下 左右
 // 缩略图 下 右
+const titleGridPosition = {
+  'left':{top:2.5,left:0,right:0,bottom:0},
+  'right':{top:2.5,left:0,right:0,bottom:0},
+  'center':{top:2.5,left:0,right:0,bottom:0},
+} as GridPosition
 
-const calculatePositionConfig = () => {
-  let option: {
-    legend: {
-      show?: boolean
-      top?: string
-      left?: string
-      right?: string
-      bottom?: string
-      orient?: 'horizontal' | 'vertical'
-    }
-    grid: {
-      top?: string
-      right?: string
-      left?: string
-      bottom?: string
-    }
-    title: {
-      show?: boolean
-      top?: string
-      right?: string
-      left?: string
-      bottom?: string
-    }
-  } = {
-    legend: {},
-    grid: {},
-    title: {},
-  }
+/**
+ * topLeft
+ * topCenter
+ * topRight
+ * leftCenter
+ * rightCenter
+ * bottomLeft
+ * bottomCenter
+ * bottomRight
+ */
+const legendGridPosition = {
+'topLeft':{top:2.5,left:0,right:0,bottom:0},
+'topCenter':{top:2.5,left:0,right:0,bottom:0},
+'topRight':{top:2.5,left:0,right:0,bottom:0},
+'leftCenter':{top:0,left:8,right:0,bottom:0},
+'rightCenter':{top:0,left:0,right:8,bottom:0},
+'bottomLeft':{top:0,left:0,right:0,bottom:2.5},
+'bottomRight':{top:0,left:0,right:0,bottom:2.5},
+} as GridPosition
 
-  let titleShow: boolean = tempChartOption.title.show
-  let legendShow: boolean = tempChartOption.legend.show
+const xAxisNamePosition = {
+  'left':{top:0,left:3,right:0,bottom:0},
+  'right':{top:0,left:0,right:3,bottom:0},
+  'topCenter':{top:2.5,left:0,right:0,bottom:0},
+  'bottomCenter':{top:0,left:0,right:0,bottom:2.5},
+} as GridPosition
 
-  // topLeft 、topCenter、topRight、
-  // leftCenter、rightCenter
-  // bottomLeft、bottomCenter、bottomRight
-  if (titleShow) {
-    if (legendShow) {
-      if (legendPosition.value.startsWith('top')) {
-        option.grid.top = '8%'
-        option.grid.left = '2'
-        option.grid.right = '2'
-        option.grid.bottom = '2%'
+const yAxisNamePosition = {
+  'leftTop':{top:2.5,left:0,right:0,bottom:0},
+  'leftCenter':{top:0,left:0,right:0,bottom:0},
+  'leftBottom':{top:0,left:0,right:0,bottom:2.5},
+  'rightTop':{top:2.5,left:0,right:3,bottom:0},
+  'rightCenter':{top:0,left:0,right:0,bottom:0},
+  'rightBottom':{top:0,left:0,right:0,bottom:2.5},
+} as GridPosition
 
-        option.legend.top = '3.5%'
-        option.legend.bottom = undefined
-
-        option.title.top = '2'
-
-        if (legendPosition.value.endsWith('Left')) {
-          option.legend.left = 'left'
-        } else if (legendPosition.value.endsWith('Center')) {
-          option.legend.left = 'center'
-        } else {
-          option.legend.left = 'right'
-        }
-      } else if (legendPosition.value.startsWith('bottom')) {
-        option.grid.top = '5%'
-        option.grid.left = '2'
-        option.grid.right = '2'
-        option.grid.bottom = '4.5%'
-
-        option.legend.top = undefined
-        option.legend.bottom = '2'
-
-        option.title.top = '2'
-
-        if (legendPosition.value.endsWith('Left')) {
-          option.legend.left = 'left'
-        } else if (legendPosition.value.endsWith('Center')) {
-          option.legend.left = 'center'
-        } else {
-          option.legend.left = 'right'
-        }
-      } else if (legendPosition.value == 'leftCenter') {
-        option.grid.top = '5%'
-        option.grid.left = '9%'
-        option.grid.right = '2'
-        option.grid.bottom = '2%'
-
-        option.legend.left = 'left'
-        option.legend.top = '3.5%'
-        option.legend.bottom = undefined
-
-        option.title.top = '2'
-      } else if (legendPosition.value == 'rightCenter') {
-        option.grid.top = '5%'
-        option.grid.left = '2'
-        option.grid.right = '9%'
-        option.grid.bottom = '2%'
-
-        option.legend.left = 'right'
-        option.legend.top = '3.5%'
-        option.legend.bottom = undefined
-
-        option.title.top = '2'
-      } else {
-        console.error('图表定位发生错误')
-      }
-    } else {
-      option.grid.top = '5%'
-      option.grid.left = '2'
-      option.grid.right = '2'
-      option.grid.bottom = '2%'
-
-      option.legend.left = undefined
-      option.legend.top = undefined
-      option.legend.bottom = undefined
-
-      option.title.top = '2'
-    }
-  } else {
-    if (legendShow) {
-      option.title.top = undefined
-      if (legendPosition.value.startsWith('top')) {
-        option.grid.top = '5%'
-        option.grid.left = '2'
-        option.grid.right = '2'
-        option.grid.bottom = '2%'
-
-        option.legend.top = '2'
-        option.legend.bottom = undefined
-
-        if (legendPosition.value.endsWith('Left')) {
-          option.legend.left = 'left'
-        } else if (legendPosition.value.endsWith('Center')) {
-          option.legend.left = 'center'
-        } else {
-          option.legend.left = 'right'
-        }
-      } else if (legendPosition.value.startsWith('bottom')) {
-        option.grid.top = '2%'
-        option.grid.left = '2'
-        option.grid.right = '2'
-        option.grid.bottom = '4.5%'
-
-        option.legend.top = undefined
-        option.legend.bottom = '2'
-
-        if (legendPosition.value.endsWith('Left')) {
-          option.legend.left = 'left'
-        } else if (legendPosition.value.endsWith('Center')) {
-          option.legend.left = 'center'
-        } else {
-          option.legend.left = 'right'
-        }
-      } else if (legendPosition.value == 'leftCenter') {
-        option.grid.top = '2%'
-        option.grid.left = '9%'
-        option.grid.right = '2'
-        option.grid.bottom = '2%'
-
-        option.legend.left = 'left'
-        option.legend.top = '2%'
-        option.legend.bottom = undefined
-      } else if (legendPosition.value == 'rightCenter') {
-        option.grid.top = '2%'
-        option.grid.left = '2'
-        option.grid.right = '9%'
-        option.grid.bottom = '2%'
-
-        option.legend.left = 'right'
-        option.legend.top = '2%'
-        option.legend.bottom = undefined
-      } else {
-        console.error('图表定位发生错误')
-      }
-    } else {
-      option.grid.top = '2%'
-      option.grid.left = '2'
-      option.grid.right = '2'
-      option.grid.bottom = '2%'
-
-      option.legend.left = undefined
-      option.legend.top = undefined
-      option.legend.bottom = undefined
-
-      option.title.top = undefined
-    }
-  }
-  return option
+const zoomPosition = {
+  'right':{top:0,left:0,right:6,bottom:0},
+  'bottom':{top:0,left:0,right:0,bottom:6},
 }
 
 let stackItems = reactive([[]])
@@ -1591,17 +1391,17 @@ onBeforeUnmount(() => {
                               if (tempChartOption.xAxis.name == undefined) {
                                tempChartOption.xAxis.name = tempChartOption.dataset.dimensions[0];
                               }
-                              let position =  calculateTopPosition();
-                              position.xAxis.name = tempChartOption.xAxis.name;
-                              position.xAxis.nameLocation = tempChartOption.xAxis.nameLocation;
-                              tempChart.setOption(position);
+                              let option =  calculateTopPosition();
+                              option.xAxis.name = tempChartOption.xAxis.name;
+                              option.xAxis.nameLocation = tempChartOption.xAxis.nameLocation;
+                              tempChart.setOption(option);
                             } else {
                               tempChartOption.xAxis.name = undefined;
 
-                              let position =  calculateTopPosition();
-                              position.xAxis.name = tempChartOption.xAxis.name;
-                              position.xAxis.nameLocation = tempChartOption.xAxis.nameLocation;
-                              tempChart.setOption(position);
+                              let option =  calculateTopPosition();
+                              option.xAxis.name = tempChartOption.xAxis.name;
+                              option.xAxis.nameLocation = tempChartOption.xAxis.nameLocation;
+                              tempChart.setOption(option);
                             }
                           }
                         "
@@ -1678,10 +1478,12 @@ onBeforeUnmount(() => {
                         button-style="solid"
                         v-model:value="tempChartOption.xAxis.position"
                         @change="
-                          tempChart.setOption({
-                            xAxis: { position: tempChartOption.xAxis.position },
-                          })
-                        "
+                        ()=>{
+                              let option =  calculateTopPosition();
+                              option.xAxis.position = tempChartOption.xAxis.position
+                              tempChart.setOption(option);
+                        }
+                       "
                       >
                         <a-radio-button value="top"
                           ><span style="font-size: 12px">顶部</span></a-radio-button
