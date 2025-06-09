@@ -478,19 +478,20 @@ const changeAllSeriesEmphasis = (item) => {
   }
   tempChart.setOption({series: option})
 }
+
 let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   // 标题属性
   title: {
     text: '測試',
     left: 'left',
     show: true,
-    top: '1%',
+    top: '0.5%',
   },
   grid: {
-    top: '8%',
-    right: '0',
-    left: '0',
-    bottom: '0',
+    top: '7%',
+    right: '0.5%',
+    left: '0.5%',
+    bottom: '0.5%',
     show: true,
     containLabel: true,
   },
@@ -507,7 +508,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   legend: {
     show: true,
     orient: 'horizontal', // vertical | horizontal
-    top: '4%',
+    top: '3%',
     left: 'center',
     type: 'scroll',
     tooltip: {
@@ -704,6 +705,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       type: 'slider',
       show: false,
       xAxisIndex: [0],
+      bottom: '2%'
     },
     {
       id: 'y0Inside',
@@ -734,16 +736,23 @@ interface ComponentPosition {
   allStatus: GridPosition
 }
 
-let changeGridPosition = reactive({top: 0, left: 0, right: 0, bottom: 0})
+// let changeGridPosition = reactive({top: 0, left: 0, right: 0, bottom: 0})
 
-let currentGridPosition = reactive({top: 8, left: 0, right: 0, bottom: 0})
+let currentGridPosition = reactive({top: 7, left: 0.5, right: 0.5, bottom: 0.5});
 
-watch(changeGridPosition, () => {
-  currentGridPosition.top += changeGridPosition.top
-  currentGridPosition.left += changeGridPosition.left
-  currentGridPosition.right += changeGridPosition.right
-  currentGridPosition.bottom += changeGridPosition.bottom
-})
+function changeGridPosition(top: number, left: number, right: number, bottom: number) {
+  currentGridPosition.top += top
+  currentGridPosition.left += left
+  currentGridPosition.right += right
+  currentGridPosition.bottom += bottom
+}
+
+// watch(changeGridPosition, () => {
+//   currentGridPosition.top += changeGridPosition.top
+//   currentGridPosition.left += changeGridPosition.left
+//   currentGridPosition.right += changeGridPosition.right
+//   currentGridPosition.bottom += changeGridPosition.bottom
+// })
 
 watch(currentGridPosition, () => {
   tempChart.setOption({
@@ -755,6 +764,7 @@ watch(currentGridPosition, () => {
     },
   })
 })
+
 // 图例 开关 上下左右
 // 标题 开关 上
 // x轴名称 开关 左右 中上 中下
@@ -871,7 +881,7 @@ let currentYAxisNamePosition = ref<ComponentPosition>({
 
 const zoomPosition = {
   right: {top: 0, left: 0, right: 3, bottom: 0},
-  bottom: {top: 0, left: 0, right: 0, bottom: 3},
+  bottom: {top: 0, left: 0, right: 0, bottom: 7},
 }
 
 let currentXZoomPosition = ref<ComponentPosition>({
@@ -1312,15 +1322,21 @@ onBeforeUnmount(() => {
                       v-model:checked="tempChartOption.title.show"
                       @change="
                       () => {
-                        let option = { title: { show: tempChartOption.title.show } }
+                        // 显示
+                        let option = { title: { show: tempChartOption.title.show },legend:{top:'3%'}};
+
+                        if(!tempChartOption.title.show && tempChartOption.legend.show && legendPosition.startsWith('top')){
+                          option.legend.top = '0.5%'
+                        }
                         tempChart.setOption(option);
 
+                        // grid 布局
                         let { top, left, right, bottom } = openAndCloseComponent(
                           currentTitlePosition,
                           tempChartOption.title.show
                         )
 
-                        Object.assign(changeGridPosition, { top, left, right, bottom })
+                        changeGridPosition(top, left, right, bottom );
                       }
                     "
                   ></a-switch>
@@ -1331,8 +1347,11 @@ onBeforeUnmount(() => {
                       size="small"
                       @change="
                       () => {
+                        let option = { title: { left: tempChartOption.title.left } }
+                        tempChart.setOption(option);
+
                         let { top, left, right, bottom } = changeComponentPosition(currentTitlePosition,tempChartOption.title.left)
-                        Object.assign(changeGridPosition, { top, left, right, bottom })
+                        changeGridPosition(top, left, right, bottom );
                       }
                     "
                   >
@@ -1405,16 +1424,31 @@ onBeforeUnmount(() => {
                       v-model:checked="tempChartOption.legend.show"
                       @change="
                       () => {
+                        let { top, left, right, bottom } = openAndCloseComponent(currentLegendPosition,tempChartOption.legend.show)
+
+                        changeGridPosition(top, left, right, bottom );
+
                         let option = {
                           legend:{
-                            show:tempChartOption.legend.show
-                          }
+                            show:tempChartOption.legend.show,
+                          },
+                          dataZoom:[
+                            {
+                            id:'x0Slider',
+                            top: (101 - currentGridPosition.bottom)+'%'
+                            },
+                            {
+                            id:'y0Slider',
+                            left: (101 - currentGridPosition.right) +'%'
+                            }
+                          ]
                         }
+
+                        if(!tempChartOption.title.show && tempChartOption.legend.show && legendPosition.startsWith('top')){
+                          option.legend.top = '0.5%'
+                        }
+
                         tempChart.setOption(option);
-
-                      let { top, left, right, bottom } = openAndCloseComponent(currentLegendPosition,tempChartOption.legend.show)
-
-                      Object.assign(changeGridPosition, { top, left, right, bottom });
 
                       }
                     "
@@ -1444,7 +1478,7 @@ onBeforeUnmount(() => {
                       @change="
                       () => {
                         let thisPosition:{top:string|undefined,left:string|undefined,right:string|undefined,bottom:string|undefined} = {
-                            top:'4%',
+                            top:'3%',
                             left:'center',
                             right:undefined,
                             bottom:undefined
@@ -1460,8 +1494,14 @@ onBeforeUnmount(() => {
                         if(legendPosition.endsWith('Left') || legendPosition == 'leftCenter'){
                           thisPosition.left = 'left'
                         }else if(legendPosition.endsWith('Right')|| legendPosition == 'rightCenter'){
-                           thisPosition.left = 'right'
+                          thisPosition.left = 'right'
                         }
+
+                        if(!tempChartOption.title.show && tempChartOption.legend.show && legendPosition.startsWith('top')){
+                          thisPosition.top = '0.5%'
+                        }
+                        let { top, left, right, bottom } = changeComponentPosition(currentLegendPosition,legendPosition);
+                        changeGridPosition(top, left, right, bottom );
 
                         let option = {
                           legend:{
@@ -1469,12 +1509,20 @@ onBeforeUnmount(() => {
                             top:thisPosition.top,
                             left:thisPosition.left,
                             bottom:thisPosition.bottom
-                          }
+                          },
+                          dataZoom:[
+                            {
+                            id:'x0Slider',
+                            top: (101 - currentGridPosition.bottom)+'%'
+                            },
+                            {
+                            id:'y0Slider',
+                            left: (101 - currentGridPosition.right) +'%'
+                            }
+                          ]
                         }
-                        tempChart.setOption(option);
 
-                     let { top, left, right, bottom } = changeComponentPosition(currentLegendPosition,legendPosition);
-                     Object.assign(changeGridPosition, { top, left, right, bottom });
+                        tempChart.setOption(option);
                       }
                     "
                   >
@@ -1534,6 +1582,10 @@ onBeforeUnmount(() => {
                           v-model:checked="xAxisNameShow"
                           @change="
                           () => {
+
+                            let {top,left,right,bottom} =  openAndCloseComponent(currentXAxisNamePosition,xAxisNameShow);
+                            changeGridPosition(top, left, right, bottom );
+
                             if (!xAxisNameShow) {
                                tempChartOption.xAxis.name = undefined
                             }else {
@@ -1546,14 +1598,20 @@ onBeforeUnmount(() => {
                             {xAxis:
                               {name:tempChartOption.xAxis.name,
                                nameLocation:tempChartOption.xAxis.nameLocation
-                              }
+                              },
+                            dataZoom:[
+                                {
+                                id:'x0Slider',
+                                top: (101 - currentGridPosition.bottom)+'%'
+                                },
+                                {
+                                id:'y0Slider',
+                                left: (101 - currentGridPosition.right) +'%'
+                                }
+                              ]
                             };
 
                             tempChart.setOption(option)
-
-                            let {top,left,right,bottom} =  openAndCloseComponent(currentXAxisNamePosition,xAxisNameShow);
-                            Object.assign(changeGridPosition, { top, left, right, bottom });
-
                           }
                         "
                       ></a-switch>
@@ -1586,10 +1644,6 @@ onBeforeUnmount(() => {
                           v-model:value="tempChartOption.xAxis.nameLocation"
                           @change="()=>{
 
-                            tempChart.setOption({
-                            xAxis: { nameLocation: tempChartOption.xAxis.nameLocation },
-                            })
-
                             let changeStatus = tempChartOption.xAxis.nameLocation;
 
                             if(tempChartOption.xAxis.nameLocation == 'center' ){
@@ -1599,9 +1653,22 @@ onBeforeUnmount(() => {
                                changeStatus = 'bottomCenter'
                              }
                             }
-
                             let {top,left,right,bottom} =  changeComponentPosition(currentXAxisNamePosition,changeStatus);
-                            Object.assign(changeGridPosition, { top, left, right, bottom });
+                            changeGridPosition(top, left, right, bottom );
+
+                            tempChart.setOption({
+                            xAxis: { nameLocation: tempChartOption.xAxis.nameLocation },
+                            dataZoom:[
+                                {
+                                id:'x0Slider',
+                                top: (101 - currentGridPosition.bottom)+'%'
+                                },
+                                {
+                                id:'y0Slider',
+                                left: (101 - currentGridPosition.right) +'%'
+                                }
+                              ]
+                            })
                           }
 
                         "
@@ -1646,22 +1713,36 @@ onBeforeUnmount(() => {
                           v-model:value="tempChartOption.xAxis.position"
                           @change="
                           () => {
-                            let option = {xAxis:{position:tempChartOption.xAxis.position}}
-                            tempChart.setOption(option);
+                              if(xAxisNameShow){
+                                let changeStatus = tempChartOption.xAxis.nameLocation;
 
-                            if(xAxisNameShow){
-                              let changeStatus = tempChartOption.xAxis.nameLocation;
-
-                              if(tempChartOption.xAxis.nameLocation == 'center' ){
-                               if( tempChartOption.xAxis.position == 'top'){
-                                 changeStatus = 'topCenter'
-                               } else {
-                                 changeStatus = 'bottomCenter'
-                               }
+                                if(tempChartOption.xAxis.nameLocation == 'center' ){
+                                 if( tempChartOption.xAxis.position == 'top'){
+                                   changeStatus = 'topCenter'
+                                 } else {
+                                   changeStatus = 'bottomCenter'
+                                 }
                               }
 
                               let {top,left,right,bottom} =  changeComponentPosition(currentXAxisNamePosition,changeStatus);
-                              Object.assign(changeGridPosition, { top, left, right, bottom });
+                              changeGridPosition(top, left, right, bottom );
+
+                            let option = {
+                              xAxis:{position:tempChartOption.xAxis.position},
+                              dataZoom:[
+                                {
+                                id:'x0Slider',
+                                top: (101 - currentGridPosition.bottom)+'%'
+                                },
+                                {
+                                id:'y0Slider',
+                                left: (101 - currentGridPosition.right) +'%'
+                                }
+                              ]
+                            }
+                            tempChart.setOption(option);
+
+
                             }
                           }
                         "
@@ -1968,19 +2049,29 @@ onBeforeUnmount(() => {
                           v-model:checked="yAxisNameShow"
                           @change="
                           () => {
+                            let {top,left,right,bottom} = openAndCloseComponent(currentYAxisNamePosition,yAxisNameShow);
+                            changeGridPosition(top, left, right, bottom );
+
                             if (!yAxisNameShow) {
                                tempChartOption.yAxis.name = undefined
                             }
 
                             tempChart.setOption(
                                 { yAxis:
-                                  { name: tempChartOption.yAxis.name ,
-                                    nameLocation:tempChartOption.yAxis.nameLocation
-                                  }
+                                    { name: tempChartOption.yAxis.name ,
+                                      nameLocation:tempChartOption.yAxis.nameLocation
+                                    },
+                                  dataZoom:[
+                                    {
+                                    id:'x0Slider',
+                                    top: (101 - currentGridPosition.bottom)+'%'
+                                    },
+                                    {
+                                    id:'y0Slider',
+                                    left: (101 - currentGridPosition.right) +'%'
+                                    }
+                                  ]
                                 });
-
-                            let {top,left,right,bottom} = openAndCloseComponent(currentYAxisNamePosition,yAxisNameShow);
-                            Object.assign(changeGridPosition,{top,left,right,bottom})
 
                           }
                         "
@@ -2013,9 +2104,6 @@ onBeforeUnmount(() => {
                           :disabled="!yAxisNameShow"
                           v-model:value="tempChartOption.yAxis.nameLocation"
                           @change="()=>{
-                            tempChart.setOption({
-                            yAxis: { nameLocation: tempChartOption.yAxis.nameLocation },
-                            })
 
                             let changeStatus = '';
                             if(tempChartOption.yAxis.position=='left'){
@@ -2035,8 +2123,23 @@ onBeforeUnmount(() => {
                                  changeStatus='rightTop'
                               }
                             }
+
                             let {top,left,right,bottom} = changeComponentPosition(currentYAxisNamePosition,changeStatus);
-                            Object.assign(changeGridPosition,{top,left,right,bottom})
+                            changeGridPosition(top, left, right, bottom );
+
+                            tempChart.setOption({
+                            yAxis: { nameLocation: tempChartOption.yAxis.nameLocation },
+                            dataZoom:[
+                                {
+                                id:'x0Slider',
+                                top: (101 - currentGridPosition.bottom)+'%'
+                                },
+                                {
+                                id:'y0Slider',
+                                left: (101 - currentGridPosition.right) +'%'
+                                }
+                              ]
+                            })
                           }
 
                         "
@@ -2081,9 +2184,6 @@ onBeforeUnmount(() => {
                           button-style="solid"
                           v-model:value="tempChartOption.yAxis.position"
                           @change="()=>{
-                             tempChart.setOption({
-                              yAxis: { position: tempChartOption.yAxis.position },
-                              })
 
                             let changeStatus = '';
                             if(tempChartOption.yAxis.position=='left'){
@@ -2104,7 +2204,21 @@ onBeforeUnmount(() => {
                               }
                             }
                             let {top,left,right,bottom} = changeComponentPosition(currentYAxisNamePosition,changeStatus);
-                            Object.assign(changeGridPosition,{top,left,right,bottom})
+                            changeGridPosition(top, left, right, bottom );
+
+                             tempChart.setOption({
+                              yAxis: { position: tempChartOption.yAxis.position },
+                              dataZoom:[
+                                  {
+                                  id:'x0Slider',
+                                  top: (101 - currentGridPosition.bottom)+'%'
+                                  },
+                                  {
+                                  id:'y0Slider',
+                                  left: (101 - currentGridPosition.right) +'%'
+                                  }
+                                ]
+                              })
                           }
 
                         "
@@ -2656,8 +2770,9 @@ onBeforeUnmount(() => {
                       v-model:value="xZoom"
                       @change="
                       () => {
-                        let x0InsideDisabled = false
-                        let x0SliderShow = true
+                       let x0InsideDisabled = false
+                       let x0SliderShow = true
+
                         if (xZoom.length > 0) {
                           if (xZoom.length == 1 && xZoom[0] == 'inside') {
                               x0InsideDisabled = false
@@ -2674,6 +2789,10 @@ onBeforeUnmount(() => {
                           x0SliderShow = false
                         }
 
+                        let {top,left,right,bottom} =  openAndCloseComponent(currentXZoomPosition,x0SliderShow);
+
+                        changeGridPosition(top, left, right, bottom );
+
                         let option = [
                           {
                             id: 'x0Inside',
@@ -2682,6 +2801,7 @@ onBeforeUnmount(() => {
                           {
                             id: 'x0Slider',
                             show: x0SliderShow,
+                            top: (101 - currentGridPosition.bottom)+'%'
                           },
                         ]
                         for (let i = 0; i < tempChartOption.dataZoom.length; i++) {
@@ -2692,11 +2812,6 @@ onBeforeUnmount(() => {
                           }
                         }
                         tempChart.setOption({ dataZoom: option });
-
-                       let {top,left,right,bottom} =  openAndCloseComponent(currentXZoomPosition,x0SliderShow);
-
-                       Object.assign(changeGridPosition,{top,left,right,bottom});
-
                       }
                     "
                   >
@@ -2744,8 +2859,8 @@ onBeforeUnmount(() => {
                       v-model:value="yZoom"
                       @change="
                       () => {
-                        let y0InsideDisabled = false
-                        let y0SliderShow = true
+                       let y0InsideDisabled = false
+                       let y0SliderShow = true
                         if (yZoom.length > 0) {
                           if (yZoom.length == 1 && yZoom[0] == 'inside') {
                             y0InsideDisabled = false
@@ -2762,6 +2877,10 @@ onBeforeUnmount(() => {
                           y0SliderShow = false
                         }
 
+                       let {top,left,right,bottom} =  openAndCloseComponent(currentYZoomPosition,y0SliderShow);
+
+                       changeGridPosition(top, left, right, bottom );
+
                         let option = [
                           {
                             id: 'y0Inside',
@@ -2770,6 +2889,7 @@ onBeforeUnmount(() => {
                           {
                             id: 'y0Slider',
                             show: y0SliderShow,
+                            left: (101 - currentGridPosition.right) +'%'
                           },
                         ]
 
@@ -2782,11 +2902,6 @@ onBeforeUnmount(() => {
                         }
 
                         tempChart.setOption({ dataZoom: option });
-
-
-                       let {top,left,right,bottom} =  openAndCloseComponent(currentYZoomPosition,y0SliderShow);
-
-                       Object.assign(changeGridPosition,{top,left,right,bottom});
                       }
                     "
                   >
