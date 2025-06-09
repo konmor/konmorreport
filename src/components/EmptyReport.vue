@@ -22,18 +22,18 @@ import {
   watch,
 } from 'vue'
 import Filter from '@/components/Filter.vue'
-import { getUuid } from 'ant-design-vue/es/vc-notification/HookNotification'
-import { BarChartOutlined, LineChartOutlined } from '@ant-design/icons-vue'
+import {getUuid} from 'ant-design-vue/es/vc-notification/HookNotification'
+import {BarChartOutlined, LineChartOutlined} from '@ant-design/icons-vue'
 // 1. 引入echarts
 import * as echarts from 'echarts'
 
-import { barTemplate } from '@/composable/ChartTemplate.ts'
-import { Modal } from 'ant-design-vue'
+import {barTemplate} from '@/composable/ChartTemplate.ts'
+import {Modal} from 'ant-design-vue'
 import useNavigator from '@/composable/useNavigator.ts'
 import B from '@/test/B.vue'
-import type { EChartsType } from 'echarts'
-import type { ECBasicOption } from 'echarts/types/dist/shared'
-import { UpOutlined, DownOutlined, SettingOutlined } from '@ant-design/icons-vue'
+import type {EChartsType} from 'echarts'
+import type {ECBasicOption} from 'echarts/types/dist/shared'
+import {UpOutlined, DownOutlined, SettingOutlined} from '@ant-design/icons-vue'
 import Left from '@/assets/icon/Left.vue'
 import Center from '@/assets/icon/Center.vue'
 import Right from '@/assets/icon/Right.vue'
@@ -47,7 +47,7 @@ import BotomCenter from '@/assets/icon/legend/BotomCenter.vue'
 import BottomRight from '@/assets/icon/legend/BottomRight.vue'
 import Position from '@/assets/icon/legend/Position.vue'
 import PerfectScrollbar from 'perfect-scrollbar'
-import { themArray } from '@/echartsThem/registerThem.ts'
+import {themArray} from '@/echartsThem/registerThem.ts'
 
 // 主题是否展开
 let themOpen = ref('')
@@ -134,7 +134,7 @@ const moveTest = (event: Event) => {
   console.log('chart move', event)
 }
 
-const { sqlArray, refreshDatasourceList } = useNavigator()
+const {sqlArray, refreshDatasourceList} = useNavigator()
 refreshDatasourceList()
 
 const addTest = (event: Event) => {
@@ -209,7 +209,7 @@ onMounted(() => {
   let colors = currentColors.value
   // 4 * 8 32 3*8 = 24
   for (let i = 0; i < dimensions.length - 1; i++) {
-    stackItems[i] = [{ name: dimensions[i + 1], id: i + 1, color: colors[i] }]
+    stackItems[i] = [{name: dimensions[i + 1], id: i + 1, color: colors[i]}]
   }
 })
 
@@ -251,8 +251,8 @@ const seriesLabelControl = (item) => {
   }
   let temp = {
     id: item.id,
-    label: { show: item.label.show },
-    emphasis: { label: { show: item.emphasis.label.show } },
+    label: {show: item.label.show},
+    emphasis: {label: {show: item.emphasis.label.show}},
   }
   tempChart.setOption({
     series: temp,
@@ -398,6 +398,7 @@ function transferDataToArray() {
 
   return data.map((item) => [item.userName, item.salary1, item.salary2, item.salary3, item.salary4])
 }
+
 let yAxisInterval = ref(false)
 let xAxisInterval = ref(false)
 
@@ -406,10 +407,10 @@ let dimensions = ['userName', 'salary1', 'salary2', 'salary3', 'salary4']
 const changeAllType = (value: string) => {
   let option = []
   for (let i = 0; i < tempChartOption.series.length; i++) {
-    option.push({ id: tempChartOption.series[i].id, type: value })
+    option.push({id: tempChartOption.series[i].id, type: value})
     tempChartOption.series[i].type = value
   }
-  tempChart.setOption({ series: option })
+  tempChart.setOption({series: option})
 }
 
 const changAllLabelControl = (item) => {
@@ -426,15 +427,15 @@ const changAllLabelControl = (item) => {
   for (let i = 0; i < tempChartOption.series.length; i++) {
     option.push({
       id: tempChartOption.series[i].id,
-      label: { show: labelShow },
-      emphasis: { label: { show: emphasisLabelShow } },
+      label: {show: labelShow},
+      emphasis: {label: {show: emphasisLabelShow}},
     })
 
     tempChartOption.series[i].emphasis.label.show = emphasisLabelShow
     tempChartOption.series[i].label.show = labelShow
     seriesLabelShow.value[tempChartOption.series[i].id] = checked
   }
-  tempChart.setOption({ series: option })
+  tempChart.setOption({series: option})
 }
 
 const changeAllLabelPosition = (item) => {
@@ -443,12 +444,12 @@ const changeAllLabelPosition = (item) => {
   for (let i = 0; i < tempChartOption.series.length; i++) {
     option.push({
       id: tempChartOption.series[i].id,
-      label: { position: position },
+      label: {position: position},
     })
 
     tempChartOption.series[i].label.position = position
   }
-  tempChart.setOption({ series: option })
+  tempChart.setOption({series: option})
 }
 
 const changeAllRotate = (item) => {
@@ -457,12 +458,12 @@ const changeAllRotate = (item) => {
   for (let i = 0; i < tempChartOption.series.length; i++) {
     option.push({
       id: tempChartOption.series[i].id,
-      label: { rotate: rotate },
+      label: {rotate: rotate},
     })
 
     tempChartOption.series[i].label.rotate = rotate
   }
-  tempChart.setOption({ series: option })
+  tempChart.setOption({series: option})
 }
 
 const changeAllSeriesEmphasis = (item) => {
@@ -471,11 +472,11 @@ const changeAllSeriesEmphasis = (item) => {
   for (let i = 0; i < tempChartOption.series.length; i++) {
     option.push({
       id: tempChartOption.series[i].id,
-      emphasis: { focus: focus },
+      emphasis: {focus: focus},
     })
     tempChartOption.series[i].emphasis.focus = focus
   }
-  tempChart.setOption({ series: option })
+  tempChart.setOption({series: option})
 }
 let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   // 标题属性
@@ -486,10 +487,10 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
     top: '1%',
   },
   grid: {
-    top: '10%',
-    right: '2%',
-    left: '2%',
-    bottom: '10%',
+    top: '8%',
+    right: '0',
+    left: '0',
+    bottom: '0',
     show: true,
     containLabel: true,
   },
@@ -732,9 +733,10 @@ interface ComponentPosition {
   position: { top: number; left: number; right: number; bottom: number } | undefined
   allStatus: GridPosition
 }
-let changeGridPosition = reactive({ top: 0, left: 0, right: 0, bottom: 0 })
 
-let currentGridPosition = reactive({ top: 10, left: 2, right: 2, bottom: 10 })
+let changeGridPosition = reactive({top: 0, left: 0, right: 0, bottom: 0})
+
+let currentGridPosition = reactive({top: 8, left: 0, right: 0, bottom: 0})
 
 watch(changeGridPosition, () => {
   currentGridPosition.top += changeGridPosition.top
@@ -759,9 +761,9 @@ watch(currentGridPosition, () => {
 // y轴名称 上 下 左右
 // 缩略图 下 右
 const titleGridPosition = {
-  left: { top: 2.5, left: 0, right: 0, bottom: 0 },
-  right: { top: 2.5, left: 0, right: 0, bottom: 0 },
-  center: { top: 2.5, left: 0, right: 0, bottom: 0 },
+  left: {top: 2.5, left: 0, right: 0, bottom: 0},
+  right: {top: 2.5, left: 0, right: 0, bottom: 0},
+  center: {top: 2.5, left: 0, right: 0, bottom: 0},
 } as GridPosition
 
 let currentTitlePosition = ref<ComponentPosition>({
@@ -771,8 +773,8 @@ let currentTitlePosition = ref<ComponentPosition>({
 })
 
 function openAndCloseComponent(
-  currentComponentPosition: ComponentPosition,
-  show: boolean,
+    currentComponentPosition: ComponentPosition,
+    show: boolean,
 ) {
   let top = 0
   let left = 0
@@ -790,47 +792,47 @@ function openAndCloseComponent(
     right -= currentComponentPosition.allStatus[currentStatus].right
     bottom -= currentComponentPosition.allStatus[currentStatus].bottom
   }
-  return { top, left, right, bottom }
+  return {top, left, right, bottom}
 }
 
 function changeComponentPosition(
-  currentComponentPosition: ComponentPosition,
-  changeStatus: string,
+    currentComponentPosition: ComponentPosition,
+    changeStatus: string,
 ) {
-    let top = 0
-    let left = 0
-    let right = 0
-    let bottom = 0
-    if (currentComponentPosition.position != undefined) {
-      top = -currentComponentPosition.position.top
-      left = -currentComponentPosition.position.left
-      right = -currentComponentPosition.position.right
-      bottom = -currentComponentPosition.position.bottom
-    } else {
-      top = -currentComponentPosition.allStatus[currentComponentPosition.currentStatus].top
-      left = -currentComponentPosition.allStatus[currentComponentPosition.currentStatus].left
-      right = -currentComponentPosition.allStatus[currentComponentPosition.currentStatus].right
-      bottom = -currentComponentPosition.allStatus[currentComponentPosition.currentStatus].bottom
-    }
+  let top = 0
+  let left = 0
+  let right = 0
+  let bottom = 0
+  if (currentComponentPosition.position != undefined) {
+    top = -currentComponentPosition.position.top
+    left = -currentComponentPosition.position.left
+    right = -currentComponentPosition.position.right
+    bottom = -currentComponentPosition.position.bottom
+  } else {
+    top = -currentComponentPosition.allStatus[currentComponentPosition.currentStatus].top
+    left = -currentComponentPosition.allStatus[currentComponentPosition.currentStatus].left
+    right = -currentComponentPosition.allStatus[currentComponentPosition.currentStatus].right
+    bottom = -currentComponentPosition.allStatus[currentComponentPosition.currentStatus].bottom
+  }
 
-    top += currentComponentPosition.allStatus[changeStatus].top
-    left += currentComponentPosition.allStatus[changeStatus].left
-    right += currentComponentPosition.allStatus[changeStatus].right
-    bottom += currentComponentPosition.allStatus[changeStatus].bottom
+  top += currentComponentPosition.allStatus[changeStatus].top
+  left += currentComponentPosition.allStatus[changeStatus].left
+  right += currentComponentPosition.allStatus[changeStatus].right
+  bottom += currentComponentPosition.allStatus[changeStatus].bottom
 
-    currentComponentPosition.currentStatus = changeStatus;
-    return { top, left, right, bottom }
+  currentComponentPosition.currentStatus = changeStatus;
+  return {top, left, right, bottom}
 }
 
 const legendGridPosition = {
-  topLeft: { top: 2.5, left: 0, right: 0, bottom: 0 },
-  topCenter: { top: 2.5, left: 0, right: 0, bottom: 0 },
-  topRight: { top: 2.5, left: 0, right: 0, bottom: 0 },
-  leftCenter: { top: 0, left: 8, right: 0, bottom: 0 },
-  rightCenter: { top: 0, left: 0, right: 8, bottom: 0 },
-  bottomLeft: { top: 0, left: 0, right: 0, bottom: 2.5 },
-  bottomRight: { top: 0, left: 0, right: 0, bottom: 2.5 },
-  bottomCenter:{ top: 0, left: 0, right: 0, bottom: 2.5 },
+  topLeft: {top: 2.5, left: 0, right: 0, bottom: 0},
+  topCenter: {top: 2.5, left: 0, right: 0, bottom: 0},
+  topRight: {top: 2.5, left: 0, right: 0, bottom: 0},
+  leftCenter: {top: 0, left: 8, right: 0, bottom: 0},
+  rightCenter: {top: 0, left: 0, right: 8, bottom: 0},
+  bottomLeft: {top: 0, left: 0, right: 0, bottom: 5},
+  bottomRight: {top: 0, left: 0, right: 0, bottom: 5},
+  bottomCenter: {top: 0, left: 0, right: 0, bottom: 5},
 } as GridPosition
 
 let currentLegendPosition = ref<ComponentPosition>({
@@ -840,37 +842,62 @@ let currentLegendPosition = ref<ComponentPosition>({
 });
 
 const xAxisNamePosition = {
-  left: { top: 0, left: 3, right: 0, bottom: 0 },
-  right: { top: 0, left: 0, right: 3, bottom: 0 },
-  topCenter: { top: 2.5, left: 0, right: 0, bottom: 0 },
-  bottomCenter: { top: 0, left: 0, right: 0, bottom: 2.5 },
-} as GridPosition
+  start: {top: 0, left: 3, right: 0, bottom: 0},
+  end: {top: 0, left: 0, right: 3, bottom: 0},
+  topCenter: {top: 2.5, left: 0, right: 0, bottom: 0},
+  bottomCenter: {top: 0, left: 0, right: 0, bottom: 2.5},
+} as GridPosition;
+
+let currentXAxisNamePosition = ref<ComponentPosition>({
+  currentStatus: 'bottomCenter',
+  position: undefined,
+  allStatus: xAxisNamePosition,
+});
 
 const yAxisNamePosition = {
-  leftTop: { top: 2.5, left: 0, right: 0, bottom: 0 },
-  leftCenter: { top: 0, left: 0, right: 0, bottom: 0 },
-  leftBottom: { top: 0, left: 0, right: 0, bottom: 2.5 },
-  rightTop: { top: 2.5, left: 0, right: 3, bottom: 0 },
-  rightCenter: { top: 0, left: 0, right: 0, bottom: 0 },
-  rightBottom: { top: 0, left: 0, right: 0, bottom: 2.5 },
-} as GridPosition
+  leftTop: {top: 2.5, left: 0, right: 0, bottom: 0},
+  leftCenter: {top: 0, left: 0, right: 0, bottom: 0},
+  leftBottom: {top: 0, left: 0, right: 0, bottom: 2.5},
+  rightTop: {top: 2.5, left: 0, right: 0, bottom: 0},
+  rightCenter: {top: 0, left: 0, right: 0, bottom: 0},
+  rightBottom: {top: 0, left: 0, right: 0, bottom: 2.5},
+} as GridPosition;
+
+let currentYAxisNamePosition = ref<ComponentPosition>({
+  currentStatus: 'leftTop',
+  position: undefined,
+  allStatus: yAxisNamePosition,
+});
 
 const zoomPosition = {
-  right: { top: 0, left: 0, right: 6, bottom: 0 },
-  bottom: { top: 0, left: 0, right: 0, bottom: 6 },
+  right: {top: 0, left: 0, right: 3, bottom: 0},
+  bottom: {top: 0, left: 0, right: 0, bottom: 3},
 }
+
+let currentXZoomPosition = ref<ComponentPosition>({
+  currentStatus: 'bottom',
+  position: undefined,
+  allStatus: zoomPosition,
+});
+
+let currentYZoomPosition = ref<ComponentPosition>({
+  currentStatus: 'right',
+  position: undefined,
+  allStatus: zoomPosition,
+});
+
 
 let stackItems = reactive([[]])
 
 watch(stackItems, (items) => {
-  let option = { series: [] }
+  let option = {series: []}
   for (let i = 0; i < items.length; i++) {
     let item = items[i]
     if (item.length != 0) {
       //
       let stack = 'group' + i
       for (let j = 0; j < item.length; j++) {
-        option.series.push({ id: item[j].id, name: item[j].name, stack: stack })
+        option.series.push({id: item[j].id, name: item[j].name, stack: stack})
       }
     }
   }
@@ -967,18 +994,18 @@ const selectData = reactive<{
         let colors = currentColors.value
         // 4 * 8 32 3*8 = 24
         for (let i = 0; i < dimensions.length - 1; i++) {
-          stackItems[i] = [{ name: dimensions[i + 1], id: i + 1, color: colors[i] }]
+          stackItems[i] = [{name: dimensions[i + 1], id: i + 1, color: colors[i]}]
         }
       })
     }
   },
   selected: '',
   data:
-    sqlArray != null && sqlArray.length > 0
-      ? sqlArray.map((item) => {
-          return { value: item?.key, label: item?.label }
-        })
-      : [{ label: '测试选项-1', value: 'key1' }],
+      sqlArray != null && sqlArray.length > 0
+          ? sqlArray.map((item) => {
+            return {value: item?.key, label: item?.label}
+          })
+          : [{label: '测试选项-1', value: 'key1'}],
   showError: false,
 })
 
@@ -1031,7 +1058,7 @@ onBeforeUnmount(() => {
 <template>
   <a-layout :style="{ height: '100%', width: '100%' }">
     <a-layout-sider
-      :style="{
+        :style="{
         border: '1px solid black',
         height: '100%',
         backgroundColor: 'transparent',
@@ -1041,39 +1068,39 @@ onBeforeUnmount(() => {
       <div class="diagramContainer">
         <span class="diagramTitle">图表</span>
         <!--        <Diagram @mousedown="testDown($event)" @mouseup="testUp($event)" @mousemove="testMove($event)"/>-->
-        <Diagram />
+        <Diagram/>
       </div>
 
       <div class="filterContainer">
         <span class="filterTitle">过滤器</span>
-        <Filter />
+        <Filter/>
       </div>
 
       <!-- 图表绑定的数据 选择择模态框-->
       <a-modal
-        v-model:open="selectData.open"
-        title="请选择需要渲染的数据！"
-        @ok="selectData.ok"
-        ok-text="确认"
-        cancel-text="取消"
+          v-model:open="selectData.open"
+          title="请选择需要渲染的数据！"
+          @ok="selectData.ok"
+          ok-text="确认"
+          cancel-text="取消"
       >
         <a-select
-          v-model:value="selectData.selected"
-          placeholder="请选择数据!"
-          :options="selectData.data"
-          :style="{ width: '60%' }"
-          allowClear
+            v-model:value="selectData.selected"
+            placeholder="请选择数据!"
+            :options="selectData.data"
+            :style="{ width: '60%' }"
+            allowClear
         >
         </a-select>
         <span :style="{ marginLeft: '10px' }" v-if="selectData.showError">
-          <CloseCircleOutlined :style="{ color: 'red' }" />
+          <CloseCircleOutlined :style="{ color: 'red' }"/>
           请选择正确的数据！
         </span>
       </a-modal>
     </a-layout-sider>
 
     <a-layout-content
-      :style="{
+        :style="{
         border: '1px solid black',
         height: '100%',
         width: '100%',
@@ -1086,34 +1113,34 @@ onBeforeUnmount(() => {
       }"
     >
       <draggable
-        :style="{
+          :style="{
           display: 'grid',
           gridTemplateColumns: 'repeat(24,1fr)',
           gridAutoRows: '3em',
           justifyContent: 'center',
           gridAutoFlow: 'row dense',
         }"
-        class="chartIconContainer"
-        :list="items"
-        :group="{ name: 'outerContainer', pull: false, put: true }"
-        animation="500"
-        @end="endTest"
-        @move="moveTest"
-        @add="addTest"
-        @change="change"
-        item-key="id"
-        tag="div"
+          class="chartIconContainer"
+          :list="items"
+          :group="{ name: 'outerContainer', pull: false, put: true }"
+          animation="500"
+          @end="endTest"
+          @move="moveTest"
+          @add="addTest"
+          @change="change"
+          item-key="id"
+          tag="div"
       >
         <template #item="{ element }">
           <div
-            :id="element.id"
-            :style="{
+              :id="element.id"
+              :style="{
               gridRowStart: `span ${element.xSpan}`,
               gridColumnStart: `span ${element.ySpan}`,
               /*backgroundColor: generateRandomBrightColor(),*/
             }"
-            class="chart"
-            @click="
+              class="chart"
+              @click="
               () => {
                 element.xSpan++
                 element.ySpan++
@@ -1127,29 +1154,29 @@ onBeforeUnmount(() => {
       <!-- 图形配置模态框-->
       <!--        :open="chartData.open"-->
       <a-modal
-        open="true"
-        @ok="chartData.ok"
-        ok-text="确认"
-        cancel-text="取消"
-        :style="{ backgroundColor: 'transparent' }"
-        width="100%"
-        wrap-class-name="full-modal"
+          open="true"
+          @ok="chartData.ok"
+          ok-text="确认"
+          cancel-text="取消"
+          :style="{ backgroundColor: 'transparent' }"
+          width="100%"
+          wrap-class-name="full-modal"
       >
         <template #title><span>配置图表</span></template>
 
         <a-layout :style="{ height: '100%', width: '100%', backgroundColor: 'transparent' }">
           <a-layout-sider :style="{ height: '100%', width: '100%', backgroundColor: 'transparent' }"
-            >hello
+          >hello
           </a-layout-sider>
 
           <a-layout>
             <a-layout-header
-              :style="{ backgroundColor: 'transparent', border: '1px solid black', height: '15%' }"
+                :style="{ backgroundColor: 'transparent', border: '1px solid black', height: '15%' }"
             >
               <div>hello world</div>
             </a-layout-header>
             <a-layout-content
-              :style="{
+                :style="{
                 height: '100%',
                 width: '100%',
                 backgroundColor: 'transparent',
@@ -1161,7 +1188,7 @@ onBeforeUnmount(() => {
           </a-layout>
 
           <a-layout-sider
-            :style="{
+              :style="{
               height: '100%',
               maxHeight: '100%',
               backgroundColor: 'transparent',
@@ -1169,15 +1196,15 @@ onBeforeUnmount(() => {
               borderTop: '1px solid black',
               overflowY: 'auto', // abc todo
             }"
-            width="240px"
-            class="viewConfig"
+              width="240px"
+              class="viewConfig"
           >
             <!--主题-->
             <div class="chart-group">
               <a-collapse
-                v-model:activeKey="themOpen"
-                expand-icon-position="end"
-                :style="{
+                  v-model:activeKey="themOpen"
+                  expand-icon-position="end"
+                  :style="{
                   border: 'none',
                   backgroundColor: 'transparent',
                   margin: '0',
@@ -1185,15 +1212,15 @@ onBeforeUnmount(() => {
                 }"
               >
                 <a-collapse-panel
-                  key="them"
-                  header="主题"
-                  :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
+                    key="them"
+                    header="主题"
+                    :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
                 >
                   <div
-                    class="chart-item color-items"
-                    v-for="(item, index) in themArray"
-                    :key="index"
-                    :style="{
+                      class="chart-item color-items"
+                      v-for="(item, index) in themArray"
+                      :key="index"
+                      :style="{
                       backgroundColor: item.theme.backgroundColor,
                       paddingLeft: '6px',
                       paddingRight: '6px',
@@ -1202,15 +1229,15 @@ onBeforeUnmount(() => {
                       border: '1px solid #eee',
                       cursor: 'pointer',
                     }"
-                    @click="changeThem(item.themeName)"
+                      @click="changeThem(item.themeName)"
                   >
                     <div
-                      v-for="(colorItem, colorIndex) in item.theme.color.length > 7
+                        v-for="(colorItem, colorIndex) in item.theme.color.length > 7
                         ? 7
                         : item.theme.color.length"
-                      class="color-item"
-                      :key="colorIndex"
-                      :style="{
+                        class="color-item"
+                        :key="colorIndex"
+                        :style="{
                         backgroundColor: item.theme.color[colorIndex],
                         height: '20px',
                         width: '20px',
@@ -1224,9 +1251,9 @@ onBeforeUnmount(() => {
             <!-- 堆叠 -->
             <div class="chart-group">
               <a-collapse
-                v-model:activeKey="pileOpen"
-                expand-icon-position="end"
-                :style="{
+                  v-model:activeKey="pileOpen"
+                  expand-icon-position="end"
+                  :style="{
                   border: 'none',
                   backgroundColor: 'transparent',
                   margin: '0',
@@ -1234,30 +1261,30 @@ onBeforeUnmount(() => {
                 }"
               >
                 <a-collapse-panel
-                  key="them"
-                  header="堆叠"
-                  :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
+                    key="them"
+                    header="堆叠"
+                    :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
                 >
                   <div class="stackContainers" :style="stackContainersStyle">
                     <draggable
-                      v-for="item in stackItems"
-                      :style="stackContainerStyle"
-                      class="stackContainer"
-                      :list="item"
-                      :group="{ name: 'outerPile', pull: true, put: true }"
-                      animation="800"
-                      item-key="id"
-                      tag="div"
+                        v-for="item in stackItems"
+                        :style="stackContainerStyle"
+                        class="stackContainer"
+                        :list="item"
+                        :group="{ name: 'outerPile', pull: true, put: true }"
+                        animation="800"
+                        item-key="id"
+                        tag="div"
                     >
                       <template #item="{ element }">
                         <div
-                          :id="element.id"
-                          :style="{
+                            :id="element.id"
+                            :style="{
                             backgroundColor: element.color,
                             height: stackItemStyle.height,
                             width: stackItemStyle.width,
                           }"
-                          class="stackItem"
+                            class="stackItem"
                         >
                           <!-- {{ element.value }}-->
                         </div>
@@ -1271,19 +1298,19 @@ onBeforeUnmount(() => {
             <!--            标题控制-->
             <div class="chart-group">
               <a-input
-                v-show="false"
-                size="small"
-                v-model:value="tempChartOption.title.id"
-                placeholder="组件唯一id"
+                  v-show="false"
+                  size="small"
+                  v-model:value="tempChartOption.title.id"
+                  placeholder="组件唯一id"
               ></a-input>
 
               <div class="chart-item">
                 <span class="label-left" style="width: 48px">标题</span>
                 <div class="component-right">
                   <a-switch
-                    size="small"
-                    v-model:checked="tempChartOption.title.show"
-                    @change="
+                      size="small"
+                      v-model:checked="tempChartOption.title.show"
+                      @change="
                       () => {
                         let option = { title: { show: tempChartOption.title.show } }
                         tempChart.setOption(option);
@@ -1298,11 +1325,11 @@ onBeforeUnmount(() => {
                     "
                   ></a-switch>
                   <a-radio-group
-                    v-model:value="tempChartOption.title.left"
-                    :disabled="!tempChartOption.title.show"
-                    button-style="solid"
-                    size="small"
-                    @change="
+                      v-model:value="tempChartOption.title.left"
+                      :disabled="!tempChartOption.title.show"
+                      button-style="solid"
+                      size="small"
+                      @change="
                       () => {
                         let { top, left, right, bottom } = changeComponentPosition(currentTitlePosition,tempChartOption.title.left)
                         Object.assign(changeGridPosition, { top, left, right, bottom })
@@ -1310,13 +1337,13 @@ onBeforeUnmount(() => {
                     "
                   >
                     <a-radio-button value="left">
-                      <Left />
+                      <Left/>
                     </a-radio-button>
                     <a-radio-button value="center">
-                      <Center />
+                      <Center/>
                     </a-radio-button>
                     <a-radio-button value="right">
-                      <Right />
+                      <Right/>
                     </a-radio-button>
                   </a-radio-group>
                 </div>
@@ -1326,13 +1353,13 @@ onBeforeUnmount(() => {
                 <span class="label-left" style="width: 24px">名称</span>
                 <div class="component-right">
                   <a-input
-                    v-model:value="tempChartOption.title.text"
-                    placeholder="图表名称"
-                    allow-clear
-                    :disabled="!tempChartOption.title.show"
-                    size="small"
-                    :style="{ width: '100%', fontSize: '12px', height: '22px' }"
-                    @change="tempChart.setOption({ title: { text: tempChartOption.title.text } })"
+                      v-model:value="tempChartOption.title.text"
+                      placeholder="图表名称"
+                      allow-clear
+                      :disabled="!tempChartOption.title.show"
+                      size="small"
+                      :style="{ width: '100%', fontSize: '12px', height: '22px' }"
+                      @change="tempChart.setOption({ title: { text: tempChartOption.title.text } })"
                   ></a-input>
                 </div>
               </div>
@@ -1344,10 +1371,10 @@ onBeforeUnmount(() => {
                 <div class="component-right">
                   <a-tooltip title="鼠标挪入图表中可查看效果！">
                     <a-radio-group
-                      size="small"
-                      button-style="solid"
-                      v-model:value="tempChartOption.tooltip.axisPointer.type"
-                      @change="
+                        size="small"
+                        button-style="solid"
+                        v-model:value="tempChartOption.tooltip.axisPointer.type"
+                        @change="
                         tempChart.setOption({
                           tooltip: {
                             axisPointer: { type: tempChartOption.tooltip.axisPointer.type },
@@ -1356,13 +1383,13 @@ onBeforeUnmount(() => {
                       "
                     >
                       <a-radio-button value="cross"
-                        ><span style="font-size: 12px">交叉</span></a-radio-button
+                      ><span style="font-size: 12px">交叉</span></a-radio-button
                       >
                       <a-radio-button value="shadow"
-                        ><span style="font-size: 12px">阴影</span></a-radio-button
+                      ><span style="font-size: 12px">阴影</span></a-radio-button
                       >
                       <a-radio-button value="line"
-                        ><span style="font-size: 12px">竖线</span></a-radio-button
+                      ><span style="font-size: 12px">竖线</span></a-radio-button
                       >
                     </a-radio-group>
                   </a-tooltip>
@@ -1374,9 +1401,9 @@ onBeforeUnmount(() => {
                 <span class="label-left" style="width: 24px">图例</span>
                 <div class="component-right">
                   <a-switch
-                    size="small"
-                    v-model:checked="tempChartOption.legend.show"
-                    @change="
+                      size="small"
+                      v-model:checked="tempChartOption.legend.show"
+                      @change="
                       () => {
                         let option = {
                           legend:{
@@ -1397,24 +1424,24 @@ onBeforeUnmount(() => {
 
               <div class="legend-position">
                 <span
-                  class="label-left"
-                  style="
+                    class="label-left"
+                    style="
                     width: 24px;
                     font-size: 12px;
                     height: 14px;
                     line-height: 14px;
                     align-self: flex-start;
                   "
-                  >位置</span
+                >位置</span
                 >
                 <div class="legend-position-container">
                   <a-radio-group
-                    class="legend-position-control"
-                    size="small"
-                    button-style="solid"
-                    v-model:value="legendPosition"
-                    :disabled="!tempChartOption.legend.show"
-                    @change="
+                      class="legend-position-control"
+                      size="small"
+                      button-style="solid"
+                      v-model:value="legendPosition"
+                      :disabled="!tempChartOption.legend.show"
+                      @change="
                       () => {
                         let thisPosition:{top:string|undefined,left:string|undefined,right:string|undefined,bottom:string|undefined} = {
                             top:'4%',
@@ -1426,7 +1453,7 @@ onBeforeUnmount(() => {
                         // top 和 bottom
                         if(legendPosition.startsWith('bottom')){
                           thisPosition.top = undefined;
-                          thisPosition.bottom = '4%';
+                          thisPosition.bottom = '1%';
                         }
 
                         // left
@@ -1452,31 +1479,31 @@ onBeforeUnmount(() => {
                     "
                   >
                     <a-radio-button class="btn top left" value="topLeft">
-                      <TopLeft />
+                      <TopLeft/>
                     </a-radio-button>
                     <a-radio-button class="btn top center" value="topCenter">
-                      <TopCenter />
+                      <TopCenter/>
                     </a-radio-button>
                     <a-radio-button class="btn top right" value="topRight">
-                      <TopRight />
+                      <TopRight/>
                     </a-radio-button>
                     <a-radio-button class="btn middle left" value="leftCenter">
-                      <LeftCenter />
+                      <LeftCenter/>
                     </a-radio-button>
                     <a-radio-button class="btn middle center" disabled>
-                      <Position />
+                      <Position/>
                     </a-radio-button>
                     <a-radio-button class="btn middle right" value="rightCenter">
-                      <RightCenter />
+                      <RightCenter/>
                     </a-radio-button>
                     <a-radio-button class="btn bottom left" value="bottomLeft">
-                      <BottomLeft />
+                      <BottomLeft/>
                     </a-radio-button>
                     <a-radio-button class="btn bottom center" value="bottomCenter">
-                      <BotomCenter />
+                      <BotomCenter/>
                     </a-radio-button>
                     <a-radio-button class="btn bottom right" value="bottomRight">
-                      <BottomRight />
+                      <BottomRight/>
                     </a-radio-button>
                   </a-radio-group>
                 </div>
@@ -1485,9 +1512,9 @@ onBeforeUnmount(() => {
 
             <div class="chart-group">
               <a-collapse
-                v-model:activeKey="xAxisConfigShow"
-                expand-icon-position="end"
-                :style="{
+                  v-model:activeKey="xAxisConfigShow"
+                  expand-icon-position="end"
+                  :style="{
                   border: 'none',
                   backgroundColor: 'transparent',
                   margin: '0',
@@ -1495,34 +1522,38 @@ onBeforeUnmount(() => {
                 }"
               >
                 <a-collapse-panel
-                  key="1"
-                  header="X轴"
-                  :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
+                    key="1"
+                    header="X轴"
+                    :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
                 >
                   <div class="chart-item">
                     <span class="label-left" style="width: 24px">名称</span>
                     <div class="component-right">
                       <a-switch
-                        size="small"
-                        v-model:checked="xAxisNameShow"
-                        @change="
+                          size="small"
+                          v-model:checked="xAxisNameShow"
+                          @change="
                           () => {
-                            if (xAxisNameShow) {
+                            if (!xAxisNameShow) {
+                               tempChartOption.xAxis.name = undefined
+                            }else {
                               if (tempChartOption.xAxis.name == undefined) {
                                 tempChartOption.xAxis.name = tempChartOption.dataset.dimensions[0]
                               }
-                              let option = calculateTopPosition()
-                              option.xAxis.name = tempChartOption.xAxis.name
-                              option.xAxis.nameLocation = tempChartOption.xAxis.nameLocation
-                              tempChart.setOption(option)
-                            } else {
-                              tempChartOption.xAxis.name = undefined
-
-                              let option = calculateTopPosition()
-                              option.xAxis.name = tempChartOption.xAxis.name
-                              option.xAxis.nameLocation = tempChartOption.xAxis.nameLocation
-                              tempChart.setOption(option)
                             }
+
+                            let option =
+                            {xAxis:
+                              {name:tempChartOption.xAxis.name,
+                               nameLocation:tempChartOption.xAxis.nameLocation
+                              }
+                            };
+
+                            tempChart.setOption(option)
+
+                            let {top,left,right,bottom} =  openAndCloseComponent(currentXAxisNamePosition,xAxisNameShow);
+                            Object.assign(changeGridPosition, { top, left, right, bottom });
+
                           }
                         "
                       ></a-switch>
@@ -1533,12 +1564,12 @@ onBeforeUnmount(() => {
                     <span class="label-left"></span>
                     <div class="component-right">
                       <a-input
-                        size="small"
-                        :style="{ width: '100%', fontSize: '12px', height: '22px' }"
-                        allow-clear
-                        :disabled="!xAxisNameShow"
-                        v-model:value="tempChartOption.xAxis.name"
-                        @change="
+                          size="small"
+                          :style="{ width: '100%', fontSize: '12px', height: '22px' }"
+                          allow-clear
+                          :disabled="!xAxisNameShow"
+                          v-model:value="tempChartOption.xAxis.name"
+                          @change="
                           tempChart.setOption({ xAxis: { name: tempChartOption.xAxis.name } })
                         "
                       ></a-input>
@@ -1549,24 +1580,40 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 48px">名称位置</span>
                     <div class="component-right">
                       <a-radio-group
-                        size="small"
-                        button-style="solid"
-                        :disabled="!xAxisNameShow"
-                        v-model:value="tempChartOption.xAxis.nameLocation"
-                        @change="
-                          tempChart.setOption({
+                          size="small"
+                          button-style="solid"
+                          :disabled="!xAxisNameShow"
+                          v-model:value="tempChartOption.xAxis.nameLocation"
+                          @change="()=>{
+
+                            tempChart.setOption({
                             xAxis: { nameLocation: tempChartOption.xAxis.nameLocation },
-                          })
+                            })
+
+                            let changeStatus = tempChartOption.xAxis.nameLocation;
+
+                            if(tempChartOption.xAxis.nameLocation == 'center' ){
+                             if( tempChartOption.xAxis.position == 'top'){
+                               changeStatus = 'topCenter'
+                             } else {
+                               changeStatus = 'bottomCenter'
+                             }
+                            }
+
+                            let {top,left,right,bottom} =  changeComponentPosition(currentXAxisNamePosition,changeStatus);
+                            Object.assign(changeGridPosition, { top, left, right, bottom });
+                          }
+
                         "
                       >
                         <a-radio-button value="start"
-                          ><span style="font-size: 12px">左边</span></a-radio-button
+                        ><span style="font-size: 12px">左边</span></a-radio-button
                         >
                         <a-radio-button value="center"
-                          ><span style="font-size: 12px">中间</span></a-radio-button
+                        ><span style="font-size: 12px">中间</span></a-radio-button
                         >
                         <a-radio-button value="end"
-                          ><span style="font-size: 12px">右边</span></a-radio-button
+                        ><span style="font-size: 12px">右边</span></a-radio-button
                         >
                       </a-radio-group>
                     </div>
@@ -1576,13 +1623,13 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 48px">离坐标轴</span>
                     <div class="component-right">
                       <a-input-number
-                        size="small"
-                        min="8"
-                        :style="{ width: '100%', fontSize: '12px' }"
-                        :disabled="!xAxisNameShow"
-                        v-model:value="tempChartOption.xAxis.nameGap"
-                        addon-after="px"
-                        @change="
+                          size="small"
+                          min="8"
+                          :style="{ width: '100%', fontSize: '12px' }"
+                          :disabled="!xAxisNameShow"
+                          v-model:value="tempChartOption.xAxis.nameGap"
+                          addon-after="px"
+                          @change="
                           tempChart.setOption({ xAxis: { nameGap: tempChartOption.xAxis.nameGap } })
                         "
                       >
@@ -1594,22 +1641,36 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 60px">坐标轴位置</span>
                     <div class="component-right">
                       <a-radio-group
-                        size="small"
-                        button-style="solid"
-                        v-model:value="tempChartOption.xAxis.position"
-                        @change="
+                          size="small"
+                          button-style="solid"
+                          v-model:value="tempChartOption.xAxis.position"
+                          @change="
                           () => {
-                            let option = calculateTopPosition()
-                            option.xAxis.position = tempChartOption.xAxis.position
-                            tempChart.setOption(option)
+                            let option = {xAxis:{position:tempChartOption.xAxis.position}}
+                            tempChart.setOption(option);
+
+                            if(xAxisNameShow){
+                              let changeStatus = tempChartOption.xAxis.nameLocation;
+
+                              if(tempChartOption.xAxis.nameLocation == 'center' ){
+                               if( tempChartOption.xAxis.position == 'top'){
+                                 changeStatus = 'topCenter'
+                               } else {
+                                 changeStatus = 'bottomCenter'
+                               }
+                              }
+
+                              let {top,left,right,bottom} =  changeComponentPosition(currentXAxisNamePosition,changeStatus);
+                              Object.assign(changeGridPosition, { top, left, right, bottom });
+                            }
                           }
                         "
                       >
                         <a-radio-button value="top"
-                          ><span style="font-size: 12px">顶部</span></a-radio-button
+                        ><span style="font-size: 12px">顶部</span></a-radio-button
                         >
                         <a-radio-button value="bottom"
-                          ><span style="font-size: 12px">底部</span></a-radio-button
+                        ><span style="font-size: 12px">底部</span></a-radio-button
                         >
                       </a-radio-group>
                     </div>
@@ -1619,9 +1680,9 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 60px">标签</span>
                     <div class="component-right">
                       <a-switch
-                        size="small"
-                        v-model:checked="tempChartOption.xAxis.axisLabel.show"
-                        @change="
+                          size="small"
+                          v-model:checked="tempChartOption.xAxis.axisLabel.show"
+                          @change="
                           tempChart.setOption({
                             xAxis: { axisLabel: { show: tempChartOption.xAxis.axisLabel.show } },
                           })
@@ -1634,20 +1695,20 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 60px">角度</span>
                     <div class="component-right">
                       <a-slider
-                        v-model:value="tempChartOption.xAxis.axisLabel.rotate"
-                        :min="-90"
-                        :max="90"
-                        :style="{ width: '100%' }"
-                        :dots="true"
-                        :step="15"
-                        @change="
+                          v-model:value="tempChartOption.xAxis.axisLabel.rotate"
+                          :min="-90"
+                          :max="90"
+                          :style="{ width: '100%' }"
+                          :dots="true"
+                          :step="15"
+                          @change="
                           tempChart.setOption({
                             xAxis: {
                               axisLabel: { rotate: tempChartOption.xAxis.axisLabel.rotate },
                             },
                           })
                         "
-                        :disabled="!tempChartOption.xAxis.axisLabel.show"
+                          :disabled="!tempChartOption.xAxis.axisLabel.show"
                       ></a-slider>
                     </div>
                   </div>
@@ -1656,19 +1717,19 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 48px">离坐标轴</span>
                     <div class="component-right">
                       <a-input-number
-                        size="small"
-                        min="8"
-                        :style="{ width: '100%', fontSize: '12px' }"
-                        v-model:value="tempChartOption.xAxis.axisLabel.margin"
-                        addon-after="px"
-                        @change="
+                          size="small"
+                          min="8"
+                          :style="{ width: '100%', fontSize: '12px' }"
+                          v-model:value="tempChartOption.xAxis.axisLabel.margin"
+                          addon-after="px"
+                          @change="
                           tempChart.setOption({
                             xAxis: {
                               axisLabel: { margin: tempChartOption.xAxis.axisLabel.margin },
                             },
                           })
                         "
-                        :disabled="!tempChartOption.xAxis.axisLabel.show"
+                          :disabled="!tempChartOption.xAxis.axisLabel.show"
                       >
                       </a-input-number>
                     </div>
@@ -1678,18 +1739,18 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 60px">长度</span>
                     <div class="component-right">
                       <a-input-number
-                        size="small"
-                        min="48"
-                        max="200"
-                        :style="{ width: '100%', fontSize: '12px' }"
-                        v-model:value="tempChartOption.xAxis.axisLabel.width"
-                        addon-after="px"
-                        @change="
+                          size="small"
+                          min="48"
+                          max="200"
+                          :style="{ width: '100%', fontSize: '12px' }"
+                          v-model:value="tempChartOption.xAxis.axisLabel.width"
+                          addon-after="px"
+                          @change="
                           tempChart.setOption({
                             xAxis: { axisLabel: { width: tempChartOption.xAxis.axisLabel.width } },
                           })
                         "
-                        :disabled="!tempChartOption.xAxis.axisLabel.show"
+                          :disabled="!tempChartOption.xAxis.axisLabel.show"
                       >
                       </a-input-number>
                     </div>
@@ -1699,46 +1760,46 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 48px">溢出处理</span>
                     <div class="component-right">
                       <a-radio-group
-                        size="small"
-                        button-style="solid"
-                        v-model:value="tempChartOption.xAxis.axisLabel.overflow"
-                        @change="
+                          size="small"
+                          button-style="solid"
+                          v-model:value="tempChartOption.xAxis.axisLabel.overflow"
+                          @change="
                           tempChart.setOption({
                             xAxis: {
                               axisLabel: { overflow: tempChartOption.xAxis.axisLabel.overflow },
                             },
                           })
                         "
-                        :disabled="!tempChartOption.xAxis.axisLabel.show"
+                          :disabled="!tempChartOption.xAxis.axisLabel.show"
                       >
                         <a-radio-button value="truncate"
-                          ><span style="font-size: 12px">截断</span></a-radio-button
+                        ><span style="font-size: 12px">截断</span></a-radio-button
                         >
                         <a-radio-button value="break"
-                          ><span style="font-size: 12px">换行</span></a-radio-button
+                        ><span style="font-size: 12px">换行</span></a-radio-button
                         >
                       </a-radio-group>
                     </div>
                   </div>
 
                   <div
-                    class="chart-item"
-                    v-show="tempChartOption.xAxis.axisLabel.overflow == 'truncate'"
+                      class="chart-item"
+                      v-show="tempChartOption.xAxis.axisLabel.overflow == 'truncate'"
                   >
                     <span class="label-left" style="width: 60px">截断提示</span>
                     <div class="component-right">
                       <a-input
-                        size="small"
-                        :style="{ width: '100%', fontSize: '12px', height: '22px' }"
-                        v-model:value="tempChartOption.xAxis.axisLabel.ellipsis"
-                        @change="
+                          size="small"
+                          :style="{ width: '100%', fontSize: '12px', height: '22px' }"
+                          v-model:value="tempChartOption.xAxis.axisLabel.ellipsis"
+                          @change="
                           tempChart.setOption({
                             xAxis: {
                               axisLabel: { ellipsis: tempChartOption.xAxis.axisLabel.ellipsis },
                             },
                           })
                         "
-                        :disabled="!tempChartOption.xAxis.axisLabel.show"
+                          :disabled="!tempChartOption.xAxis.axisLabel.show"
                       >
                       </a-input>
                     </div>
@@ -1747,9 +1808,9 @@ onBeforeUnmount(() => {
                   <div class="chart-item">
                     <div style="display: flex; justify-content: flex-start; align-items: center">
                       <a-checkbox
-                        :disabled="!tempChartOption.xAxis.axisLabel.show"
-                        v-model:checked="xAxisInterval"
-                        @change="
+                          :disabled="!tempChartOption.xAxis.axisLabel.show"
+                          v-model:checked="xAxisInterval"
+                          @change="
                           () => {
                             if (xAxisInterval) {
                               tempChartOption.xAxis.axisLabel.interval = 0
@@ -1774,20 +1835,20 @@ onBeforeUnmount(() => {
 
                     <div class="component-right">
                       <a-input-number
-                        size="small"
-                        min="0"
-                        max="5"
-                        :style="{ width: '100%', fontSize: '12px' }"
-                        v-model:value="tempChartOption.xAxis.axisLabel.interval"
-                        addon-after="个标签"
-                        @change="
+                          size="small"
+                          min="0"
+                          max="5"
+                          :style="{ width: '100%', fontSize: '12px' }"
+                          v-model:value="tempChartOption.xAxis.axisLabel.interval"
+                          addon-after="个标签"
+                          @change="
                           tempChart.setOption({
                             xAxis: {
                               axisLabel: { interval: tempChartOption.xAxis.axisLabel.interval },
                             },
                           })
                         "
-                        :disabled="!tempChartOption.xAxis.axisLabel.show || !xAxisInterval"
+                          :disabled="!tempChartOption.xAxis.axisLabel.show || !xAxisInterval"
                       ></a-input-number>
                     </div>
                   </div>
@@ -1796,10 +1857,10 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 60px">对齐刻度线</span>
                     <div class="component-right">
                       <a-radio-group
-                        size="small"
-                        button-style="solid"
-                        v-model:value="tempChartOption.xAxis.axisTick.alignWithLabel"
-                        @change="
+                          size="small"
+                          button-style="solid"
+                          v-model:value="tempChartOption.xAxis.axisTick.alignWithLabel"
+                          @change="
                           tempChart.setOption({
                             xAxis: {
                               axisTick: {
@@ -1808,7 +1869,7 @@ onBeforeUnmount(() => {
                             },
                           })
                         "
-                        :disabled="!tempChartOption.xAxis.axisLabel.show"
+                          :disabled="!tempChartOption.xAxis.axisLabel.show"
                       >
                         <a-radio :value="true"><span style="font-size: 12px">是</span></a-radio>
                         <a-radio :value="false"><span style="font-size: 12px">否</span></a-radio>
@@ -1820,9 +1881,9 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 60px">分割线</span>
                     <div class="component-right">
                       <a-switch
-                        size="small"
-                        v-model:checked="tempChartOption.xAxis.splitLine.show"
-                        @change="
+                          size="small"
+                          v-model:checked="tempChartOption.xAxis.splitLine.show"
+                          @change="
                           tempChart.setOption({
                             xAxis: { splitLine: { show: tempChartOption.xAxis.splitLine.show } },
                           })
@@ -1833,9 +1894,9 @@ onBeforeUnmount(() => {
 
                   <div class="chart-item">
                     <a-select
-                      size="small"
-                      v-model:value="tempChartOption.xAxis.splitLine.lineStyle.type"
-                      @change="
+                        size="small"
+                        v-model:value="tempChartOption.xAxis.splitLine.lineStyle.type"
+                        @change="
                         tempChart.setOption({
                           xAxis: {
                             splitLine: {
@@ -1844,27 +1905,27 @@ onBeforeUnmount(() => {
                           },
                         })
                       "
-                      :disabled="!tempChartOption.xAxis.splitLine.show"
+                        :disabled="!tempChartOption.xAxis.splitLine.show"
                     >
                       <a-select-option value="solid"
-                        ><span style="font-size: 12px">实线</span></a-select-option
+                      ><span style="font-size: 12px">实线</span></a-select-option
                       >
                       <a-select-option value="dashed"
-                        ><span style="font-size: 12px">虚线</span></a-select-option
+                      ><span style="font-size: 12px">虚线</span></a-select-option
                       >
                       <a-select-option value="dotted"
-                        ><span style="font-size: 12px">点线</span></a-select-option
+                      ><span style="font-size: 12px">点线</span></a-select-option
                       >
                     </a-select>
 
                     <div class="component-right">
                       <a-input-number
-                        size="small"
-                        min="1"
-                        :style="{ width: '100%', fontSize: '12px' }"
-                        v-model:value="tempChartOption.xAxis.splitLine.lineStyle.width"
-                        addon-after="px"
-                        @change="
+                          size="small"
+                          min="1"
+                          :style="{ width: '100%', fontSize: '12px' }"
+                          v-model:value="tempChartOption.xAxis.splitLine.lineStyle.width"
+                          addon-after="px"
+                          @change="
                           tempChart.setOption({
                             xAxis: {
                               splitLine: {
@@ -1875,7 +1936,7 @@ onBeforeUnmount(() => {
                             },
                           })
                         "
-                        :disabled="!tempChartOption.xAxis.splitLine.show"
+                          :disabled="!tempChartOption.xAxis.splitLine.show"
                       ></a-input-number>
                     </div>
                   </div>
@@ -1885,9 +1946,9 @@ onBeforeUnmount(() => {
 
             <div class="chart-group">
               <a-collapse
-                v-model:activeKey="yAxisConfigShow"
-                expand-icon-position="end"
-                :style="{
+                  v-model:activeKey="yAxisConfigShow"
+                  expand-icon-position="end"
+                  :style="{
                   border: 'none',
                   backgroundColor: 'transparent',
                   margin: '0',
@@ -1895,24 +1956,32 @@ onBeforeUnmount(() => {
                 }"
               >
                 <a-collapse-panel
-                  key="1"
-                  header="Y轴"
-                  :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
+                    key="1"
+                    header="Y轴"
+                    :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
                 >
                   <div class="chart-item">
                     <span class="label-left" style="width: 24px">名称</span>
                     <div class="component-right">
                       <a-switch
-                        size="small"
-                        v-model:checked="yAxisNameShow"
-                        @change="
+                          size="small"
+                          v-model:checked="yAxisNameShow"
+                          @change="
                           () => {
-                            if (yAxisNameShow) {
-                              tempChart.setOption({ yAxis: { name: tempChartOption.yAxis.name } })
-                            } else {
-                              tempChartOption.yAxis.name = undefined
-                              tempChart.setOption({ yAxis: { name: undefined } })
+                            if (!yAxisNameShow) {
+                               tempChartOption.yAxis.name = undefined
                             }
+
+                            tempChart.setOption(
+                                { yAxis:
+                                  { name: tempChartOption.yAxis.name ,
+                                    nameLocation:tempChartOption.yAxis.nameLocation
+                                  }
+                                });
+
+                            let {top,left,right,bottom} = openAndCloseComponent(currentYAxisNamePosition,yAxisNameShow);
+                            Object.assign(changeGridPosition,{top,left,right,bottom})
+
                           }
                         "
                       ></a-switch>
@@ -1923,12 +1992,12 @@ onBeforeUnmount(() => {
                     <span class="label-left"></span>
                     <div class="component-right">
                       <a-input
-                        size="small"
-                        :style="{ width: '100%', fontSize: '12px', height: '22px' }"
-                        allow-clear
-                        :disabled="!yAxisNameShow"
-                        v-model:value="tempChartOption.yAxis.name"
-                        @change="
+                          size="small"
+                          :style="{ width: '100%', fontSize: '12px', height: '22px' }"
+                          allow-clear
+                          :disabled="!yAxisNameShow"
+                          v-model:value="tempChartOption.yAxis.name"
+                          @change="
                           tempChart.setOption({ yAxis: { name: tempChartOption.yAxis.name } })
                         "
                       ></a-input>
@@ -1939,24 +2008,47 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 48px">名称位置</span>
                     <div class="component-right">
                       <a-radio-group
-                        size="small"
-                        button-style="solid"
-                        :disabled="!yAxisNameShow"
-                        v-model:value="tempChartOption.yAxis.nameLocation"
-                        @change="
-                          tempChart.setOption({
+                          size="small"
+                          button-style="solid"
+                          :disabled="!yAxisNameShow"
+                          v-model:value="tempChartOption.yAxis.nameLocation"
+                          @change="()=>{
+                            tempChart.setOption({
                             yAxis: { nameLocation: tempChartOption.yAxis.nameLocation },
-                          })
+                            })
+
+                            let changeStatus = '';
+                            if(tempChartOption.yAxis.position=='left'){
+                              if(tempChartOption.yAxis.nameLocation == 'start'){
+                                changeStatus = 'leftBottom'
+                              } else if(tempChartOption.yAxis.nameLocation == 'center'){
+                                changeStatus='leftCenter'
+                              } else{
+                                changeStatus='leftTop'
+                              }
+                            }else {
+                              if(tempChartOption.yAxis.nameLocation == 'start'){
+                                 changeStatus='rightBottom'
+                              } else if(tempChartOption.yAxis.nameLocation == 'center'){
+                                 changeStatus='rightCenter'
+                              } else{
+                                 changeStatus='rightTop'
+                              }
+                            }
+                            let {top,left,right,bottom} = changeComponentPosition(currentYAxisNamePosition,changeStatus);
+                            Object.assign(changeGridPosition,{top,left,right,bottom})
+                          }
+
                         "
                       >
                         <a-radio-button value="start"
-                          ><span style="font-size: 12px">下</span></a-radio-button
+                        ><span style="font-size: 12px">下</span></a-radio-button
                         >
                         <a-radio-button value="center"
-                          ><span style="font-size: 12px">中</span></a-radio-button
+                        ><span style="font-size: 12px">中</span></a-radio-button
                         >
                         <a-radio-button value="end"
-                          ><span style="font-size: 12px">上</span></a-radio-button
+                        ><span style="font-size: 12px">上</span></a-radio-button
                         >
                       </a-radio-group>
                     </div>
@@ -1967,14 +2059,14 @@ onBeforeUnmount(() => {
 
                     <div class="component-right">
                       <a-input-number
-                        size="small"
-                        min="8"
-                        :style="{ width: '100%', fontSize: '12px' }"
-                        :disabled="!yAxisNameShow"
-                        v-model:value="tempChartOption.yAxis.nameGap"
-                        addon-after="px"
-                        @change="
-                          tempChart.setOption({ yAxis: { nameGap: tempChartOption.yAxis.nameGap } })
+                          size="small"
+                          min="8"
+                          :style="{ width: '100%', fontSize: '12px' }"
+                          :disabled="!yAxisNameShow"
+                          v-model:value="tempChartOption.yAxis.nameGap"
+                          addon-after="px"
+                          @change="
+                            tempChart.setOption({ yAxis: { nameGap: tempChartOption.yAxis.nameGap } });
                         "
                       >
                       </a-input-number>
@@ -1985,20 +2077,43 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 60px">坐标轴位置</span>
                     <div class="component-right">
                       <a-radio-group
-                        size="small"
-                        button-style="solid"
-                        v-model:value="tempChartOption.yAxis.position"
-                        @change="
-                          tempChart.setOption({
-                            yAxis: { position: tempChartOption.yAxis.position },
-                          })
+                          size="small"
+                          button-style="solid"
+                          v-model:value="tempChartOption.yAxis.position"
+                          @change="()=>{
+                             tempChart.setOption({
+                              yAxis: { position: tempChartOption.yAxis.position },
+                              })
+
+                            let changeStatus = '';
+                            if(tempChartOption.yAxis.position=='left'){
+                              if(tempChartOption.yAxis.nameLocation == 'start'){
+                                changeStatus = 'leftBottom'
+                              } else if(tempChartOption.yAxis.nameLocation == 'center'){
+                                changeStatus='leftCenter'
+                              } else{
+                                changeStatus='leftTop'
+                              }
+                            }else {
+                              if(tempChartOption.yAxis.nameLocation == 'start'){
+                                 changeStatus='rightBottom'
+                              } else if(tempChartOption.yAxis.nameLocation == 'center'){
+                                 changeStatus='rightCenter'
+                              } else{
+                                 changeStatus='rightTop'
+                              }
+                            }
+                            let {top,left,right,bottom} = changeComponentPosition(currentYAxisNamePosition,changeStatus);
+                            Object.assign(changeGridPosition,{top,left,right,bottom})
+                          }
+
                         "
                       >
                         <a-radio-button value="left"
-                          ><span style="font-size: 12px">左侧</span></a-radio-button
+                        ><span style="font-size: 12px">左侧</span></a-radio-button
                         >
                         <a-radio-button value="right"
-                          ><span style="font-size: 12px">右侧</span></a-radio-button
+                        ><span style="font-size: 12px">右侧</span></a-radio-button
                         >
                       </a-radio-group>
                     </div>
@@ -2008,9 +2123,9 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 60px">标签</span>
                     <div class="component-right">
                       <a-switch
-                        size="small"
-                        v-model:checked="tempChartOption.yAxis.axisLabel.show"
-                        @change="
+                          size="small"
+                          v-model:checked="tempChartOption.yAxis.axisLabel.show"
+                          @change="
                           tempChart.setOption({
                             yAxis: { axisLabel: { show: tempChartOption.yAxis.axisLabel.show } },
                           })
@@ -2023,20 +2138,20 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 60px">角度</span>
                     <div class="component-right">
                       <a-slider
-                        v-model:value="tempChartOption.yAxis.axisLabel.rotate"
-                        :min="-90"
-                        :max="90"
-                        :dots="true"
-                        :step="15"
-                        :style="{ width: '100%' }"
-                        @change="
+                          v-model:value="tempChartOption.yAxis.axisLabel.rotate"
+                          :min="-90"
+                          :max="90"
+                          :dots="true"
+                          :step="15"
+                          :style="{ width: '100%' }"
+                          @change="
                           tempChart.setOption({
                             yAxis: {
                               axisLabel: { rotate: tempChartOption.yAxis.axisLabel.rotate },
                             },
                           })
                         "
-                        :disabled="!tempChartOption.yAxis.axisLabel.show"
+                          :disabled="!tempChartOption.yAxis.axisLabel.show"
                       ></a-slider>
                     </div>
                   </div>
@@ -2045,19 +2160,19 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 48px">离坐标轴</span>
                     <div class="component-right">
                       <a-input-number
-                        size="small"
-                        min="8"
-                        :style="{ width: '100%', fontSize: '12px' }"
-                        v-model:value="tempChartOption.yAxis.axisLabel.margin"
-                        addon-after="px"
-                        @change="
+                          size="small"
+                          min="8"
+                          :style="{ width: '100%', fontSize: '12px' }"
+                          v-model:value="tempChartOption.yAxis.axisLabel.margin"
+                          addon-after="px"
+                          @change="
                           tempChart.setOption({
                             yAxis: {
                               axisLabel: { margin: tempChartOption.yAxis.axisLabel.margin },
                             },
                           })
                         "
-                        :disabled="!tempChartOption.yAxis.axisLabel.show"
+                          :disabled="!tempChartOption.yAxis.axisLabel.show"
                       >
                       </a-input-number>
                     </div>
@@ -2068,20 +2183,20 @@ onBeforeUnmount(() => {
                     <div class="component-right">
                       <a-tooltip title="最大值200 最小值 48">
                         <a-input-number
-                          size="small"
-                          min="48"
-                          max="200"
-                          :style="{ width: '100%', fontSize: '12px' }"
-                          v-model:value="tempChartOption.yAxis.axisLabel.width"
-                          addon-after="px"
-                          @change="
+                            size="small"
+                            min="48"
+                            max="200"
+                            :style="{ width: '100%', fontSize: '12px' }"
+                            v-model:value="tempChartOption.yAxis.axisLabel.width"
+                            addon-after="px"
+                            @change="
                             tempChart.setOption({
                               yAxis: {
                                 axisLabel: { width: tempChartOption.yAxis.axisLabel.width },
                               },
                             })
                           "
-                          :disabled="!tempChartOption.yAxis.axisLabel.show"
+                            :disabled="!tempChartOption.yAxis.axisLabel.show"
                         >
                         </a-input-number>
                       </a-tooltip>
@@ -2092,46 +2207,46 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 60px">溢出处理</span>
                     <div class="component-right">
                       <a-radio-group
-                        size="small"
-                        button-style="solid"
-                        v-model:value="tempChartOption.yAxis.axisLabel.overflow"
-                        @change="
+                          size="small"
+                          button-style="solid"
+                          v-model:value="tempChartOption.yAxis.axisLabel.overflow"
+                          @change="
                           tempChart.setOption({
                             yAxis: {
                               axisLabel: { overflow: tempChartOption.yAxis.axisLabel.overflow },
                             },
                           })
                         "
-                        :disabled="!tempChartOption.yAxis.axisLabel.show"
+                          :disabled="!tempChartOption.yAxis.axisLabel.show"
                       >
                         <a-radio-button value="truncate"
-                          ><span style="font-size: 12px">截断</span></a-radio-button
+                        ><span style="font-size: 12px">截断</span></a-radio-button
                         >
                         <a-radio-button value="break"
-                          ><span style="font-size: 12px">换行</span></a-radio-button
+                        ><span style="font-size: 12px">换行</span></a-radio-button
                         >
                       </a-radio-group>
                     </div>
                   </div>
 
                   <div
-                    class="chart-item"
-                    v-show="tempChartOption.yAxis.axisLabel.overflow == 'truncate'"
+                      class="chart-item"
+                      v-show="tempChartOption.yAxis.axisLabel.overflow == 'truncate'"
                   >
                     <span class="label-left" style="width: 60px">截断提示</span>
                     <div class="component-right">
                       <a-input
-                        size="small"
-                        :style="{ width: '100%', fontSize: '12px', height: '22px' }"
-                        v-model:value="tempChartOption.yAxis.axisLabel.ellipsis"
-                        @change="
+                          size="small"
+                          :style="{ width: '100%', fontSize: '12px', height: '22px' }"
+                          v-model:value="tempChartOption.yAxis.axisLabel.ellipsis"
+                          @change="
                           tempChart.setOption({
                             yAxis: {
                               axisLabel: { ellipsis: tempChartOption.yAxis.axisLabel.ellipsis },
                             },
                           })
                         "
-                        :disabled="!tempChartOption.yAxis.axisLabel.show"
+                          :disabled="!tempChartOption.yAxis.axisLabel.show"
                       >
                       </a-input>
                     </div>
@@ -2140,9 +2255,9 @@ onBeforeUnmount(() => {
                   <div class="chart-item">
                     <div style="display: flex; justify-content: flex-start; align-items: center">
                       <a-checkbox
-                        v-model:checked="yAxisInterval"
-                        :disabled="!tempChartOption.yAxis.axisLabel.show"
-                        @change="
+                          v-model:checked="yAxisInterval"
+                          :disabled="!tempChartOption.yAxis.axisLabel.show"
+                          @change="
                           () => {
                             if (yAxisInterval) {
                               tempChartOption.yAxis.axisLabel.interval = 0
@@ -2163,26 +2278,26 @@ onBeforeUnmount(() => {
                       >
                       </a-checkbox>
                       <span class="label-normal" style="margin-left: 8px; margin-left: 8px"
-                        >间隔</span
+                      >间隔</span
                       >
                     </div>
 
                     <div class="component-right">
                       <a-input-number
-                        size="small"
-                        min="0"
-                        max="5"
-                        :style="{ width: '100%', fontSize: '12px' }"
-                        v-model:value="tempChartOption.yAxis.axisLabel.interval"
-                        addon-after="个标签"
-                        @change="
+                          size="small"
+                          min="0"
+                          max="5"
+                          :style="{ width: '100%', fontSize: '12px' }"
+                          v-model:value="tempChartOption.yAxis.axisLabel.interval"
+                          addon-after="个标签"
+                          @change="
                           tempChart.setOption({
                             yAxis: {
                               axisLabel: { interval: tempChartOption.yAxis.axisLabel.interval },
                             },
                           })
                         "
-                        :disabled="!tempChartOption.yAxis.axisLabel.show || !yAxisInterval"
+                          :disabled="!tempChartOption.yAxis.axisLabel.show || !yAxisInterval"
                       ></a-input-number>
                     </div>
                   </div>
@@ -2191,9 +2306,9 @@ onBeforeUnmount(() => {
                     <span class="label-left" style="width: 60px">分割线</span>
                     <div class="component-right">
                       <a-switch
-                        size="small"
-                        v-model:checked="tempChartOption.yAxis.splitLine.show"
-                        @change="
+                          size="small"
+                          v-model:checked="tempChartOption.yAxis.splitLine.show"
+                          @change="
                           tempChart.setOption({
                             yAxis: { splitLine: { show: tempChartOption.yAxis.splitLine.show } },
                           })
@@ -2204,9 +2319,9 @@ onBeforeUnmount(() => {
 
                   <div class="chart-item">
                     <a-select
-                      size="small"
-                      v-model:value="tempChartOption.yAxis.splitLine.lineStyle.type"
-                      @change="
+                        size="small"
+                        v-model:value="tempChartOption.yAxis.splitLine.lineStyle.type"
+                        @change="
                         tempChart.setOption({
                           yAxis: {
                             splitLine: {
@@ -2215,27 +2330,27 @@ onBeforeUnmount(() => {
                           },
                         })
                       "
-                      :disabled="!tempChartOption.yAxis.splitLine.show"
+                        :disabled="!tempChartOption.yAxis.splitLine.show"
                     >
                       <a-select-option value="solid"
-                        ><span style="font-size: 12px">实线</span></a-select-option
+                      ><span style="font-size: 12px">实线</span></a-select-option
                       >
                       <a-select-option value="dashed"
-                        ><span style="font-size: 12px">虚线</span></a-select-option
+                      ><span style="font-size: 12px">虚线</span></a-select-option
                       >
                       <a-select-option value="dotted"
-                        ><span style="font-size: 12px">点线</span></a-select-option
+                      ><span style="font-size: 12px">点线</span></a-select-option
                       >
                     </a-select>
 
                     <div class="component-right">
                       <a-input-number
-                        size="small"
-                        min="1"
-                        :style="{ width: '100%', fontSize: '12px' }"
-                        v-model:value="tempChartOption.yAxis.splitLine.lineStyle.width"
-                        addon-after="px"
-                        @change="
+                          size="small"
+                          min="1"
+                          :style="{ width: '100%', fontSize: '12px' }"
+                          v-model:value="tempChartOption.yAxis.splitLine.lineStyle.width"
+                          addon-after="px"
+                          @change="
                           tempChart.setOption({
                             yAxis: {
                               splitLine: {
@@ -2246,7 +2361,7 @@ onBeforeUnmount(() => {
                             },
                           })
                         "
-                        :disabled="!tempChartOption.yAxis.splitLine.show"
+                          :disabled="!tempChartOption.yAxis.splitLine.show"
                       ></a-input-number>
                     </div>
                   </div>
@@ -2259,8 +2374,8 @@ onBeforeUnmount(() => {
                 <span class="label-left" style="width: 48px">数据系列</span>
                 <div class="component-right">
                   <a-checkbox
-                    v-model:checked="allSeriesEqual"
-                    @change="
+                      v-model:checked="allSeriesEqual"
+                      @change="
                       () => {
                         if (allSeriesEqual) {
                           allSeriesConfigShow = [tempChartOption.series[0].id || '0']
@@ -2269,14 +2384,14 @@ onBeforeUnmount(() => {
                         }
                       }
                     "
-                    ><span style="font-size: 12px">各系列一致</span>
+                  ><span style="font-size: 12px">各系列一致</span>
                   </a-checkbox>
                 </div>
               </div>
               <a-collapse
-                v-model:activeKey="allSeriesConfigShow"
-                expand-icon-position="end"
-                :style="{
+                  v-model:activeKey="allSeriesConfigShow"
+                  expand-icon-position="end"
+                  :style="{
                   border: 'none',
                   backgroundColor: 'transparent',
                   margin: '0',
@@ -2284,9 +2399,9 @@ onBeforeUnmount(() => {
                 }"
               >
                 <a-collapse-panel
-                  :style="{ border: 'none', marginTop: '8px', padding: '0', fontSize: '12px' }"
-                  v-for="(item, index) in tempChartOption.series"
-                  :key="item.id || index"
+                    :style="{ border: 'none', marginTop: '8px', padding: '0', fontSize: '12px' }"
+                    v-for="(item, index) in tempChartOption.series"
+                    :key="item.id || index"
                 >
                   <template #header>
                     <div :style="{ display: 'flex', justifyContent: 'space-between' }">
@@ -2294,10 +2409,10 @@ onBeforeUnmount(() => {
                         {{ item.name }}
                       </span>
                       <span v-if="item.type == 'bar'">
-                        <BarChartOutlined :style="{ color: currentColors[index] }" />
+                        <BarChartOutlined :style="{ color: currentColors[index] }"/>
                       </span>
                       <span v-else-if="item.type == 'line'">
-                        <LineChartOutlined :style="{ color: currentColors[index] }" />
+                        <LineChartOutlined :style="{ color: currentColors[index] }"/>
                       </span>
                     </div>
                   </template>
@@ -2306,10 +2421,10 @@ onBeforeUnmount(() => {
 
                     <div class="component-right">
                       <a-input
-                        v-model:value="item.name"
-                        size="small"
-                        :style="{ width: '100%', fontSize: '12px', height: '22px' }"
-                        @change="
+                          v-model:value="item.name"
+                          size="small"
+                          :style="{ width: '100%', fontSize: '12px', height: '22px' }"
+                          @change="
                           () => {
                             tempChart.setOption({ series: [{ id: item.id, name: item.name }] })
                           }
@@ -2324,9 +2439,9 @@ onBeforeUnmount(() => {
 
                     <div class="component-right">
                       <a-select
-                        v-model:value="item.type"
-                        size="small"
-                        @change="
+                          v-model:value="item.type"
+                          size="small"
+                          @change="
                           (value: string) => {
                             if (allSeriesEqual) {
                               changeAllType(value)
@@ -2351,8 +2466,8 @@ onBeforeUnmount(() => {
 
                     <div class="component-right">
                       <a-checkbox
-                        v-model:checked="seriesLabelShow[item.id]"
-                        @change="
+                          v-model:checked="seriesLabelShow[item.id]"
+                          @change="
                           () => {
                             if (allSeriesEqual) {
                               changAllLabelControl(item)
@@ -2366,9 +2481,9 @@ onBeforeUnmount(() => {
                       </a-checkbox>
 
                       <a-select
-                        v-model:value="item.label.position"
-                        size="small"
-                        @change="
+                          v-model:value="item.label.position"
+                          size="small"
+                          @change="
                           () => {
                             if (allSeriesEqual) {
                               changeAllLabelPosition(item)
@@ -2379,21 +2494,21 @@ onBeforeUnmount(() => {
                             }
                           }
                         "
-                        :disabled="
+                          :disabled="
                           seriesLabelShow[item.id] == null || seriesLabelShow[item.id] == ''
                         "
                       >
                         <a-select-option value="top"
-                          ><span class="label-normal">顶部</span></a-select-option
+                        ><span class="label-normal">顶部</span></a-select-option
                         >
                         <a-select-option value="inside"
-                          ><span class="label-normal">内中</span></a-select-option
+                        ><span class="label-normal">内中</span></a-select-option
                         >
                         <a-select-option value="insideBottom"
-                          ><span class="label-normal">内下</span></a-select-option
+                        ><span class="label-normal">内下</span></a-select-option
                         >
                         <a-select-option value="insideTop"
-                          ><span class="label-normal">内上</span></a-select-option
+                        ><span class="label-normal">内上</span></a-select-option
                         >
                       </a-select>
                     </div>
@@ -2404,13 +2519,13 @@ onBeforeUnmount(() => {
 
                     <div class="component-right">
                       <a-slider
-                        v-model:value="item.label.rotate"
-                        :min="-90"
-                        :max="90"
-                        :dots="true"
-                        :step="15"
-                        :style="{ width: '100%' }"
-                        @change="
+                          v-model:value="item.label.rotate"
+                          :min="-90"
+                          :max="90"
+                          :dots="true"
+                          :step="15"
+                          :style="{ width: '100%' }"
+                          @change="
                           () => {
                             if (allSeriesEqual) {
                               changeAllRotate(item)
@@ -2421,7 +2536,7 @@ onBeforeUnmount(() => {
                             }
                           }
                         "
-                        :disabled="
+                          :disabled="
                           seriesLabelShow[item.id] == null || seriesLabelShow[item.id] == ''
                         "
                       >
@@ -2434,9 +2549,9 @@ onBeforeUnmount(() => {
 
                     <div class="component-right">
                       <a-radio-group
-                        v-model:value="item.emphasis.focus"
-                        size="small"
-                        @change="
+                          v-model:value="item.emphasis.focus"
+                          size="small"
+                          @change="
                           () => {
                             if (allSeriesEqual) {
                               changeAllSeriesEmphasis(item)
@@ -2449,13 +2564,13 @@ onBeforeUnmount(() => {
                         "
                       >
                         <a-radio-button value="none"
-                          ><span class="label-normal">无</span></a-radio-button
+                        ><span class="label-normal">无</span></a-radio-button
                         >
                         <a-radio-button value="series"
-                          ><span class="label-normal">系列</span></a-radio-button
+                        ><span class="label-normal">系列</span></a-radio-button
                         >
                         <a-radio-button value="self"
-                          ><span class="label-normal">自身</span></a-radio-button
+                        ><span class="label-normal">自身</span></a-radio-button
                         >
                       </a-radio-group>
                     </div>
@@ -2469,9 +2584,9 @@ onBeforeUnmount(() => {
                 <span class="label-left" style="width: 48px">横(纵)向</span>
                 <div class="component-right">
                   <a-checkbox
-                    v-model:checked="vertical"
-                    value="vertical"
-                    @change="
+                      v-model:checked="vertical"
+                      value="vertical"
+                      @change="
                       () => {
                         if (vertical) {
                           tempChartOption.xAxis.type = 'value'
@@ -2497,7 +2612,7 @@ onBeforeUnmount(() => {
                         }
                       }
                     "
-                    ><span class="label-normal">条形图</span></a-checkbox
+                  ><span class="label-normal">条形图</span></a-checkbox
                   >
                 </div>
               </div>
@@ -2507,20 +2622,16 @@ onBeforeUnmount(() => {
                 <span class="label-left" style="width: 48px">缩放组件</span>
                 <div class="component-right">
                   <a-checkbox-group
-                    v-model:value="zoomShow"
-                    @change="
+                      v-model:value="zoomShow"
+                      @change="
                       () => {
                         if (zoomShow.length > 0) {
-                          if (zoomShow.length == 1) {
-                            zoomShow.forEach((item) => {
-                              if (item == 'x') {
-                                xZoomShow = true
-                                yZoomShow = false
-                              } else {
-                                xZoomShow = false
-                                yZoomShow = true
-                              }
-                            })
+                          if (zoomShow.length == 1 && zoomShow[0] == 'x') {
+                            xZoomShow = true
+                            yZoomShow = false
+                          }else if(zoomShow.length == 1 && zoomShow[0] == 'y') {
+                            xZoomShow = false
+                            yZoomShow = true
                           } else {
                             xZoomShow = true
                             yZoomShow = true
@@ -2542,20 +2653,18 @@ onBeforeUnmount(() => {
                 <span class="label-left" style="width: 48px">横向</span>
                 <div class="component-right">
                   <a-checkbox-group
-                    v-model:value="xZoom"
-                    @change="
+                      v-model:value="xZoom"
+                      @change="
                       () => {
                         let x0InsideDisabled = false
                         let x0SliderShow = true
                         if (xZoom.length > 0) {
-                          if (xZoom.length == 1) {
-                            if (xZoom[0] == 'inside') {
+                          if (xZoom.length == 1 && xZoom[0] == 'inside') {
                               x0InsideDisabled = false
                               x0SliderShow = false
-                            } else {
-                              x0InsideDisabled = true
-                              x0SliderShow = true
-                            }
+                          } else if(xZoom.length == 1 && xZoom[0] == 'slider'){
+                            x0InsideDisabled = true
+                            x0SliderShow = true
                           } else {
                             x0InsideDisabled = false
                             x0SliderShow = true
@@ -2582,12 +2691,17 @@ onBeforeUnmount(() => {
                             tempChartOption.dataZoom[i].show = x0SliderShow
                           }
                         }
-                        tempChart.setOption({ dataZoom: option })
+                        tempChart.setOption({ dataZoom: option });
+
+                       let {top,left,right,bottom} =  openAndCloseComponent(currentXZoomPosition,x0SliderShow);
+
+                       Object.assign(changeGridPosition,{top,left,right,bottom});
+
                       }
                     "
                   >
                     <a-checkbox value="inside"><span class="label-normal">内置</span></a-checkbox>
-                    <a-checkbox value="silder"><span class="label-normal">滑块</span></a-checkbox>
+                    <a-checkbox value="slider"><span class="label-normal">滑块</span></a-checkbox>
                   </a-checkbox-group>
                 </div>
               </div>
@@ -2596,12 +2710,12 @@ onBeforeUnmount(() => {
                 <span class="label-left" style="width: 48px">范围</span>
                 <div class="component-right">
                   <a-slider
-                    v-model:value="xZoomRange"
-                    range
-                    :style="{ width: '100%' }"
-                    :dots="true"
-                    :step="5"
-                    @change="
+                      v-model:value="xZoomRange"
+                      range
+                      :style="{ width: '100%' }"
+                      :dots="true"
+                      :step="5"
+                      @change="
                       () => {
                         let option = {
                           id: 'x0Inside',
@@ -2627,20 +2741,18 @@ onBeforeUnmount(() => {
                 <span class="label-left" style="width: 48px">纵向</span>
                 <div class="component-right">
                   <a-checkbox-group
-                    v-model:value="yZoom"
-                    @change="
+                      v-model:value="yZoom"
+                      @change="
                       () => {
                         let y0InsideDisabled = false
                         let y0SliderShow = true
                         if (yZoom.length > 0) {
-                          if (yZoom.length == 1) {
-                            if (yZoom[0] == 'inside') {
-                              y0InsideDisabled = false
-                              y0SliderShow = false
-                            } else {
-                              y0InsideDisabled = true
-                              y0SliderShow = true
-                            }
+                          if (yZoom.length == 1 && yZoom[0] == 'inside') {
+                            y0InsideDisabled = false
+                            y0SliderShow = false
+                          } else if(yZoom.length == 1 && yZoom[0] == 'slider') {
+                            y0InsideDisabled = true
+                            y0SliderShow = true
                           } else {
                             y0InsideDisabled = false
                             y0SliderShow = true
@@ -2669,12 +2781,17 @@ onBeforeUnmount(() => {
                           }
                         }
 
-                        tempChart.setOption({ dataZoom: option })
+                        tempChart.setOption({ dataZoom: option });
+
+
+                       let {top,left,right,bottom} =  openAndCloseComponent(currentYZoomPosition,y0SliderShow);
+
+                       Object.assign(changeGridPosition,{top,left,right,bottom});
                       }
                     "
                   >
                     <a-checkbox value="inside"><span class="label-normal">内置</span></a-checkbox>
-                    <a-checkbox value="silder"><span class="label-normal">滑块</span></a-checkbox>
+                    <a-checkbox value="slider"><span class="label-normal">滑块</span></a-checkbox>
                   </a-checkbox-group>
                 </div>
               </div>
@@ -2683,12 +2800,12 @@ onBeforeUnmount(() => {
                 <span class="label-left" style="width: 48px">范围</span>
                 <div class="component-right">
                   <a-slider
-                    v-model:value="yZoomRange"
-                    range
-                    :style="{ width: '100%' }"
-                    :dots="true"
-                    :step="5"
-                    @change="
+                      v-model:value="yZoomRange"
+                      range
+                      :style="{ width: '100%' }"
+                      :dots="true"
+                      :step="5"
+                      @change="
                       () => {
                         let option = {
                           id: 'y0Inside',
