@@ -144,7 +144,7 @@ const addTest = (event: Event) => {
   // 添加元素后展示模态框
   // 一 选择数据源
   selectData.open = true
-  // 二 开始配置
+  // 二 开始配置 配置内容由 selectData.open 点击ok后的模态框决定
 }
 
 let chartArray: EChartsType[] = []
@@ -736,8 +736,6 @@ interface ComponentPosition {
   allStatus: GridPosition
 }
 
-// let changeGridPosition = reactive({top: 0, left: 0, right: 0, bottom: 0})
-
 let currentGridPosition = reactive({top: 7, left: 0.5, right: 0.5, bottom: 0.5});
 
 function changeGridPosition(top: number, left: number, right: number, bottom: number) {
@@ -747,12 +745,6 @@ function changeGridPosition(top: number, left: number, right: number, bottom: nu
   currentGridPosition.bottom += bottom
 }
 
-// watch(changeGridPosition, () => {
-//   currentGridPosition.top += changeGridPosition.top
-//   currentGridPosition.left += changeGridPosition.left
-//   currentGridPosition.right += changeGridPosition.right
-//   currentGridPosition.bottom += changeGridPosition.bottom
-// })
 
 watch(currentGridPosition, () => {
   tempChart.setOption({
@@ -765,11 +757,6 @@ watch(currentGridPosition, () => {
   })
 })
 
-// 图例 开关 上下左右
-// 标题 开关 上
-// x轴名称 开关 左右 中上 中下
-// y轴名称 上 下 左右
-// 缩略图 下 右
 const titleGridPosition = {
   left: {top: 2.5, left: 0, right: 0, bottom: 0},
   right: {top: 2.5, left: 0, right: 0, bottom: 0},
@@ -838,11 +825,11 @@ const legendGridPosition = {
   topLeft: {top: 2.5, left: 0, right: 0, bottom: 0},
   topCenter: {top: 2.5, left: 0, right: 0, bottom: 0},
   topRight: {top: 2.5, left: 0, right: 0, bottom: 0},
-  leftCenter: {top: 0, left: 8, right: 0, bottom: 0},
-  rightCenter: {top: 0, left: 0, right: 8, bottom: 0},
-  bottomLeft: {top: 0, left: 0, right: 0, bottom: 5},
-  bottomRight: {top: 0, left: 0, right: 0, bottom: 5},
-  bottomCenter: {top: 0, left: 0, right: 0, bottom: 5},
+  leftCenter: {top: 0, left: 5, right: 0, bottom: 0},
+  rightCenter: {top: 0, left: 0, right: 5, bottom: 0},
+  bottomLeft: {top: 0, left: 0, right: 0, bottom: 3.5},
+  bottomRight: {top: 0, left: 0, right: 0, bottom: 3.5},
+  bottomCenter: {top: 0, left: 0, right: 0, bottom: 3.5},
 } as GridPosition
 
 let currentLegendPosition = ref<ComponentPosition>({
@@ -1048,7 +1035,11 @@ const changeThem = (themName: string) => {
 const chartData = reactive<{ open: boolean; ok: (reject: any) => void }>({
   open: false,
   ok: (reject: any) => {
-    chartData.open = false
+    chartData.open = false;
+
+    // 配置好之后从 temChart 中获取数据，并渲染给最后一个 chartArray 中的chart
+    chartArray[chartArray.length-1].setOption(tempChart.getOption(),true);
+    tempChart.dispose();
   },
 })
 
@@ -1164,7 +1155,7 @@ onBeforeUnmount(() => {
       <!-- 图形配置模态框-->
       <!--        :open="chartData.open"-->
       <a-modal
-          open="true"
+          :open="chartData.open"
           @ok="chartData.ok"
           ok-text="确认"
           cancel-text="取消"
@@ -2768,36 +2759,33 @@ onBeforeUnmount(() => {
                 <div class="component-right">
                   <a-checkbox-group
                       v-model:value="xZoom"
-                      @change="
-                      () => {
-                       let x0InsideDisabled = false
-                       let x0SliderShow = true
-
-                        if (xZoom.length > 0) {
-                          if (xZoom.length == 1 && xZoom[0] == 'inside') {
-                              x0InsideDisabled = false
-                              x0SliderShow = false
-                          } else if(xZoom.length == 1 && xZoom[0] == 'slider'){
-                            x0InsideDisabled = true
-                            x0SliderShow = true
-                          } else {
-                            x0InsideDisabled = false
-                            x0SliderShow = true
-                          }
-                        } else {
-                          x0InsideDisabled = true
-                          x0SliderShow = false
-                        }
-
-                        let {top,left,right,bottom} =  openAndCloseComponent(currentXZoomPosition,x0SliderShow);
-
-                        changeGridPosition(top, left, right, bottom );
+                  >
+                    <a-checkbox value="inside" @change="(v)=>{
+                       let x0InsideDisabled = !v.target.checked;
 
                         let option = [
                           {
                             id: 'x0Inside',
                             disabled: x0InsideDisabled,
                           },
+                        ]
+                        for (let i = 0; i < tempChartOption.dataZoom.length; i++) {
+                          if (tempChartOption.dataZoom[i].id == 'x0Inside') {
+                            tempChartOption.dataZoom[i].disabled = x0InsideDisabled;
+                            break;
+                          }
+                        }
+                        tempChart.setOption({ dataZoom: option });
+                    }"><span class="label-normal">内置</span></a-checkbox>
+                    <a-checkbox value="slider" @change="(v)=>{
+                      console.log(v,'fasfdsfdas')
+                       let x0SliderShow = v.target.checked;
+
+                       let {top,left,right,bottom} =  openAndCloseComponent(currentXZoomPosition,x0SliderShow);
+
+                        changeGridPosition(top, left, right, bottom );
+
+                        let option = [
                           {
                             id: 'x0Slider',
                             show: x0SliderShow,
@@ -2805,18 +2793,14 @@ onBeforeUnmount(() => {
                           },
                         ]
                         for (let i = 0; i < tempChartOption.dataZoom.length; i++) {
-                          if (tempChartOption.dataZoom[i].id == 'x0Inside') {
-                            tempChartOption.dataZoom[i].disabled = x0InsideDisabled
-                          } else if (tempChartOption.dataZoom[i].id == 'x0Slider') {
-                            tempChartOption.dataZoom[i].show = x0SliderShow
+                         if (tempChartOption.dataZoom[i].id == 'x0Slider') {
+                            tempChartOption.dataZoom[i].show = x0SliderShow;
+                            break;
                           }
                         }
                         tempChart.setOption({ dataZoom: option });
-                      }
-                    "
-                  >
-                    <a-checkbox value="inside"><span class="label-normal">内置</span></a-checkbox>
-                    <a-checkbox value="slider"><span class="label-normal">滑块</span></a-checkbox>
+
+                    }"><span class="label-normal">滑块</span></a-checkbox>
                   </a-checkbox-group>
                 </div>
               </div>
@@ -2857,35 +2841,31 @@ onBeforeUnmount(() => {
                 <div class="component-right">
                   <a-checkbox-group
                       v-model:value="yZoom"
-                      @change="
-                      () => {
-                       let y0InsideDisabled = false
-                       let y0SliderShow = true
-                        if (yZoom.length > 0) {
-                          if (yZoom.length == 1 && yZoom[0] == 'inside') {
-                            y0InsideDisabled = false
-                            y0SliderShow = false
-                          } else if(yZoom.length == 1 && yZoom[0] == 'slider') {
-                            y0InsideDisabled = true
-                            y0SliderShow = true
-                          } else {
-                            y0InsideDisabled = false
-                            y0SliderShow = true
-                          }
-                        } else {
-                          y0InsideDisabled = true
-                          y0SliderShow = false
-                        }
-
-                       let {top,left,right,bottom} =  openAndCloseComponent(currentYZoomPosition,y0SliderShow);
-
-                       changeGridPosition(top, left, right, bottom );
-
+                  >
+                    <a-checkbox value="inside" @change="(v)=>{
+                       let y0InsideDisabled = !v.target.checked
                         let option = [
                           {
                             id: 'y0Inside',
                             disabled: y0InsideDisabled,
                           },
+                        ]
+
+                        for (let i = 0; i < tempChartOption.dataZoom.length; i++) {
+                          if (tempChartOption.dataZoom[i].id == 'y0Inside') {
+                            tempChartOption.dataZoom[i].disabled = y0InsideDisabled;
+                            break;
+                          }
+                        }
+
+                        tempChart.setOption({ dataZoom: option });
+                    }"><span class="label-normal">内置</span></a-checkbox>
+                    <a-checkbox value="slider" @change="(v)=>{
+                       let y0SliderShow = v.target.checked;
+                       let {top,left,right,bottom} =  openAndCloseComponent(currentYZoomPosition,y0SliderShow);
+                       changeGridPosition(top, left, right, bottom );
+
+                        let option = [
                           {
                             id: 'y0Slider',
                             show: y0SliderShow,
@@ -2894,19 +2874,14 @@ onBeforeUnmount(() => {
                         ]
 
                         for (let i = 0; i < tempChartOption.dataZoom.length; i++) {
-                          if (tempChartOption.dataZoom[i].id == 'y0Inside') {
-                            tempChartOption.dataZoom[i].disabled = y0InsideDisabled
-                          } else if (tempChartOption.dataZoom[i].id == 'y0Slider') {
-                            tempChartOption.dataZoom[i].show = y0SliderShow
+                          if (tempChartOption.dataZoom[i].id == 'y0Slider') {
+                            tempChartOption.dataZoom[i].show = y0SliderShow;
+                            break;
                           }
                         }
 
                         tempChart.setOption({ dataZoom: option });
-                      }
-                    "
-                  >
-                    <a-checkbox value="inside"><span class="label-normal">内置</span></a-checkbox>
-                    <a-checkbox value="slider"><span class="label-normal">滑块</span></a-checkbox>
+                    }"><span class="label-normal">滑块</span></a-checkbox>
                   </a-checkbox-group>
                 </div>
               </div>
