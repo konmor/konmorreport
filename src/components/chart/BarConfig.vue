@@ -27,7 +27,6 @@ interface ComponentPosition {
   position: { top: number; left: number; right: number; bottom: number } | undefined
   allStatus: GridPosition
 }
-
 let {chartConfig, chartOption, chartContainer} = defineProps(['chartConfig', 'chartOption', 'chartContainer']);
 
 const chartConfigConstParams = {
@@ -36,7 +35,7 @@ const chartConfigConstParams = {
     right: {top: 2.5, left: 0, right: 0, bottom: 0},
     center: {top: 2.5, left: 0, right: 0, bottom: 0},
   } as GridPosition,
-  legendGridPosition:{
+  legendGridPosition: {
     topLeft: {top: 2.5, left: 0, right: 0, bottom: 0},
     topCenter: {top: 2.5, left: 0, right: 0, bottom: 0},
     topRight: {top: 2.5, left: 0, right: 0, bottom: 0},
@@ -46,13 +45,13 @@ const chartConfigConstParams = {
     bottomRight: {top: 0, left: 0, right: 0, bottom: 3.5},
     bottomCenter: {top: 0, left: 0, right: 0, bottom: 3.5},
   } as GridPosition,
-  xAxisNamePosition:{
+  xAxisNamePosition: {
     start: {top: 0, left: 3, right: 0, bottom: 0},
     end: {top: 0, left: 0, right: 3, bottom: 0},
     topCenter: {top: 2.5, left: 0, right: 0, bottom: 0},
     bottomCenter: {top: 0, left: 0, right: 0, bottom: 2.5},
   } as GridPosition,
-  yAxisNamePosition:{
+  yAxisNamePosition: {
     leftTop: {top: 2.5, left: 0, right: 0, bottom: 0},
     leftCenter: {top: 0, left: 0, right: 0, bottom: 0},
     leftBottom: {top: 0, left: 0, right: 0, bottom: 2.5},
@@ -60,65 +59,78 @@ const chartConfigConstParams = {
     rightCenter: {top: 0, left: 0, right: 0, bottom: 0},
     rightBottom: {top: 0, left: 0, right: 0, bottom: 2.5},
   } as GridPosition,
-  zoomPosition:{
+  zoomPosition: {
     right: {top: 0, left: 0, right: 3, bottom: 0},
     bottom: {top: 0, left: 0, right: 0, bottom: 7},
   } as GridPosition,
 }
-
 let chartConfigControl = reactive({
   themActiveKey: '', // 展开主题折叠面板
   currentThem: 'customized', // 当前主题
+  currentColors: themArray.find((item) => item.themeName == 'customized')!.theme.color, // 当前主题的颜色
   pileActiveKey: '', // 展开堆叠折叠面板
-  stackItems: [], // 堆叠的内容
+  stackItems: [[]] as Array<Array<{ id: string, name: string, color: string }>>, // 堆叠的内容[[{name,id,color}]]
   legendPosition: 'topCenter', // 图例的位置
-  xAxisActiveKey:'', // 展开x轴折叠面板
-  xAxisNameShow:false, // x轴名称显示开关
-  xAxisIntervalChecked:false, // 标签是否固定间隔
+  xAxisActiveKey: '', // 展开x轴折叠面板
+  xAxisNameShow: false, // x轴名称显示开关
+  xAxisIntervalChecked: false, // 标签是否固定间隔
 
+  yAxisActiveKey: '',
+  yAxisNameShow: false,
+  yAxisIntervalChecked: false,
+
+  allSeriesEqual: false, // 数据系列的配置，各系列全一一致
+  allSeriesConfigShow: [], // 数据系列：默认展开的内容
+  seriesLabelShow: {} as Record<string, 'show' | 'hover' | ''>, // key 是该系列的id，value是 'show' | 'hover' | ''
+
+  vertical: false, // 是否条形图
+  zoomShow: [], // string[] 缩放组件控制器显示隐藏控制
+  xZoomShow: false, // x轴缩放组件显示隐藏控制
+  yZoomShow: false, // y轴缩放组件显示隐藏控制
+  xZoom: [],
+  yZoom: [],
+  xZoomRange: [0, 100],
+  yZoomRange: [0, 100],
   currentGridPosition:
       {top: 7, left: 0.5, right: 0.5, bottom: 0.5},
 
-  currentTitlePosition:{
+  currentTitlePosition: {
     currentStatus: 'left',
     position: undefined,
     allStatus: chartConfigConstParams.titleGridPosition,
-  }as ComponentPosition,
+  } as ComponentPosition,
 
-  currentLegendPosition:{
+  currentLegendPosition: {
     currentStatus: 'topCenter',
     position: undefined,
     allStatus: chartConfigConstParams.legendGridPosition,
-  }as ComponentPosition,
+  } as ComponentPosition,
 
-  currentXAxisNamePosition:{
+  currentXAxisNamePosition: {
     currentStatus: 'bottomCenter',
     position: undefined,
     allStatus: chartConfigConstParams.xAxisNamePosition,
-  }as ComponentPosition,
+  } as ComponentPosition,
 
-  currentYAxisNamePosition:{
+  currentYAxisNamePosition: {
     currentStatus: 'leftTop',
     position: undefined,
     allStatus: chartConfigConstParams.yAxisNamePosition,
   } as ComponentPosition,
 
-  currentXZoomPosition:{
+  currentXZoomPosition: {
     currentStatus: 'bottom',
     position: undefined,
     allStatus: chartConfigConstParams.zoomPosition,
-  }as ComponentPosition,
+  } as ComponentPosition,
 
-  currentYZoomPosition:{
+  currentYZoomPosition: {
     currentStatus: 'right',
     position: undefined,
     allStatus: chartConfigConstParams.zoomPosition,
-  }as ComponentPosition,
+  } as ComponentPosition,
 
 });
-
-
-
 const chartConfigFunction = {
   changeThem: (themName: string) => {
     chartConfig.dispose()
@@ -151,16 +163,16 @@ const chartConfigFunction = {
     }
     return {top, left, right, bottom}
   },
-  changeGridPosition:(top: number, left: number, right: number, bottom: number)=>{
+  changeGridPosition: (top: number, left: number, right: number, bottom: number) => {
     chartConfigControl.currentGridPosition.top += top
     chartConfigControl.currentGridPosition.left += left
     chartConfigControl.currentGridPosition.right += right
     chartConfigControl.currentGridPosition.bottom += bottom
   },
-  changeComponentPosition:(
+  changeComponentPosition: (
       crtPosition: ComponentPosition,
       changeStatus: string,
-  )=>{
+  ) => {
     let top = 0
     let left = 0
     let right = 0
@@ -185,9 +197,116 @@ const chartConfigFunction = {
     bottom += crtPosition.allStatus[changeStatus].bottom
 
     crtPosition.currentStatus = changeStatus;
-    return {top, left, right, bottom}}
-}
+    return {top, left, right, bottom}
+  },
+  // 变更所有系列的类型，如柱状图全部变为折线图
+  changeAllSeriesType: (value: string) => {
+    let option = []
+    for (let i = 0; i < chartOption.series.length; i++) {
+      option.push({id: chartOption.series[i].id, type: value})
+      chartOption.series[i].type = value
+    }
+    chartConfig.setOption({series: option})
+  },
+  changAllSeriesLabelControl: (item: { id: string }) => {
 
+    let seriesLabelShow = chartConfigControl.seriesLabelShow;
+    let checked = seriesLabelShow[item.id];
+    let emphasisLabelShow = false
+    let labelShow = false
+
+    if (seriesLabelShow[item.id] != null && seriesLabelShow[item.id]) {
+      emphasisLabelShow = true
+      labelShow = true
+    }
+
+    let option = []
+    for (let i = 0; i < chartOption.series.length; i++) {
+      option.push({
+        id: chartOption.series[i].id,
+        label: {show: labelShow},
+        emphasis: {label: {show: emphasisLabelShow}},
+      })
+
+      chartOption.series[i].emphasis.label.show = emphasisLabelShow
+      chartOption.series[i].label.show = labelShow
+      seriesLabelShow[chartOption.series[i].id] = checked
+    }
+    chartConfig.setOption({series: option})
+  },
+  seriesLabelControl: (item: any) => {
+    let seriesLabelShow = chartConfigControl.seriesLabelShow;
+    if (seriesLabelShow[item.id] != null && seriesLabelShow[item.id]) {
+      item.emphasis.label.show = true
+      item.label.show = true
+    } else {
+      item.emphasis.label.show = false
+      item.label.show = false
+    }
+    let option = {
+      id: item.id,
+      label: {show: item.label.show},
+      emphasis: {label: {show: item.emphasis.label.show}},
+    }
+    chartConfig.setOption({
+      series: option,
+    })
+  },
+
+  changeAllLabelPosition: (item: any) => {
+    let position = item.label.position
+    let option = []
+    for (let i = 0; i < chartOption.series.length; i++) {
+      option.push({
+        id: chartOption.series[i].id,
+        label: {position: position},
+      })
+
+      chartOption.series[i].label.position = position
+    }
+    chartConfig.setOption({series: option})
+  },
+
+  changeAllRotate: (item: any) => {
+    let rotate = item.label.rotate
+    let option = []
+    for (let i = 0; i < chartOption.series.length; i++) {
+      option.push({
+        id: chartOption.series[i].id,
+        label: {rotate: rotate},
+      })
+
+      chartOption.series[i].label.rotate = rotate
+    }
+    chartConfig.setOption({series: option})
+  },
+
+  changeAllSeriesEmphasis: (item: any) => {
+    let focus = item.emphasis.focus
+    let option = []
+    for (let i = 0; i < chartOption.series.length; i++) {
+      option.push({
+        id: chartOption.series[i].id,
+        emphasis: {focus: focus},
+      })
+      chartOption.series[i].emphasis.focus = focus
+    }
+    chartConfig.setOption({series: option})
+  },
+  initStackItems: () => {
+    for (let i = 0; i < chartOption.series.length; i++) {
+      let seriesItem = chartOption.series[i];
+      chartConfigControl.stackItems[i] = [
+        {
+          id: seriesItem.id,
+          name: seriesItem.name,
+          color: chartConfigControl.currentColors[i]
+        }
+      ]
+    }
+  }
+
+};
 const chartConfigStyle = reactive({
   stackContainersStyle: {
     display: 'flex',
@@ -205,9 +324,11 @@ const chartConfigStyle = reactive({
     height: '1.6em',
     width: '1em',
   }
-})
+});
+// 初始化堆叠配置
+chartConfigFunction.initStackItems();
 
-
+// grid的变化
 watch(chartConfigControl.currentGridPosition, (grid) => {
   chartConfig.setOption({
     grid: {
@@ -219,6 +340,70 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
   })
 })
 
+// 主题切换
+watch(() => chartConfigControl.currentThem, (them) => {
+  chartConfigControl.currentColors = themArray.find((item) => item.themeName == them)!.theme.color
+
+  for (let i = 0; i < chartConfigControl.stackItems.length; i++) {
+    let stackItem = chartConfigControl.stackItems[i]
+    if (stackItem.length > 0) {
+      for (let j = 0; j < stackItem.length; j++) {
+        // todo
+        stackItem[j].color = chartConfigControl.currentColors[parseInt(stackItem[j].id) - 1]
+      }
+    }
+  }
+})
+// 堆叠变化
+watch(chartConfigControl.stackItems, (items: Array<Array<{ id: string, name: string, color: string }>>) => {
+  let option: { series: Array<any> } = {series: []};
+  for (let i = 0; i < items.length; i++) {
+    let item = items[i]
+    if (item.length != 0) {
+      let stack = 'group' + i
+      for (let j = 0; j < item.length; j++) {
+        option.series.push({id: item[j].id, name: item[j].name, stack: stack})
+      }
+    }
+  }
+
+  chartConfig.setOption(option);
+
+  if (chartConfigControl.vertical) {
+    chartConfigStyle.stackContainerStyle.width = chartConfigControl.stackItems.length * 22.4 + 'px'
+    chartConfigStyle.stackContainerStyle.height = '18px'
+  } else {
+    chartConfigStyle.stackContainerStyle.width = '18px'
+    chartConfigStyle.stackContainerStyle.height = chartConfigControl.stackItems.length * 22.4 + 'px'
+  }
+})
+// 条形图和柱状图的切换
+watch(() => chartConfigControl.vertical, () => {
+  if (chartConfigControl.vertical) {
+    chartConfigStyle.stackContainerStyle = {
+      width: chartConfigControl.stackItems.length * 22.4 + 'px',
+      height: '18px',
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'flex-start',
+    }
+    chartConfigStyle.stackItemStyle.width = '1.6em'
+    chartConfigStyle.stackItemStyle.height = '1em'
+    chartConfigStyle.stackContainersStyle.flexDirection = 'column'
+  } else {
+    chartConfigStyle.stackContainerStyle = {
+      width: '18px',
+      height: chartConfigControl.stackItems.length * 22.4 + 'px',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-end',
+    }
+    chartConfigStyle.stackItemStyle.width = '1em'
+    chartConfigStyle.stackItemStyle.height = '1.6em'
+
+    chartConfigStyle.stackContainersStyle.flexDirection = 'row'
+  }
+})
 </script>
 
 <template>
@@ -406,7 +591,7 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
 
   <!-- 鼠标指示器 -->
   <div class="chart-group">
-  <!--指示器类型-->
+    <!--指示器类型-->
     <div class="chart-item">
       <span class="label-left" style="width: 36px">指示器</span>
       <div class="component-right">
@@ -440,7 +625,7 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
 
   <!--图例控制-->
   <div class="chart-group">
-  <!-- 图例开关控件-->
+    <!-- 图例开关控件-->
     <div class="chart-item">
       <span class="label-left" style="width: 24px">图例</span>
       <div class="component-right">
@@ -880,7 +1065,7 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
         </div>
         <!--标签超过长度时的溢出处理 截断或者换行-->
         <div class="chart-item">
-          <span class="label-left" style="width: 48px">溢出处理</span>
+          <span class="label-left" style="width: 48px">超长后</span>
           <div class="component-right">
             <a-radio-group
                 size="small"
@@ -1069,9 +1254,10 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
     </a-collapse>
   </div>
 
+  <!--y轴配置-->
   <div class="chart-group">
     <a-collapse
-        v-model:activeKey="yAxisConfigShow"
+        v-model:activeKey="chartConfigControl.yAxisActiveKey"
         expand-icon-position="end"
         :style="{
                   border: 'none',
@@ -1085,21 +1271,27 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
           header="Y轴"
           :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
       >
+        <!--y轴名称开关-->
         <div class="chart-item">
           <span class="label-left" style="width: 24px">名称</span>
           <div class="component-right">
             <a-switch
                 size="small"
-                v-model:checked="yAxisNameShow"
+                v-model:checked="chartConfigControl.yAxisNameShow"
                 @change="
                           () => {
-                            let {top,left,right,bottom} = chartConfigFunction.openAndCloseComponent(currentYAxisNamePosition,yAxisNameShow);
-                            changeGridPosition(top, left, right, bottom );
+                            // 1. 计算该组件所需grid让出的空间
+                            let {top,left,right,bottom} = chartConfigFunction.openAndCloseComponent(
+                              chartConfigControl.currentYAxisNamePosition,
+                              chartConfigControl.yAxisNameShow);
+                            // 2. 调整grid位置
+                            chartConfigFunction.changeGridPosition(top, left, right, bottom );
 
-                            if (!yAxisNameShow) {
+                            if (!chartConfigControl.yAxisNameShow) {
                                chartOption.yAxis.name = undefined
                             }
 
+                            // 3. 设置y轴名称到图表
                             chartConfig.setOption(
                                 { yAxis:
                                     { name: chartOption.yAxis.name ,
@@ -1108,11 +1300,11 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
                                   dataZoom:[
                                     {
                                     id:'x0Slider',
-                                    top: (101 - currentGridPosition.bottom)+'%'
+                                    top: (101 - chartConfigControl.currentGridPosition.bottom)+'%'
                                     },
                                     {
                                     id:'y0Slider',
-                                    left: (101 - currentGridPosition.right) +'%'
+                                    left: (101 - chartConfigControl.currentGridPosition.right) +'%'
                                     }
                                   ]
                                 });
@@ -1123,6 +1315,7 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
           </div>
         </div>
 
+        <!--y轴名称-->
         <div class="chart-item">
           <span class="label-left"></span>
           <div class="component-right">
@@ -1130,7 +1323,7 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
                 size="small"
                 :style="{ width: '100%', fontSize: '12px', height: '22px' }"
                 allow-clear
-                :disabled="!yAxisNameShow"
+                :disabled="!chartConfigControl.yAxisNameShow"
                 v-model:value="chartOption.yAxis.name"
                 @change="
                           chartConfig.setOption({ yAxis: { name: chartOption.yAxis.name } })
@@ -1139,13 +1332,14 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
           </div>
         </div>
 
+        <!--y轴名称位置-->
         <div class="chart-item">
           <span class="label-left" style="width: 48px">名称位置</span>
           <div class="component-right">
             <a-radio-group
                 size="small"
                 button-style="solid"
-                :disabled="!yAxisNameShow"
+                :disabled="!chartConfigControl.yAxisNameShow"
                 v-model:value="chartOption.yAxis.nameLocation"
                 @change="()=>{
 
@@ -1168,19 +1362,22 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
                               }
                             }
 
-                            let {top,left,right,bottom} = changeComponentPosition(currentYAxisNamePosition,changeStatus);
-                            changeGridPosition(top, left, right, bottom );
-
+                            // 1.
+                            let {top,left,right,bottom} =chartConfigFunction.changeComponentPosition(
+                                chartConfigControl.currentYAxisNamePosition,changeStatus);
+                            // 2.
+                            chartConfigFunction.changeGridPosition(top, left, right, bottom );
+                            // 3.
                             chartConfig.setOption({
                             yAxis: { nameLocation: chartOption.yAxis.nameLocation },
                             dataZoom:[
                                 {
                                 id:'x0Slider',
-                                top: (101 - currentGridPosition.bottom)+'%'
+                                top: (101 - chartConfigControl.currentGridPosition.bottom)+'%'
                                 },
                                 {
                                 id:'y0Slider',
-                                left: (101 - currentGridPosition.right) +'%'
+                                left: (101 - chartConfigControl.currentGridPosition.right) +'%'
                                 }
                               ]
                             })
@@ -1200,7 +1397,7 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
             </a-radio-group>
           </div>
         </div>
-
+        <!--y轴名称位置-->
         <div class="chart-item">
           <span class="label-left" style="width: 48px">离坐标轴</span>
 
@@ -1209,7 +1406,7 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
                 size="small"
                 min="8"
                 :style="{ width: '100%', fontSize: '12px' }"
-                :disabled="!yAxisNameShow"
+                :disabled="!chartConfigControl.yAxisNameShow"
                 v-model:value="chartOption.yAxis.nameGap"
                 addon-after="px"
                 @change="
@@ -1219,7 +1416,7 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
             </a-input-number>
           </div>
         </div>
-
+        <!--y轴 坐标轴位置-->
         <div class="chart-item" style="margin-top: 2px">
           <span class="label-left" style="width: 60px">坐标轴位置</span>
           <div class="component-right">
@@ -1247,19 +1444,24 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
                                  changeStatus='rightTop'
                               }
                             }
-                            let {top,left,right,bottom} = changeComponentPosition(currentYAxisNamePosition,changeStatus);
-                            changeGridPosition(top, left, right, bottom );
+                            // 1.
+                            let {top,left,right,bottom} = chartConfigFunction.changeComponentPosition(
+                                chartConfigControl.currentYAxisNamePosition,
+                                changeStatus);
+                            // 2.
+                            chartConfigFunction.changeGridPosition(top, left, right, bottom );
 
+                            // 3.
                              chartConfig.setOption({
                               yAxis: { position: chartOption.yAxis.position },
                               dataZoom:[
                                   {
                                   id:'x0Slider',
-                                  top: (101 - currentGridPosition.bottom)+'%'
+                                  top: (101 - chartConfigControl.currentGridPosition.bottom)+'%'
                                   },
                                   {
                                   id:'y0Slider',
-                                  left: (101 - currentGridPosition.right) +'%'
+                                  left: (101 - chartConfigControl.currentGridPosition.right) +'%'
                                   }
                                 ]
                               })
@@ -1277,6 +1479,7 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
           </div>
         </div>
 
+        <!--y轴 标签-->
         <div class="chart-item" style="margin-top: 12px; border-top: 1px solid #e8e8e8">
           <span class="label-left" style="width: 60px">标签</span>
           <div class="component-right">
@@ -1291,7 +1494,7 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
             ></a-switch>
           </div>
         </div>
-
+        <!--y轴 标签的角度-->
         <div class="chart-item">
           <span class="label-left" style="width: 60px">角度</span>
           <div class="component-right">
@@ -1313,7 +1516,7 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
             ></a-slider>
           </div>
         </div>
-
+        <!--y轴 标签离坐标轴的距离-->
         <div class="chart-item">
           <span class="label-left" style="width: 48px">离坐标轴</span>
           <div class="component-right">
@@ -1336,8 +1539,9 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
           </div>
         </div>
 
+        <!--y轴 标签长度-->
         <div class="chart-item">
-          <span class="label-left" style="width: 60px">长度</span>
+          <span class="label-left" style="width: 48px">最大长度</span>
           <div class="component-right">
             <a-tooltip title="最大值200 最小值 48">
               <a-input-number
@@ -1361,8 +1565,9 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
           </div>
         </div>
 
+        <!--y轴 标签超过最大长度时，溢出处理-->
         <div class="chart-item">
-          <span class="label-left" style="width: 60px">溢出处理</span>
+          <span class="label-left" style="width: 36px">超长后</span>
           <div class="component-right">
             <a-radio-group
                 size="small"
@@ -1387,6 +1592,7 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
           </div>
         </div>
 
+        <!--y轴 标签超过最大长度时，截断提示-->
         <div
             class="chart-item"
             v-show="chartOption.yAxis.axisLabel.overflow == 'truncate'"
@@ -1410,14 +1616,15 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
           </div>
         </div>
 
+        <!--y轴 标签超过最大长度时，截断提示-->
         <div class="chart-item">
           <div style="display: flex; justify-content: flex-start; align-items: center">
             <a-checkbox
-                v-model:checked="yAxisInterval"
+                v-model:checked="chartConfigControl.yAxisIntervalChecked"
                 :disabled="!chartOption.yAxis.axisLabel.show"
                 @change="
                           () => {
-                            if (yAxisInterval) {
+                            if (chartConfigControl.yAxisIntervalChecked) {
                               chartOption.yAxis.axisLabel.interval = 0
                               chartConfig.setOption({
                                 yAxis: {
@@ -1455,11 +1662,12 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
                             },
                           })
                         "
-                :disabled="!chartOption.yAxis.axisLabel.show || !yAxisInterval"
+                :disabled="!chartOption.yAxis.axisLabel.show || !chartConfigControl.yAxisIntervalChecked"
             ></a-input-number>
           </div>
         </div>
 
+        <!--y轴 分割线开关-->
         <div class="chart-item" style="margin-top: 12px; border-top: 1px solid #e8e8e8">
           <span class="label-left" style="width: 60px">分割线</span>
           <div class="component-right">
@@ -1475,6 +1683,7 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
           </div>
         </div>
 
+        <!--y轴 分割线类型、以及分割线宽度-->
         <div class="chart-item">
           <a-select
               size="small"
@@ -1527,18 +1736,21 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
     </a-collapse>
   </div>
 
+  <!--数据系列-->
   <div class="chart-group">
+
+    <!--数据系列配置一致-->
     <div class="chart-item" style="margin-bottom: 8px">
       <span class="label-left" style="width: 48px">数据系列</span>
       <div class="component-right">
         <a-checkbox
-            v-model:checked="allSeriesEqual"
+            v-model:checked="chartConfigControl.allSeriesEqual"
             @change="
                       () => {
-                        if (allSeriesEqual) {
-                          allSeriesConfigShow = [chartOption.series[0].id || '0']
+                        if (chartConfigControl.allSeriesEqual) {
+                          chartConfigControl.allSeriesConfigShow = [chartOption.series[0].id || '0']
                         } else {
-                          allSeriesConfigShow = []
+                          chartConfigControl.allSeriesConfigShow = []
                         }
                       }
                     "
@@ -1546,8 +1758,9 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
         </a-checkbox>
       </div>
     </div>
+
     <a-collapse
-        v-model:activeKey="allSeriesConfigShow"
+        v-model:activeKey="chartConfigControl.allSeriesConfigShow"
         expand-icon-position="end"
         :style="{
                   border: 'none',
@@ -1567,13 +1780,15 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
                         {{ item.name }}
                       </span>
             <span v-if="item.type == 'bar'">
-                        <BarChartOutlined :style="{ color: currentColors[index] }"/>
+                        <BarChartOutlined :style="{ color: chartConfigControl.currentColors[index] }"/>
                       </span>
             <span v-else-if="item.type == 'line'">
-                        <LineChartOutlined :style="{ color: currentColors[index] }"/>
+                        <LineChartOutlined :style="{ color: chartConfigControl.currentColors[index] }"/>
                       </span>
           </div>
         </template>
+
+        <!--系列名称-->
         <div class="chart-item">
           <span class="label-left" style="width: 48px">系列名称</span>
 
@@ -1592,6 +1807,7 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
           </div>
         </div>
 
+        <!--系列类型-->
         <div class="chart-item">
           <span class="label-left" style="width: 48px">系列类型</span>
 
@@ -1601,8 +1817,8 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
                 size="small"
                 @change="
                           (value: string) => {
-                            if (allSeriesEqual) {
-                              changeAllType(value)
+                            if (chartConfigControl.allSeriesEqual) {
+                              chartConfigFunction.changeAllSeriesType(value);
                             } else {
                               chartConfig.setOption({ series: { id: item.id, type: value } })
                             }
@@ -1619,18 +1835,19 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
           </div>
         </div>
 
+        <!--数据的标签显示开关，以及显示位置-->
         <div class="chart-item">
           <span class="label-left" style="width: 48px">数据标签</span>
 
           <div class="component-right">
             <a-checkbox
-                v-model:checked="seriesLabelShow[item.id]"
+                v-model:checked="chartConfigControl.seriesLabelShow[item.id]"
                 @change="
                           () => {
-                            if (allSeriesEqual) {
-                              changAllLabelControl(item)
+                            if (chartConfigControl.allSeriesEqual) {
+                              chartConfigFunction.changAllSeriesLabelControl(item)
                             } else {
-                              seriesLabelControl(item)
+                              chartConfigFunction.seriesLabelControl(item)
                             }
                           }
                         "
@@ -1643,8 +1860,8 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
                 size="small"
                 @change="
                           () => {
-                            if (allSeriesEqual) {
-                              changeAllLabelPosition(item)
+                            if (chartConfigControl.allSeriesEqual) {
+                              chartConfigFunction.changeAllLabelPosition(item)
                             } else {
                               chartConfig.setOption({
                                 series: [{ id: item.id, label: { position: item.label.position } }],
@@ -1653,7 +1870,7 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
                           }
                         "
                 :disabled="
-                          seriesLabelShow[item.id] == null || seriesLabelShow[item.id] == ''
+                          chartConfigControl.seriesLabelShow[item.id] == null || chartConfigControl.seriesLabelShow[item.id] == ''
                         "
             >
               <a-select-option value="top"
@@ -1672,6 +1889,7 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
           </div>
         </div>
 
+        <!--标签的旋转角度-->
         <div class="chart-item">
           <span class="label-left" style="width: 48px">角度</span>
 
@@ -1685,8 +1903,8 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
                 :style="{ width: '100%' }"
                 @change="
                           () => {
-                            if (allSeriesEqual) {
-                              changeAllRotate(item)
+                            if (chartConfigControl.allSeriesEqual) {
+                              chartConfigFunction.changeAllRotate(item)
                             } else {
                               chartConfig.setOption({
                                 series: { id: item.id, label: { rotate: item.label.rotate } },
@@ -1695,13 +1913,14 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
                           }
                         "
                 :disabled="
-                          seriesLabelShow[item.id] == null || seriesLabelShow[item.id] == ''
+                          chartConfigControl.seriesLabelShow[item.id] == null || chartConfigControl.seriesLabelShow[item.id] == ''
                         "
             >
             </a-slider>
           </div>
         </div>
 
+        <!--系列的高亮状态-->
         <div class="chart-item">
           <span class="label-left" style="width: 48px">高亮状态</span>
 
@@ -1711,8 +1930,8 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
                 size="small"
                 @change="
                           () => {
-                            if (allSeriesEqual) {
-                              changeAllSeriesEmphasis(item)
+                            if (chartConfigControl.allSeriesEqual) {
+                             chartConfigFunction.changeAllSeriesEmphasis(item);
                             } else {
                               chartConfig.setOption({
                                 series: { id: item.id, emphasis: { focus: item.emphasis.focus } },
@@ -1737,16 +1956,17 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
     </a-collapse>
   </div>
 
+  <!--  条形图-->
   <div class="chart-group">
     <div class="chart-item">
-      <span class="label-left" style="width: 48px">横(纵)向</span>
+      <span class="label-left" style="width: 48px">条形图</span>
       <div class="component-right">
         <a-checkbox
-            v-model:checked="vertical"
+            v-model:checked="chartConfigControl.vertical"
             value="vertical"
             @change="
                       () => {
-                        if (vertical) {
+                        if (chartConfigControl.vertical) {
                           chartOption.xAxis.type = 'value'
                           chartOption.yAxis.type = 'category'
                           chartConfig.setOption({
@@ -1754,7 +1974,7 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
                             yAxis: { type: 'category', axisLabel: chartOption.yAxis.axisLabel },
                           })
 
-                          // 重新设置下阶段和换行
+                          // 重新设置下截断和换行
                           chartConfig.setOption({
                             xAxis: {
                               axisLabel: { overflow: chartOption.xAxis.axisLabel.overflow },
@@ -1770,8 +1990,7 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
                         }
                       }
                     "
-        ><span class="label-normal">条形图</span></a-checkbox
-        >
+        ><span class="label-normal">切换</span></a-checkbox>
       </div>
     </div>
   </div>
@@ -1780,40 +1999,22 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
       <span class="label-left" style="width: 48px">缩放组件</span>
       <div class="component-right">
         <a-checkbox-group
-            v-model:value="zoomShow"
-            @change="
-                      () => {
-                        if (zoomShow.length > 0) {
-                          if (zoomShow.length == 1 && zoomShow[0] == 'x') {
-                            xZoomShow = true
-                            yZoomShow = false
-                          }else if(zoomShow.length == 1 && zoomShow[0] == 'y') {
-                            xZoomShow = false
-                            yZoomShow = true
-                          } else {
-                            xZoomShow = true
-                            yZoomShow = true
-                          }
-                        } else {
-                          xZoomShow = false
-                          yZoomShow = false
-                        }
-                      }
-                    "
-        >
-          <a-checkbox value="x"><span class="label-normal">横向</span></a-checkbox>
-          <a-checkbox value="y"><span class="label-normal">纵向</span></a-checkbox>
+            v-model:value="chartConfigControl.zoomShow">
+          <a-checkbox value="x" @change="(v:any)=>{chartConfigControl.xZoomShow = v.target.checked}"><span
+              class="label-normal">横向</span></a-checkbox>
+          <a-checkbox value="y" @change="(v:any)=>{chartConfigControl.yZoomShow = v.target.checked}"><span
+              class="label-normal">纵向</span></a-checkbox>
         </a-checkbox-group>
       </div>
     </div>
 
-    <div class="chart-item" v-show="xZoomShow">
+    <div class="chart-item" v-show="chartConfigControl.xZoomShow">
       <span class="label-left" style="width: 48px">横向</span>
       <div class="component-right">
         <a-checkbox-group
-            v-model:value="xZoom"
+            v-model:value="chartConfigControl.xZoom"
         >
-          <a-checkbox value="inside" @change="(v)=>{
+          <a-checkbox value="inside" @change="(v:any)=>{
                        let x0InsideDisabled = !v.target.checked;
 
                         let option = [
@@ -1830,27 +2031,32 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
                         }
                         chartConfig.setOption({ dataZoom: option });
                     }"><span class="label-normal">内置</span></a-checkbox>
-          <a-checkbox value="slider" @change="(v)=>{
-                      console.log(v,'fasfdsfdas')
+          <a-checkbox value="slider" @change="(v:any)=>{
                        let x0SliderShow = v.target.checked;
 
-                       let {top,left,right,bottom} =  chartConfigFunction.openAndCloseComponent(currentXZoomPosition,x0SliderShow);
+                       // 1.
+                       let {top,left,right,bottom} =  chartConfigFunction.openAndCloseComponent(
+                           chartConfigControl.currentXZoomPosition,
+                           x0SliderShow);
 
-                        changeGridPosition(top, left, right, bottom );
+                       //2.
+                        chartConfigFunction.changeGridPosition(top, left, right, bottom );
 
                         let option = [
                           {
                             id: 'x0Slider',
                             show: x0SliderShow,
-                            top: (101 - currentGridPosition.bottom)+'%'
+                            top: (101 - chartConfigControl.currentGridPosition.bottom)+'%'
                           },
-                        ]
+                        ];
+
                         for (let i = 0; i < chartOption.dataZoom.length; i++) {
                          if (chartOption.dataZoom[i].id == 'x0Slider') {
                             chartOption.dataZoom[i].show = x0SliderShow;
                             break;
                           }
                         }
+                        //3.
                         chartConfig.setOption({ dataZoom: option });
 
                     }"><span class="label-normal">滑块</span></a-checkbox>
@@ -1858,11 +2064,11 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
       </div>
     </div>
 
-    <div class="chart-item" v-show="xZoomShow">
+    <div class="chart-item" v-show="chartConfigControl.xZoomShow">
       <span class="label-left" style="width: 48px">范围</span>
       <div class="component-right">
         <a-slider
-            v-model:value="xZoomRange"
+            v-model:value="chartConfigControl.xZoomRange"
             range
             :style="{ width: '100%' }"
             :dots="true"
@@ -1871,15 +2077,15 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
                       () => {
                         let option = {
                           id: 'x0Inside',
-                          start: xZoomRange[0],
-                          end: xZoomRange[1],
+                          start: chartConfigControl.xZoomRange[0],
+                          end: chartConfigControl.xZoomRange[1],
                         }
                         chartConfig.setOption({ dataZoom: option })
 
                         for (let i = 0; i < chartOption.dataZoom.length; i++) {
                           if (chartOption.dataZoom[i].id == 'x0Inside') {
-                            chartOption.dataZoom[i].start = xZoomRange[0]
-                            chartOption.dataZoom[i].end = xZoomRange[1]
+                            chartOption.dataZoom[i].start = chartConfigControl.xZoomRange[0]
+                            chartOption.dataZoom[i].end = chartConfigControl.xZoomRange[1]
                             break
                           }
                         }
@@ -1889,13 +2095,13 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
       </div>
     </div>
 
-    <div class="chart-item" v-show="yZoomShow">
+    <div class="chart-item" v-show="chartConfigControl.yZoomShow">
       <span class="label-left" style="width: 48px">纵向</span>
       <div class="component-right">
         <a-checkbox-group
-            v-model:value="yZoom"
+            v-model:value="chartConfigControl.yZoom"
         >
-          <a-checkbox value="inside" @change="(v)=>{
+          <a-checkbox value="inside" @change="(v:any)=>{
                        let y0InsideDisabled = !v.target.checked
                         let option = [
                           {
@@ -1903,28 +2109,30 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
                             disabled: y0InsideDisabled,
                           },
                         ]
-
+                        chartConfig.setOption({ dataZoom: option });
                         for (let i = 0; i < chartOption.dataZoom.length; i++) {
                           if (chartOption.dataZoom[i].id == 'y0Inside') {
                             chartOption.dataZoom[i].disabled = y0InsideDisabled;
                             break;
                           }
                         }
-
-                        chartConfig.setOption({ dataZoom: option });
                     }"><span class="label-normal">内置</span></a-checkbox>
-          <a-checkbox value="slider" @change="(v)=>{
+          <a-checkbox value="slider" @change="(v:any)=>{
                        let y0SliderShow = v.target.checked;
-                       let {top,left,right,bottom} =  chartConfigFunction.openAndCloseComponent(currentYZoomPosition,y0SliderShow);
-                       changeGridPosition(top, left, right, bottom );
+                       let {top,left,right,bottom} =  chartConfigFunction.openAndCloseComponent(
+                           chartConfigControl.currentYZoomPosition,
+                           y0SliderShow);
+                       chartConfigFunction.changeGridPosition(top, left, right, bottom );
 
                         let option = [
                           {
                             id: 'y0Slider',
                             show: y0SliderShow,
-                            left: (101 - currentGridPosition.right) +'%'
+                            left: (101 - chartConfigControl.currentGridPosition.right) +'%'
                           },
                         ]
+
+                        chartConfig.setOption({ dataZoom: option });
 
                         for (let i = 0; i < chartOption.dataZoom.length; i++) {
                           if (chartOption.dataZoom[i].id == 'y0Slider') {
@@ -1933,17 +2141,17 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
                           }
                         }
 
-                        chartConfig.setOption({ dataZoom: option });
+
                     }"><span class="label-normal">滑块</span></a-checkbox>
         </a-checkbox-group>
       </div>
     </div>
 
-    <div class="chart-item" v-show="yZoomShow">
+    <div class="chart-item" v-show="chartConfigControl.yZoomShow">
       <span class="label-left" style="width: 48px">范围</span>
       <div class="component-right">
         <a-slider
-            v-model:value="yZoomRange"
+            v-model:value="chartConfigControl.yZoomRange"
             range
             :style="{ width: '100%' }"
             :dots="true"
@@ -1952,15 +2160,15 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
                       () => {
                         let option = {
                           id: 'y0Inside',
-                          start: yZoomRange[0],
-                          end: yZoomRange[1],
+                          start: chartConfigControl.yZoomRange[0],
+                          end: chartConfigControl.yZoomRange[1],
                         }
                         chartConfig.setOption({ dataZoom: option })
 
                         for (let i = 0; i < chartOption.dataZoom.length; i++) {
                           if (chartOption.dataZoom[i].id == 'y0Inside') {
-                            chartOption.dataZoom[i].start = yZoomRange[0]
-                            chartOption.dataZoom[i].end = yZoomRange[1]
+                            chartOption.dataZoom[i].start = chartConfigControl.yZoomRange[0]
+                            chartOption.dataZoom[i].end = chartConfigControl.yZoomRange[1]
                             break
                           }
                         }

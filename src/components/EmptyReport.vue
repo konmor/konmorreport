@@ -2,8 +2,6 @@
 export default {
   name: 'EmptyReport',
 }
-
-
 </script>
 <script setup lang="ts">
 import Diagram from '@/components/Diagram.vue'
@@ -23,34 +21,14 @@ import {
 } from 'vue'
 import Filter from '@/components/Filter.vue'
 import {getUuid} from 'ant-design-vue/es/vc-notification/HookNotification'
-import {BarChartOutlined, LineChartOutlined} from '@ant-design/icons-vue'
-// 1. 引入echarts
 import * as echarts from 'echarts'
-
 import {barTemplate} from '@/composable/ChartTemplate.ts'
-import {Modal} from 'ant-design-vue'
 import useNavigator from '@/composable/useNavigator.ts'
-import B from '@/test/B.vue'
 import type {EChartsType} from 'echarts'
 import type {ECBasicOption} from 'echarts/types/dist/shared'
-import {UpOutlined, DownOutlined, SettingOutlined} from '@ant-design/icons-vue'
-import Left from '@/assets/icon/Left.vue'
-import Center from '@/assets/icon/Center.vue'
-import Right from '@/assets/icon/Right.vue'
-import TopLeft from '@/assets/icon/legend/TopLeft.vue'
-import TopCenter from '@/assets/icon/legend/TopCenter.vue'
-import TopRight from '@/assets/icon/legend/TopRight.vue'
-import LeftCenter from '@/assets/icon/legend/LeftCenter.vue'
-import RightCenter from '@/assets/icon/legend/RightCenter.vue'
-import BottomLeft from '@/assets/icon/legend/BottomLeft.vue'
-import BottomCenter from '@/assets/icon/legend/BottomCenter.vue'
-import BottomRight from '@/assets/icon/legend/BottomRight.vue'
-import Position from '@/assets/icon/legend/Position.vue'
-import PerfectScrollbar from 'perfect-scrollbar'
-import {themArray} from '@/echartsThem/registerThem.ts'
+import BarConfig from "@/components/chart/BarConfig.vue";
 
-// 主题是否展开
-let pileOpen = ref('')
+
 const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number }[]>([
   {
     value: 1,
@@ -138,139 +116,45 @@ refreshDatasourceList()
 
 const addTest = (event: Event) => {
   // __draggable_context = {element,index}
-  console.log('chart add', event, event.item.__draggable_context.element.meta)
-  console.log(items)
+  // console.log('chart add', event, event.item.__draggable_context.element.meta)
+  // console.log(items)
   // 添加元素后展示模态框
   // 一 选择数据源
-  selectData.open = true
+  sqlSelectorModal.open = true
   // 二 开始配置 配置内容由 selectData.open 点击ok后的模态框决定
 }
 
-let chartArray: EChartsType[] = []
-
-const change = function change(event: Event) {
-  // 监听添加事件
-  if ('added' in event) {
-    window.console.log(event['added'])
-    let id = event['added'].element.id
-    let container = document.getElementById(id)
-    // 2.初始化echarts 挂载的位置
-    let myEcharts = echarts.init(container) // 参数是dom节点
-    // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
-    myEcharts.setOption(barTemplate('test2'))
-
-    chartArray.push(myEcharts)
-
-    let observer = new ResizeObserver(() => {
-      if (myEcharts) myEcharts.resize()
-    })
-    observer.observe(container as Element)
-    observerArray.push(observer)
-  }
-}
-
-let observerArray: ResizeObserver[] = []
-
-onMounted(() => {
-  // 渲染图表
-  for (let i = 0; i < items.slice().length; i++) {
-    let container = document.getElementById(items[i].id)
-    // 2.初始化echarts 挂载的位置
-    let myEcharts = echarts.init(container) // 参数是dom节点
-    // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
-    myEcharts.setOption(barTemplate('test1'))
-    chartArray.push(myEcharts)
-
-    let observer = new ResizeObserver(() => {
-      if (myEcharts) myEcharts.resize()
-    })
-    observer.observe(container as Element)
-    observerArray.push(observer)
-  }
-
-  // 代码调试，后续删除 todo
-  // 开始渲染图表
-  // let container = document.getElementById('chartContainer');
-  let container = chartContainer.value
-  // 2.初始化echarts 挂载的位置
-  let myEcharts = echarts.init(container) // 参数是dom节点
-  tempChart = myEcharts
-  // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
-  myEcharts.setOption(toRaw(tempChartOption))
-
-  let observer = new ResizeObserver(() => {
-    if (myEcharts) myEcharts.resize()
-  })
-  tempObserver = observer
-  observer.observe(container as Element)
-
-  // 堆叠配置 待删除
-  let colors = currentColors.value
-  // 4 * 8 32 3*8 = 24
-  for (let i = 0; i < dimensions.length - 1; i++) {
-    stackItems[i] = [{name: dimensions[i + 1], id: i + 1, color: colors[i]}]
-  }
-})
-
-onUnmounted(() => {
-  observerArray.forEach((item) => {
-    if (item) item.disconnect()
-  })
-
-  if (tempObserver != null) {
-    tempObserver.disconnect()
-  }
-})
-
-let chartContainer = ref()
+let allChartsInstance: EChartsType[] = [];
+// 容器大小变化的监听者，数组
+let allResizeObserver: ResizeObserver[] = []
+// 配置图表时临时变量，临时渲染容器、临时echarts实例、临时监听器
+let tempChartContainer = ref()
 let tempChart: EChartsType
 let tempObserver: ResizeObserver
 
-let xAxisConfigShow = ref('')
-let yAxisConfigShow = ref('')
+// 使用change事件，监听添加事件。似乎echarts有bug，仅change事件【added】能够拿到echarts clone后的对象
+const change = function change(event: Event) {
+  // 监听添加事件
+  if ('added' in event) {
+    // window.console.log(event['added'])
+    let id = event['added'].element.id;
+    let newContainer = document.getElementById(id)
+    // 2.初始化echarts 挂载的位置
+    let newEchartsInstance = echarts.init(newContainer) // 参数是dom节点
+    // 3. 设置默认数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
+    newEchartsInstance.setOption(barTemplate('test2'));
 
-let legendPosition = ref('topCenter')
+    // 放入allChartsInstance容器中
+    allChartsInstance.push(newEchartsInstance);
 
-let xAxisNameShow = ref(false)
-let yAxisNameShow = ref(false)
-
-let allSeriesEqual = ref(false)
-
-let allSeriesConfigShow = ref([])
-
-let seriesLabelShow = ref<Record<string, 'show' | 'hover' | ''>>({})
-
-const seriesLabelControl = (item) => {
-  if (seriesLabelShow.value[item.id] != null && seriesLabelShow.value[item.id]) {
-    item.emphasis.label.show = true
-    item.label.show = true
-  } else {
-    item.emphasis.label.show = false
-    item.label.show = false
+    let observer = new ResizeObserver(() => {
+      if (newEchartsInstance) newEchartsInstance.resize()
+    })
+    observer.observe(newContainer as Element)
+    allResizeObserver.push(observer)
   }
-  let temp = {
-    id: item.id,
-    label: {show: item.label.show},
-    emphasis: {label: {show: item.emphasis.label.show}},
-  }
-  tempChart.setOption({
-    series: temp,
-  })
 }
-
-let vertical = ref(false) //horizontal vertical
-let zoomShow = ref<string[]>([])
-let xZoomShow = ref<boolean>(false)
-let yZoomShow = ref<boolean>(false)
-
-let xZoom = ref<string[]>([])
-
-let yZoom = ref<string[]>([])
-
-let xZoomRange = ref<[number, number]>([0, 100])
-
-let yZoomRange = ref<[number, number]>([0, 100])
-
+// 将对象数据转换为数组数据
 function transferDataToArray() {
   let data = [
     {
@@ -397,86 +281,8 @@ function transferDataToArray() {
 
   return data.map((item) => [item.userName, item.salary1, item.salary2, item.salary3, item.salary4])
 }
-
-let yAxisInterval = ref(false)
-let xAxisInterval = ref(false)
-
+// 维度
 let dimensions = ['userName', 'salary1', 'salary2', 'salary3', 'salary4']
-
-const changeAllType = (value: string) => {
-  let option = []
-  for (let i = 0; i < tempChartOption.series.length; i++) {
-    option.push({id: tempChartOption.series[i].id, type: value})
-    tempChartOption.series[i].type = value
-  }
-  tempChart.setOption({series: option})
-}
-
-const changAllLabelControl = (item) => {
-  let checked = seriesLabelShow.value[item.id]
-  let emphasisLabelShow = false
-  let labelShow = false
-
-  if (seriesLabelShow.value[item.id] != null && seriesLabelShow.value[item.id]) {
-    emphasisLabelShow = true
-    labelShow = true
-  }
-
-  let option = []
-  for (let i = 0; i < tempChartOption.series.length; i++) {
-    option.push({
-      id: tempChartOption.series[i].id,
-      label: {show: labelShow},
-      emphasis: {label: {show: emphasisLabelShow}},
-    })
-
-    tempChartOption.series[i].emphasis.label.show = emphasisLabelShow
-    tempChartOption.series[i].label.show = labelShow
-    seriesLabelShow.value[tempChartOption.series[i].id] = checked
-  }
-  tempChart.setOption({series: option})
-}
-
-const changeAllLabelPosition = (item) => {
-  let position = item.label.position
-  let option = []
-  for (let i = 0; i < tempChartOption.series.length; i++) {
-    option.push({
-      id: tempChartOption.series[i].id,
-      label: {position: position},
-    })
-
-    tempChartOption.series[i].label.position = position
-  }
-  tempChart.setOption({series: option})
-}
-
-const changeAllRotate = (item) => {
-  let rotate = item.label.rotate
-  let option = []
-  for (let i = 0; i < tempChartOption.series.length; i++) {
-    option.push({
-      id: tempChartOption.series[i].id,
-      label: {rotate: rotate},
-    })
-
-    tempChartOption.series[i].label.rotate = rotate
-  }
-  tempChart.setOption({series: option})
-}
-
-const changeAllSeriesEmphasis = (item) => {
-  let focus = item.emphasis.focus
-  let option = []
-  for (let i = 0; i < tempChartOption.series.length; i++) {
-    option.push({
-      id: tempChartOption.series[i].id,
-      emphasis: {focus: focus},
-    })
-    tempChartOption.series[i].emphasis.focus = focus
-  }
-  tempChart.setOption({series: option})
-}
 
 let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   // 标题属性
@@ -723,121 +529,67 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   ],
 })
 
+let stackItems = reactive([[]]);
 
+const tempChartModal = reactive<{ open: boolean; ok: (reject: any) => void ,cancel: () => void }>({
+  open: false,
+  ok: (reject: any) => {
+    tempChartModal.open = false;
 
-
-
-let stackItems = reactive([[]])
-
-watch(stackItems, (items) => {
-  let option = {series: []}
-  for (let i = 0; i < items.length; i++) {
-    let item = items[i]
-    if (item.length != 0) {
-      //
-      let stack = 'group' + i
-      for (let j = 0; j < item.length; j++) {
-        option.series.push({id: item[j].id, name: item[j].name, stack: stack})
-      }
-    }
+    // 配置好之后从 temChart 中获取数据，并渲染给最后一个 chartArray 中的chart
+    allChartsInstance[allChartsInstance.length-1].setOption(tempChart.getOption(),true);
+    tempChart.dispose();
+  },
+  cancel:()=>{
+    tempChartModal.open = false;
   }
-  tempChart.setOption(option)
-  if (vertical.value) {
-    stackContainerStyle.value.width = stackItems.length * 22.4 + 'px'
-    stackContainerStyle.value.height = '18px'
-  } else {
-    stackContainerStyle.value.width = '18px'
-    stackContainerStyle.value.height = stackItems.length * 22.4 + 'px'
-  }
-})
+});
 
-let stackContainerStyle = ref({
-  width: '18px',
-  height: stackItems.length * 22.4 + 'px',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'flex-end',
-})
-
-let stackItemStyle = ref({
-  height: '1.6em',
-  width: '1em',
-})
-
-let stackContainersStyle = ref({
-  display: 'flex',
-  flexDirection: 'row',
-  overflow: 'auto',
-})
-
-watch(vertical, () => {
-  if (vertical.value) {
-    stackContainerStyle.value = {
-      width: stackItems.length * 22.4 + 'px',
-      height: '18px',
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'flex-start',
-    }
-    stackItemStyle.value.width = '1.6em'
-    stackItemStyle.value.height = '1em'
-    stackContainersStyle.value.flexDirection = 'column'
-  } else {
-    stackContainerStyle.value = {
-      width: '18px',
-      height: stackItems.length * 22.4 + 'px',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'flex-end',
-    }
-    stackItemStyle.value.width = '1em'
-    stackItemStyle.value.height = '1.6em'
-
-    stackContainersStyle.value.flexDirection = 'row'
-  }
-})
-
-const selectData = reactive<{
-  open: boolean
-  ok: (reject: any) => void
-  selected: string
-  data: any[]
-  showError: boolean
+const sqlSelectorModal = reactive<{
+  open: boolean,
+  ok: (reject: any) => void,
+  cancel: () => void,
+  selected: string,
+  data: any[],
+  showError: boolean,
 }>({
   open: false,
   ok: (reject: any) => {
-    if (selectData.selected == null) {
-      selectData.showError = true
+    if (sqlSelectorModal.selected == null) {
+      sqlSelectorModal.showError = true
     } else {
       // 关闭数据（、sql）选择框
-      selectData.open = false
+      sqlSelectorModal.open = false
       // 打开图表配置模态框
-      chartData.open = true
+      tempChartModal.open = true
 
       // 保证已经渲染完毕
       nextTick(() => {
         // 开始渲染图表
         // let container = document.getElementById('chartContainer');
-        let container = chartContainer.value
+        let container = tempChartContainer.value
         // 2.初始化echarts 挂载的位置
-        let myEcharts = echarts.init(container) // 参数是dom节点
-        tempChart = myEcharts
+        let newEchartsInstance = echarts.init(container)
+        tempChart = newEchartsInstance; // 交给外部临时变量
         // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
-        myEcharts.setOption(tempChartOption)
+        newEchartsInstance.setOption(tempChartOption)
 
         let observer = new ResizeObserver(() => {
-          if (myEcharts) myEcharts.resize()
+          if (newEchartsInstance) newEchartsInstance.resize()
         })
-        tempObserver = observer
+        tempObserver = observer;
         observer.observe(container as Element)
-        // 堆叠配置
-        let colors = currentColors.value
-        // 4 * 8 32 3*8 = 24
-        for (let i = 0; i < dimensions.length - 1; i++) {
-          stackItems[i] = [{name: dimensions[i + 1], id: i + 1, color: colors[i]}]
-        }
+        // // 堆叠配置
+        // let colors = currentColors.value
+        // // 4 * 8 32 3*8 = 24
+        // for (let i = 0; i < dimensions.length - 1; i++) {
+        //   stackItems[i] = [{name: dimensions[i + 1], id: i + 1, color: colors[i]}]
+        // }
       })
     }
+  },
+  cancel:()=>{
+    sqlSelectorModal.open = false;
   },
   selected: '',
   data:
@@ -850,37 +602,61 @@ const selectData = reactive<{
 })
 
 
-let currentColors = ref(themArray.find((item) => item.themeName == currentThem.value).theme.color)
 
-watch(currentThem, (them) => {
-  currentColors.value = themArray.find((item) => item.themeName == them).theme.color
+onMounted(() => {
+  // 渲染图表
+  for (let i = 0; i < items.slice().length; i++) {
+    let container = document.getElementById(items[i].id)
+    // 2.初始化echarts 挂载的位置
+    let myEcharts = echarts.init(container) // 参数是dom节点
+    // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
+    myEcharts.setOption(barTemplate('test1'))
+    allChartsInstance.push(myEcharts)
 
-  for (let i = 0; i < stackItems.length; i++) {
-    let stackItem = stackItems[i]
-    if (stackItem.length > 0) {
-      for (let j = 0; j < stackItem.length; j++) {
-        stackItem[j].color = currentColors.value[parseInt(stackItem[j].id) - 1]
-      }
-    }
+    let observer = new ResizeObserver(() => {
+      if (myEcharts) myEcharts.resize()
+    })
+    observer.observe(container as Element)
+    allResizeObserver.push(observer)
+  }
+
+  // 代码调试，后续删除 todo
+  // 开始渲染图表
+ /* // let container = document.getElementById('chartContainer');
+  let container = tempChartContainer.value
+  // 2.初始化echarts 挂载的位置
+  let myEcharts = echarts.init(container) // 参数是dom节点
+  tempChart = myEcharts
+  // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
+  myEcharts.setOption(toRaw(tempChartOption))
+
+  let observer = new ResizeObserver(() => {
+    if (myEcharts) myEcharts.resize()
+  })
+  tempObserver = observer
+  observer.observe(container as Element)
+
+  // // 堆叠配置 待删除
+  // let colors = currentColors.value
+  // // 4 * 8 32 3*8 = 24
+  // for (let i = 0; i < dimensions.length - 1; i++) {
+  //   stackItems[i] = [{name: dimensions[i + 1], id: i + 1, color: colors[i]}]
+  // }*/
+})
+
+onUnmounted(() => {
+  allResizeObserver.forEach((item) => {
+    if (item) item.disconnect()
+  })
+
+  if (tempObserver != null) {
+    tempObserver.disconnect()
   }
 })
 
-
-
-const chartData = reactive<{ open: boolean; ok: (reject: any) => void }>({
-  open: false,
-  ok: (reject: any) => {
-    chartData.open = false;
-
-    // 配置好之后从 temChart 中获取数据，并渲染给最后一个 chartArray 中的chart
-    chartArray[chartArray.length-1].setOption(tempChart.getOption(),true);
-    tempChart.dispose();
-  },
-})
-
 onBeforeUnmount(() => {
-  if (chartArray != null && chartArray.length > 0) {
-    chartArray.forEach((item) => {
+  if (allChartsInstance != null && allChartsInstance.length > 0) {
+    allChartsInstance.forEach((item) => {
       if (item) item.dispose()
     })
   }
@@ -889,6 +665,7 @@ onBeforeUnmount(() => {
     tempChart.dispose()
   }
 })
+
 </script>
 
 <template>
@@ -914,21 +691,21 @@ onBeforeUnmount(() => {
 
       <!-- 图表绑定的数据 选择择模态框-->
       <a-modal
-          v-model:open="selectData.open"
+          v-model:open="sqlSelectorModal.open"
           title="请选择需要渲染的数据！"
-          @ok="selectData.ok"
+          @ok="sqlSelectorModal.ok"
           ok-text="确认"
           cancel-text="取消"
       >
         <a-select
-            v-model:value="selectData.selected"
+            v-model:value="sqlSelectorModal.selected"
             placeholder="请选择数据!"
-            :options="selectData.data"
+            :options="sqlSelectorModal.data"
             :style="{ width: '60%' }"
             allowClear
         >
         </a-select>
-        <span :style="{ marginLeft: '10px' }" v-if="selectData.showError">
+        <span :style="{ marginLeft: '10px' }" v-if="sqlSelectorModal.showError">
           <CloseCircleOutlined :style="{ color: 'red' }"/>
           请选择正确的数据！
         </span>
@@ -990,8 +767,8 @@ onBeforeUnmount(() => {
       <!-- 图形配置模态框-->
       <!--        :open="chartData.open"-->
       <a-modal
-          :open="chartData.open"
-          @ok="chartData.ok"
+          :open="tempChartModal.open"
+          @ok="tempChartModal.ok"
           ok-text="确认"
           cancel-text="取消"
           :style="{ backgroundColor: 'transparent' }"
@@ -1001,16 +778,20 @@ onBeforeUnmount(() => {
         <template #title><span>配置图表</span></template>
 
         <a-layout :style="{ height: '100%', width: '100%', backgroundColor: 'transparent' }">
-          <a-layout-sider :style="{ height: '100%', width: '100%', backgroundColor: 'transparent' }"
-          >hello
+          <!-- 配置模态框 左侧字段选择区域-->
+          <a-layout-sider :style="{ height: '100%', width: '100%', backgroundColor: 'transparent' }">
+            hello
           </a-layout-sider>
-
+          <!-- 配置模态框 中间-->
           <a-layout>
+            <!-- 配置模态框 中间 维度配置区域-->
             <a-layout-header
                 :style="{ backgroundColor: 'transparent', border: '1px solid black', height: '15%' }"
             >
               <div>hello world</div>
             </a-layout-header>
+
+            <!-- 配置模态框 中间 图表渲染区域-->
             <a-layout-content
                 :style="{
                 height: '100%',
@@ -1019,10 +800,11 @@ onBeforeUnmount(() => {
                 border: '1px solid black',
               }"
             >
-              <div id="chartContainer" ref="chartContainer" :style="{ height: '100%' }"></div>
+              <div id="tempChartContainer" ref="tempChartContainer" :style="{ height: '100%' }"></div>
             </a-layout-content>
           </a-layout>
 
+          <!-- 配置模态框 中间 图表各类配置区域-->
           <a-layout-sider
               :style="{
               height: '100%',
@@ -1035,7 +817,7 @@ onBeforeUnmount(() => {
               width="240px"
               class="viewConfig"
           >
-
+          <BarConfig :chartConfig="tempChart" :chartOption="tempChartOption" :chartContainer="tempChartContainer"></BarConfig>
           </a-layout-sider>
         </a-layout>
       </a-modal>
