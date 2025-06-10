@@ -14,8 +14,9 @@ import TopLeft from "@/assets/icon/legend/TopLeft.vue";
 import BottomRight from "@/assets/icon/legend/BottomRight.vue";
 import Center from "@/assets/icon/Center.vue";
 import TopRight from "@/assets/icon/legend/TopRight.vue";
-import {reactive, ref, toRaw, watch} from "vue";
+import {nextTick, onMounted, onUnmounted, reactive, ref, toRaw, watch} from "vue";
 import * as echarts from "echarts";
+import draggable from 'vuedraggable'
 
 interface GridPosition {
   [key: string]: { top: number; left: number; right: number; bottom: number }
@@ -27,7 +28,8 @@ interface ComponentPosition {
   position: { top: number; left: number; right: number; bottom: number } | undefined
   allStatus: GridPosition
 }
-let {chartConfig, chartOption, chartContainer} = defineProps(['chartConfig', 'chartOption', 'chartContainer']);
+let {getChartConfig,setChartConfig,chartOption, chartContainer} = defineProps(['getChartConfig','setChartConfig', 'chartOption', 'chartContainer']);
+let chartConfig:any;
 
 const chartConfigConstParams = {
   titleGridPosition: {
@@ -64,6 +66,7 @@ const chartConfigConstParams = {
     bottom: {top: 0, left: 0, right: 0, bottom: 7},
   } as GridPosition,
 }
+
 let chartConfigControl = reactive({
   themActiveKey: '', // 展开主题折叠面板
   currentThem: 'customized', // 当前主题
@@ -133,13 +136,18 @@ let chartConfigControl = reactive({
 });
 const chartConfigFunction = {
   changeThem: (themName: string) => {
-    chartConfig.dispose()
-    let container = chartContainer.value
-    let myEcharts = echarts.init(container, themName) // 参数是dom节点
-    chartConfig = myEcharts
+    if(chartConfig==null){
+      chartConfig = getChartConfig();
+    }
+    // let crtOption = chartConfig.getOption();
+    chartConfig.dispose();
+    // 赋新值
+    chartConfig = echarts.init(chartContainer, themName) // 参数是dom节点
     // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
-    myEcharts.setOption(toRaw(chartOption))
-    chartConfigControl.currentThem = themName
+    chartConfig.setOption(chartOption);
+
+    setChartConfig(chartConfig); // 传递给父级
+    chartConfigControl.currentThem = themName // 当前主题
   },
   openAndCloseComponent: (
       currentComponentPosition: ComponentPosition,
@@ -173,11 +181,7 @@ const chartConfigFunction = {
       crtPosition: ComponentPosition,
       changeStatus: string,
   ) => {
-    let top = 0
-    let left = 0
-    let right = 0
-    let bottom = 0
-
+    let top = 0,left = 0,right = 0,bottom = 0;
     let currentStatus = crtPosition.currentStatus;
     if (crtPosition.position != undefined) {
       top = -crtPosition.position.top
@@ -304,9 +308,28 @@ const chartConfigFunction = {
         }
       ]
     }
-  }
 
+    chartConfigStyle.stackContainerStyle.height = chartConfigControl.stackItems.length * 22.4 + 'px';
+  },
+  titleSwitchChange: () => {
+    // 设置选项
+    let option = { title: { show: chartOption.title.show },legend:{top:'3%'}};
+
+    if( (!chartOption.title.show) && chartOption.legend.show && chartConfigControl.legendPosition.startsWith('top')){
+      option.legend.top = '0.5%'
+    }
+    chartConfig.setOption(option);
+
+    // grid 布局
+    let { top, left, right, bottom } = chartConfigFunction.openAndCloseComponent(
+        chartConfigControl.currentTitlePosition,
+        chartOption.title.show
+    )
+
+    chartConfigFunction.changeGridPosition(top, left, right, bottom );
+  }
 };
+
 const chartConfigStyle = reactive({
   stackContainersStyle: {
     display: 'flex',
@@ -315,7 +338,7 @@ const chartConfigStyle = reactive({
   },
   stackContainerStyle: {
     width: '18px',
-    height: chartConfigControl.stackItems.length * 22.4 + 'px',
+    height: '32px', // 高度使用默认的高度后续会更改
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'flex-end',
@@ -325,8 +348,7 @@ const chartConfigStyle = reactive({
     width: '1em',
   }
 });
-// 初始化堆叠配置
-chartConfigFunction.initStackItems();
+
 
 // grid的变化
 watch(chartConfigControl.currentGridPosition, (grid) => {
@@ -404,52 +426,69 @@ watch(() => chartConfigControl.vertical, () => {
     chartConfigStyle.stackContainersStyle.flexDirection = 'row'
   }
 })
+
+onMounted(()=>{
+  // 初始化堆叠配置
+  chartConfigFunction.initStackItems();
+  // 在页面渲染完成之后设置数据，这样才能拿到父级中的该变量  getChartConfig();
+  nextTick(()=>{
+    // 初始化堆叠配置
+    chartConfig = getChartConfig();
+  })
+})
+
+
+
+onUnmounted(()=>{
+  chartConfig.dispose();
+})
 </script>
 
 <template>
   <!--主题-->
   <div class="chart-group">
     <a-collapse
-        v-model:activeKey="chartConfigControl.themActiveKey"
-        expand-icon-position="end"
-        :style="{
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  margin: '0',
-                  padding: '0',
-                }"
+      v-model:activeKey="chartConfigControl.themActiveKey"
+      expand-icon-position="end"
+      :style="{
+        border: 'none',
+        backgroundColor: 'transparent',
+        margin: '0',
+        padding: '0',
+      }"
     >
       <a-collapse-panel
-          key="them"
-          header="主题"
-          :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }">
+        key="them"
+        header="主题"
+        :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
+      >
         <div
-            class="chart-item color-items"
-            v-for="(item, index) in themArray"
-            :key="index"
-            :style="{
-                      backgroundColor: item.theme.backgroundColor,
-                      paddingLeft: '6px',
-                      paddingRight: '6px',
-                      borderRadius: '3px',
-                      marginTop: '5px',
-                      border: '1px solid #eee',
-                      cursor: 'pointer',
-                    }"
-            @click="chartConfigFunction.changeThem(item.themeName)"
+          class="chart-item color-items"
+          v-for="(item, index) in themArray"
+          :key="index"
+          :style="{
+            backgroundColor: item.theme.backgroundColor,
+            paddingLeft: '6px',
+            paddingRight: '6px',
+            borderRadius: '3px',
+            marginTop: '5px',
+            border: '1px solid #eee',
+            cursor: 'pointer',
+          }"
+          @click="chartConfigFunction.changeThem(item.themeName)"
         >
           <div
-              v-for="(colorItem, colorIndex) in item.theme.color.length > 7
-                        ? 7
-                        : item.theme.color.length"
-              class="color-item"
-              :key="colorIndex"
-              :style="{
-                        backgroundColor: item.theme.color[colorIndex],
-                        height: '20px',
-                        width: '20px',
-                        borderRadius: '3px',
-                      }"
+            v-for="(colorItem, colorIndex) in item.theme.color.length > 7
+              ? 7
+              : item.theme.color.length"
+            class="color-item"
+            :key="colorIndex"
+            :style="{
+              backgroundColor: item.theme.color[colorIndex],
+              height: '20px',
+              width: '20px',
+              borderRadius: '3px',
+            }"
           ></div>
         </div>
       </a-collapse-panel>
@@ -458,43 +497,41 @@ watch(() => chartConfigControl.vertical, () => {
   <!-- 堆叠 -->
   <div class="chart-group">
     <a-collapse
-        v-model:activeKey="chartConfigControl.pileActiveKey"
-        expand-icon-position="end"
-        :style="{
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  margin: '0',
-                  padding: '0',
-                }"
+      v-model:activeKey="chartConfigControl.pileActiveKey"
+      expand-icon-position="end"
+      :style="{
+        border: 'none',
+        backgroundColor: 'transparent',
+        margin: '0',
+        padding: '0',
+      }"
     >
       <a-collapse-panel
-          key="them"
-          header="堆叠"
-          :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
+        key="them"
+        header="堆叠"
+        :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
       >
-        <div class="stackContainers"
-             :style="chartConfigStyle.stackContainersStyle">
+        <div class="stackContainers" :style="chartConfigStyle.stackContainersStyle">
           <draggable
-              v-for="item in chartConfigControl.stackItems"
-              :style="chartConfigStyle.stackContainerStyle"
-              class="stackContainer"
-              :list="item"
-              :group="{ name: 'outerPile', pull: true, put: true }"
-              animation="800"
-              item-key="id"
-              tag="div"
+            v-for="item in chartConfigControl.stackItems"
+            :style="chartConfigStyle.stackContainerStyle"
+            class="stackContainer"
+            :list="item"
+            :group="{ name: 'outerPile', pull: true, put: true }"
+            animation="800"
+            item-key="id"
+            tag="div"
           >
             <template #item="{ element }">
               <div
-                  :id="element.id"
-                  :style="{
-                            backgroundColor: element.color,
-                            height: chartConfigStyle.stackItemStyle.height,
-                            width: chartConfigStyle.stackItemStyle.width,
-                          }"
-                  class="stackItem"
-              >
-              </div>
+                :id="element.id"
+                :style="{
+                  backgroundColor: element.color,
+                  height: chartConfigStyle.stackItemStyle.height,
+                  width: chartConfigStyle.stackItemStyle.width,
+                }"
+                class="stackItem"
+              ></div>
             </template>
           </draggable>
         </div>
@@ -505,10 +542,10 @@ watch(() => chartConfigControl.vertical, () => {
   <!-- 标题-->
   <div class="chart-group">
     <a-input
-        v-show="false"
-        size="small"
-        v-model:value="chartOption.title.id"
-        placeholder="组件唯一id"
+      v-show="false"
+      size="small"
+      v-model:value="chartOption.title.id"
+      placeholder="组件唯一id"
     ></a-input>
 
     <!--标题开关以及位置-->
@@ -516,58 +553,40 @@ watch(() => chartConfigControl.vertical, () => {
       <span class="label-left" style="width: 48px">标题</span>
       <div class="component-right">
         <a-switch
-            size="small"
-            v-model:checked="chartOption.title.show"
-            @change="
-                      () => {
-                        // 设置选项
-                        let option = { title: { show: chartOption.title.show },legend:{top:'3%'}};
-
-                        if(!chartOption.title.show && chartOption.legend.show && chartConfig.legendPosition.startsWith('top')){
-                          option.legend.top = '0.5%'
-                        }
-                        chartConfig.setOption(option);
-
-                        // grid 布局
-                        let { top, left, right, bottom } = chartConfigFunction.openAndCloseComponent(
-                          chartConfigControl.currentTitlePosition,
-                          chartOption.title.show
-                        )
-
-                       chartConfigFunction.changeGridPosition(top, left, right, bottom );
-                      }
-                    "
+          size="small"
+          v-model:checked="chartOption.title.show"
+          @change="chartConfigFunction.titleSwitchChange()"
         ></a-switch>
         <a-radio-group
-            v-model:value="chartOption.title.left"
-            :disabled="!chartOption.title.show"
-            button-style="solid"
-            size="small"
-            @change="
-                      () => {
-                        // 1. 设置图表配置
-                        let option = { title: { left: chartOption.title.left } }
-                        chartConfig.setOption(option);
+          v-model:value="chartOption.title.left"
+          :disabled="!chartOption.title.show"
+          button-style="solid"
+          size="small"
+          @change="
+            () => {
+              // 1. 设置图表配置
+              let option = { title: { left: chartOption.title.left } }
+              chartConfig.setOption(option)
 
-                        //2. 计算该组件需要的grid调整的空间
-                        let { top, left, right, bottom } =
-                        chartConfigFunction.changeComponentPosition(
-                            chartConfigControl.currentTitlePosition,
-                            chartOption.title.left);
+              //2. 计算该组件需要的grid调整的空间
+              let { top, left, right, bottom } = chartConfigFunction.changeComponentPosition(
+                chartConfigControl.currentTitlePosition,
+                chartOption.title.left,
+              )
 
-                        // 3. 调整grid的位置
-                        chartConfigFunction.changeGridPosition(top, left, right, bottom );
-                      }
-                    "
+              // 3. 调整grid的位置
+              chartConfigFunction.changeGridPosition(top, left, right, bottom)
+            }
+          "
         >
           <a-radio-button value="left">
-            <Left/>
+            <Left />
           </a-radio-button>
           <a-radio-button value="center">
-            <Center/>
+            <Center />
           </a-radio-button>
           <a-radio-button value="right">
-            <Right/>
+            <Right />
           </a-radio-button>
         </a-radio-group>
       </div>
@@ -577,13 +596,13 @@ watch(() => chartConfigControl.vertical, () => {
       <span class="label-left" style="width: 24px">名称</span>
       <div class="component-right">
         <a-input
-            v-model:value="chartOption.title.text"
-            placeholder="图表名称"
-            allow-clear
-            :disabled="!chartOption.title.show"
-            size="small"
-            :style="{ width: '100%', fontSize: '12px', height: '22px' }"
-            @change="chartConfig.setOption({ title: { text: chartOption.title.text } })"
+          v-model:value="chartOption.title.text"
+          placeholder="图表名称"
+          allow-clear
+          :disabled="!chartOption.title.show"
+          size="small"
+          :style="{ width: '100%', fontSize: '12px', height: '22px' }"
+          @change="chartConfig.setOption({ title: { text: chartOption.title.text } })"
         ></a-input>
       </div>
     </div>
@@ -597,26 +616,22 @@ watch(() => chartConfigControl.vertical, () => {
       <div class="component-right">
         <a-tooltip title="鼠标挪入图表中可查看效果！">
           <a-radio-group
-              size="small"
-              button-style="solid"
-              v-model:value="chartOption.tooltip.axisPointer.type"
-              @change="
-                        chartConfig.setOption({
-                          tooltip: {
-                            axisPointer: { type: chartOption.tooltip.axisPointer.type },
-                          },
-                        })
-                      "
+            size="small"
+            button-style="solid"
+            v-model:value="chartOption.tooltip.axisPointer.type"
+            @change="
+              chartConfig.setOption({
+                tooltip: {
+                  axisPointer: { type: chartOption.tooltip.axisPointer.type },
+                },
+              })
+            "
           >
-            <a-radio-button value="cross"
-            ><span style="font-size: 12px">交叉</span></a-radio-button
-            >
+            <a-radio-button value="cross"><span style="font-size: 12px">交叉</span></a-radio-button>
             <a-radio-button value="shadow"
-            ><span style="font-size: 12px">阴影</span></a-radio-button
+              ><span style="font-size: 12px">阴影</span></a-radio-button
             >
-            <a-radio-button value="line"
-            ><span style="font-size: 12px">竖线</span></a-radio-button
-            >
+            <a-radio-button value="line"><span style="font-size: 12px">竖线</span></a-radio-button>
           </a-radio-group>
         </a-tooltip>
       </div>
@@ -630,145 +645,169 @@ watch(() => chartConfigControl.vertical, () => {
       <span class="label-left" style="width: 24px">图例</span>
       <div class="component-right">
         <a-switch
-            size="small"
-            v-model:checked="chartOption.legend.show"
-            @change="
-                      () => {
-                        // 1. 计算该组件（图例）需要grid让出的空间
-                        let { top, left, right, bottom } =
-                        chartConfigFunction.openAndCloseComponent(
-                            chartConfigControl.currentLegendPosition,
-                            chartOption.legend.show)
-                        // 2. 调整grid，让x-y坐标系 让出位置
-                       chartConfigFunction.changeGridPosition(top, left, right, bottom );
-                        // 3. 设置图例、以及设置缩放组件的布局。
-                        let option = {
-                          legend:{
-                            show:chartOption.legend.show,
-                          },
-                          dataZoom:[
-                            {
-                            id:'x0Slider',
-                            top: (101 - chartConfigControl.currentGridPosition.bottom)+'%'
-                            },
-                            {
-                            id:'y0Slider',
-                            left: (101 - chartConfigControl.currentGridPosition.right) +'%'
-                            }
-                          ]
-                        }
-                        //当只有图例时，图例的顶部空间仅保留 0.5%
-                        if(!chartOption.title.show && chartOption.legend.show && chartConfig.legendPosition.startsWith('top')){
-                          option.legend.top = '0.5%'
-                        }
-                        chartConfig.setOption(option);
-                      }
-                    "
+          size="small"
+          v-model:checked="chartOption.legend.show"
+          @change="
+            () => {
+              // 1. 计算该组件（图例）需要grid让出的空间
+              let { top, left, right, bottom } = chartConfigFunction.openAndCloseComponent(
+                chartConfigControl.currentLegendPosition,
+                chartOption.legend.show,
+              )
+              // 2. 调整grid，让x-y坐标系 让出位置
+              chartConfigFunction.changeGridPosition(top, left, right, bottom)
+              // 3. 设置图例、以及设置缩放组件的布局。
+              let option = {
+                legend: {
+                  show: chartOption.legend.show,
+                },
+                dataZoom: [
+                  {
+                    id: 'x0Slider',
+                    top: 101 - chartConfigControl.currentGridPosition.bottom + '%',
+                  },
+                  {
+                    id: 'y0Slider',
+                    left: 101 - chartConfigControl.currentGridPosition.right + '%',
+                  },
+                ],
+              }
+              //当只有图例时，图例的顶部空间仅保留 0.5%
+              if (
+                !chartOption.title.show &&
+                chartOption.legend.show &&
+                chartConfigControl.legendPosition.startsWith('top')
+              ) {
+                option.legend.top = '0.5%'
+              }
+              chartConfig.setOption(option)
+            }
+          "
         ></a-switch>
       </div>
     </div>
     <!-- 图例位置控件-->
     <div class="legend-position">
-                <span
-                    class="label-left"
-                    style="
-                    width: 24px;
-                    font-size: 12px;
-                    height: 14px;
-                    line-height: 14px;
-                    align-self: flex-start;
-                  "
-                >位置</span
-                >
+      <span
+        class="label-left"
+        style="
+          width: 24px;
+          font-size: 12px;
+          height: 14px;
+          line-height: 14px;
+          align-self: flex-start;
+        "
+        >位置</span
+      >
       <div class="legend-position-container">
         <a-radio-group
-            class="legend-position-control"
-            size="small"
-            button-style="solid"
-            v-model:value="chartConfig.legendPosition"
-            :disabled="!chartOption.legend.show"
-            @change="() => {
+          class="legend-position-control"
+          size="small"
+          button-style="solid"
+          v-model:value="chartConfigControl.legendPosition"
+          :disabled="!chartOption.legend.show"
+          @change="
+            () => {
               // 计算图例位置
-                        let thisPosition:{top:string|undefined,left:string|undefined,right:string|undefined,bottom:string|undefined} = {
-                            top:'3%',
-                            left:'center',
-                            right:undefined,
-                            bottom:undefined
-                        }
+              let thisPosition: {
+                top: string | undefined
+                left: string | undefined
+                right: string | undefined
+                bottom: string | undefined
+              } = {
+                top: '3%',
+                left: 'center',
+                right: undefined,
+                bottom: undefined,
+              }
 
-                        // top 和 bottom
-                        if(chartConfig.legendPosition.startsWith('bottom')){
-                          thisPosition.top = undefined;
-                          thisPosition.bottom = '1%';
-                        }
+              // top 和 bottom
+              if (chartConfigControl.legendPosition.startsWith('bottom')) {
+                thisPosition.top = undefined
+                thisPosition.bottom = '1%'
+              }
 
-                        // left
-                        if(chartConfig.legendPosition.endsWith('Left') || chartConfig.legendPosition == 'leftCenter'){
-                          thisPosition.left = 'left'
-                        }else if(chartConfig.legendPosition.endsWith('Right')|| chartConfig.legendPosition == 'rightCenter'){
-                          thisPosition.left = 'right'
-                        }
+              // left
+              if (
+                chartConfigControl.legendPosition.endsWith('Left') ||
+                chartConfigControl.legendPosition == 'leftCenter'
+              ) {
+                thisPosition.left = 'left'
+              } else if (
+                chartConfigControl.legendPosition.endsWith('Right') ||
+                chartConfigControl.legendPosition == 'rightCenter'
+              ) {
+                thisPosition.left = 'right'
+              }
 
-                        if(!chartOption.title.show && chartOption.legend.show && chartConfig.legendPosition.startsWith('top')){
-                          thisPosition.top = '0.5%'
-                        }
-                        // 1. 计算该组件所需grid让出的空间
-                        let { top, left, right, bottom } =
-                        chartConfigFunction.changeComponentPosition(
-                           chartConfigControl.currentLegendPosition,
-                           chartConfig.legendPosition);
-                        // 2. 调整grid
-                        chartConfigFunction.changeGridPosition(top, left, right, bottom );
-                        // 3. 设置图例配置到图表,还包含了缩放组件的布局位置
-                        let option = {
-                          legend:{
-                            orient:(chartConfig.legendPosition == 'leftCenter' || chartConfig.legendPosition == 'rightCenter')?'vertical':'horizontal',
-                            top:thisPosition.top,
-                            left:thisPosition.left,
-                            bottom:thisPosition.bottom
-                          },
-                          dataZoom:[
-                            {
-                            id:'x0Slider',
-                            top: (101 - chartConfigControl.currentGridPosition.bottom)+'%'
-                            },
-                            {
-                            id:'y0Slider',
-                            left: (101 - chartConfigControl.currentGridPosition.right) +'%'
-                            }
-                          ]
-                        }
+              if (
+                !chartOption.title.show &&
+                chartOption.legend.show &&
+                chartConfigControl.legendPosition.startsWith('top')
+              ) {
+                thisPosition.top = '0.5%'
+              }
+              // 1. 计算该组件所需grid让出的空间
+              let { top, left, right, bottom } = chartConfigFunction.changeComponentPosition(
+                chartConfigControl.currentLegendPosition,
+                chartConfigControl.legendPosition,
+              )
+              // 2. 调整grid
+              chartConfigFunction.changeGridPosition(top, left, right, bottom)
+              // 3. 设置图例配置到图表,还包含了缩放组件的布局位置
+              let option = {
+                legend: {
+                  orient:
+                    chartConfigControl.legendPosition == 'leftCenter' ||
+                    chartConfigControl.legendPosition == 'rightCenter'
+                      ? 'vertical'
+                      : 'horizontal',
+                  top: thisPosition.top,
+                  left: thisPosition.left,
+                  bottom: thisPosition.bottom,
+                },
+                dataZoom: [
+                  {
+                    id: 'x0Slider',
+                    top: 101 - chartConfigControl.currentGridPosition.bottom + '%',
+                  },
+                  {
+                    id: 'y0Slider',
+                    left: 101 - chartConfigControl.currentGridPosition.right + '%',
+                  },
+                ],
+              }
 
-                        chartConfig.setOption(option);
-                      }
-                    "
+              chartConfig.setOption(option)
+            }
+          "
         >
           <a-radio-button class="btn top left" value="topLeft">
-            <TopLeft/>
+            <TopLeft />
           </a-radio-button>
           <a-radio-button class="btn top center" value="topCenter">
-            <TopCenter/>
+            <TopCenter />
           </a-radio-button>
           <a-radio-button class="btn top right" value="topRight">
-            <TopRight/>
+            <TopRight />
           </a-radio-button>
           <a-radio-button class="btn middle left" value="leftCenter">
-            <LeftCenter/>
+            <LeftCenter />
           </a-radio-button>
           <a-radio-button class="btn middle center" disabled>
-            <Position/>
+            <Position />
           </a-radio-button>
           <a-radio-button class="btn middle right" value="rightCenter">
-            <RightCenter/>
+            <RightCenter />
           </a-radio-button>
           <a-radio-button class="btn bottom left" value="bottomLeft">
-            <BottomLeft/>
+            <BottomLeft />
           </a-radio-button>
           <a-radio-button class="btn bottom center" value="bottomCenter">
-            <BottomCenter/>
+            <BottomCenter />
           </a-radio-button>
           <a-radio-button class="btn bottom right" value="bottomRight">
-            <BottomRight/>
+            <BottomRight />
           </a-radio-button>
         </a-radio-group>
       </div>
@@ -778,65 +817,66 @@ watch(() => chartConfigControl.vertical, () => {
   <!--x轴配置-->
   <div class="chart-group">
     <a-collapse
-        v-model:activeKey="chartConfigControl.xAxisActiveKey"
-        expand-icon-position="end"
-        :style="{
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  margin: '0',
-                  padding: '0',
-                }"
+      v-model:activeKey="chartConfigControl.xAxisActiveKey"
+      expand-icon-position="end"
+      :style="{
+        border: 'none',
+        backgroundColor: 'transparent',
+        margin: '0',
+        padding: '0',
+      }"
     >
       <a-collapse-panel
-          key="1"
-          header="X轴"
-          :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
+        key="1"
+        header="X轴"
+        :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
       >
         <!--名称开关-->
         <div class="chart-item">
           <span class="label-left" style="width: 24px">名称</span>
           <div class="component-right">
             <a-switch
-                size="small"
-                v-model:checked="chartConfigControl.xAxisNameShow"
-                @change="
-                          () => {
-                            // 1. 计算该组件所需grid让出的空间
-                            let {top,left,right,bottom} =  chartConfigFunction.openAndCloseComponent(
-                                chartConfigControl.currentXAxisNamePosition,
-                                chartConfigControl.xAxisNameShow);
-                            // 2. 调整grid
-                            chartConfigFunction.changeGridPosition(top, left, right, bottom );
+              size="small"
+              v-model:checked="chartConfigControl.xAxisNameShow"
+              @change="
+                () => {
+                  // 1. 计算该组件所需grid让出的空间
+                  let { top, left, right, bottom } = chartConfigFunction.openAndCloseComponent(
+                    chartConfigControl.currentXAxisNamePosition,
+                    chartConfigControl.xAxisNameShow,
+                  )
+                  // 2. 调整grid
+                  chartConfigFunction.changeGridPosition(top, left, right, bottom)
 
-                            if (!chartConfigControl.xAxisNameShow) {
-                               chartOption.xAxis.name = undefined
-                            }else {
-                              if (chartOption.xAxis.name == undefined) {
-                                chartOption.xAxis.name = chartOption.dataset.dimensions[0]
-                              }
-                            }
+                  if (!chartConfigControl.xAxisNameShow) {
+                    chartOption.xAxis.name = undefined
+                  } else {
+                    if (chartOption.xAxis.name == undefined) {
+                      chartOption.xAxis.name = chartOption.dataset.dimensions[0]
+                    }
+                  }
 
-                            // 3. 设置x轴名称配置，同时调整缩略组件的布局
-                            let option =
-                            {xAxis:
-                              {name:chartOption.xAxis.name,
-                               nameLocation:chartOption.xAxis.nameLocation
-                              },
-                            dataZoom:[
-                                {
-                                id:'x0Slider',
-                                top: (101 - chartConfigControl.currentGridPosition.bottom)+'%'
-                                },
-                                {
-                                id:'y0Slider',
-                                left: (101 - chartConfigControl.currentGridPosition.right) +'%'
-                                }
-                              ]
-                            };
+                  // 3. 设置x轴名称配置，同时调整缩略组件的布局
+                  let option = {
+                    xAxis: {
+                      name: chartOption.xAxis.name,
+                      nameLocation: chartOption.xAxis.nameLocation,
+                    },
+                    dataZoom: [
+                      {
+                        id: 'x0Slider',
+                        top: 101 - chartConfigControl.currentGridPosition.bottom + '%',
+                      },
+                      {
+                        id: 'y0Slider',
+                        left: 101 - chartConfigControl.currentGridPosition.right + '%',
+                      },
+                    ],
+                  }
 
-                            chartConfig.setOption(option)
-                          }
-                        "
+                  chartConfig.setOption(option)
+                }
+              "
             ></a-switch>
           </div>
         </div>
@@ -845,14 +885,12 @@ watch(() => chartConfigControl.vertical, () => {
           <span class="label-left"></span>
           <div class="component-right">
             <a-input
-                size="small"
-                :style="{ width: '100%', fontSize: '12px', height: '22px' }"
-                allow-clear
-                :disabled="!chartConfigControl.xAxisNameShow"
-                v-model:value="chartOption.xAxis.name"
-                @change="
-                          chartConfig.setOption({ xAxis: { name: chartOption.xAxis.name } })
-                        "
+              size="small"
+              :style="{ width: '100%', fontSize: '12px', height: '22px' }"
+              allow-clear
+              :disabled="!chartConfigControl.xAxisNameShow"
+              v-model:value="chartOption.xAxis.name"
+              @change="chartConfig.setOption({ xAxis: { name: chartOption.xAxis.name } })"
             ></a-input>
           </div>
         </div>
@@ -861,52 +899,52 @@ watch(() => chartConfigControl.vertical, () => {
           <span class="label-left" style="width: 48px">名称位置</span>
           <div class="component-right">
             <a-radio-group
-                size="small"
-                button-style="solid"
-                :disabled="!chartConfigControl.xAxisNameShow"
-                v-model:value="chartOption.xAxis.nameLocation"
-                @change="()=>{
-                            let changeStatus = chartOption.xAxis.nameLocation;
+              size="small"
+              button-style="solid"
+              :disabled="!chartConfigControl.xAxisNameShow"
+              v-model:value="chartOption.xAxis.nameLocation"
+              @change="
+                () => {
+                  let changeStatus = chartOption.xAxis.nameLocation
 
-                            if(chartOption.xAxis.nameLocation == 'center' ){
-                             if( chartOption.xAxis.position == 'top'){
-                               changeStatus = 'topCenter'
-                             } else {
-                               changeStatus = 'bottomCenter'
-                             }
-                            }
-                            // 1. 计算名称不同位置时所需的grid空间
-                            let {top,left,right,bottom} = chartConfigFunction.changeComponentPosition(
-                                chartConfigControl.currentXAxisNamePosition,
-                                changeStatus);
-                            // 2. 调整grid空间
-                            chartConfigFunction.changeGridPosition(top, left, right, bottom );
+                  if (chartOption.xAxis.nameLocation == 'center') {
+                    if (chartOption.xAxis.position == 'top') {
+                      changeStatus = 'topCenter'
+                    } else {
+                      changeStatus = 'bottomCenter'
+                    }
+                  }
+                  // 1. 计算名称不同位置时所需的grid空间
+                  let { top, left, right, bottom } = chartConfigFunction.changeComponentPosition(
+                    chartConfigControl.currentXAxisNamePosition,
+                    changeStatus,
+                  )
+                  // 2. 调整grid空间
+                  chartConfigFunction.changeGridPosition(top, left, right, bottom)
 
-                            chartConfig.setOption({
-                            xAxis: { nameLocation: chartOption.xAxis.nameLocation },
-                            dataZoom:[
-                                {
-                                id:'x0Slider',
-                                top: (101 - chartConfigControl.currentGridPosition.bottom)+'%'
-                                },
-                                {
-                                id:'y0Slider',
-                                left: (101 - chartConfigControl.currentGridPosition.right) +'%'
-                                }
-                              ]
-                            })
-                          }
-                        "
+                  chartConfig.setOption({
+                    xAxis: { nameLocation: chartOption.xAxis.nameLocation },
+                    dataZoom: [
+                      {
+                        id: 'x0Slider',
+                        top: 101 - chartConfigControl.currentGridPosition.bottom + '%',
+                      },
+                      {
+                        id: 'y0Slider',
+                        left: 101 - chartConfigControl.currentGridPosition.right + '%',
+                      },
+                    ],
+                  })
+                }
+              "
             >
               <a-radio-button value="start"
-              ><span style="font-size: 12px">左边</span></a-radio-button
+                ><span style="font-size: 12px">左边</span></a-radio-button
               >
               <a-radio-button value="center"
-              ><span style="font-size: 12px">中间</span></a-radio-button
+                ><span style="font-size: 12px">中间</span></a-radio-button
               >
-              <a-radio-button value="end"
-              ><span style="font-size: 12px">右边</span></a-radio-button
-              >
+              <a-radio-button value="end"><span style="font-size: 12px">右边</span></a-radio-button>
             </a-radio-group>
           </div>
         </div>
@@ -915,15 +953,13 @@ watch(() => chartConfigControl.vertical, () => {
           <span class="label-left" style="width: 48px">离坐标轴</span>
           <div class="component-right">
             <a-input-number
-                size="small"
-                min="8"
-                :style="{ width: '100%', fontSize: '12px' }"
-                :disabled="!chartConfigControl.xAxisNameShow"
-                v-model:value="chartOption.xAxis.nameGap"
-                addon-after="px"
-                @change="
-                          chartConfig.setOption({ xAxis: { nameGap: chartOption.xAxis.nameGap } })
-                        "
+              size="small"
+              min="8"
+              :style="{ width: '100%', fontSize: '12px' }"
+              :disabled="!chartConfigControl.xAxisNameShow"
+              v-model:value="chartOption.xAxis.nameGap"
+              addon-after="px"
+              @change="chartConfig.setOption({ xAxis: { nameGap: chartOption.xAxis.nameGap } })"
             >
             </a-input-number>
           </div>
@@ -933,52 +969,51 @@ watch(() => chartConfigControl.vertical, () => {
           <span class="label-left" style="width: 60px">坐标轴位置</span>
           <div class="component-right">
             <a-radio-group
-                size="small"
-                button-style="solid"
-                v-model:value="chartOption.xAxis.position"
-                @change="
-                          () => {
-                              if(chartConfigControl.xAxisNameShow){
-                                let changeStatus = chartOption.xAxis.nameLocation;
+              size="small"
+              button-style="solid"
+              v-model:value="chartOption.xAxis.position"
+              @change="
+                () => {
+                  if (chartConfigControl.xAxisNameShow) {
+                    let changeStatus = chartOption.xAxis.nameLocation
 
-                                if(chartOption.xAxis.nameLocation == 'center' ){
-                                 if( chartOption.xAxis.position == 'top'){
-                                   changeStatus = 'topCenter'
-                                 } else {
-                                   changeStatus = 'bottomCenter'
-                                 }
-                              }
+                    if (chartOption.xAxis.nameLocation == 'center') {
+                      if (chartOption.xAxis.position == 'top') {
+                        changeStatus = 'topCenter'
+                      } else {
+                        changeStatus = 'bottomCenter'
+                      }
+                    }
 
-                                // 1. 计算不同坐标轴位置在图标上的所需空间
-                              let {top,left,right,bottom} = chartConfigFunction.changeComponentPosition(
-                                  chartConfigControl.currentXAxisNamePosition,
-                                  changeStatus);
-                                // 2. 调整grid空间
-                              chartConfigFunction.changeGridPosition(top, left, right, bottom );
+                    // 1. 计算不同坐标轴位置在图标上的所需空间
+                    let { top, left, right, bottom } = chartConfigFunction.changeComponentPosition(
+                      chartConfigControl.currentXAxisNamePosition,
+                      changeStatus,
+                    )
+                    // 2. 调整grid空间
+                    chartConfigFunction.changeGridPosition(top, left, right, bottom)
 
-                            let option = {
-                              xAxis:{position:chartOption.xAxis.position},
-                              dataZoom:[
-                                {
-                                id:'x0Slider',
-                                top: (101 - chartConfigControl.currentGridPosition.bottom)+'%'
-                                },
-                                {
-                                id:'y0Slider',
-                                left: (101 - chartConfigControl.currentGridPosition.right) +'%'
-                                }
-                              ]
-                            }
-                            chartConfig.setOption(option);
-                            }
-                          }
-                        "
+                    let option = {
+                      xAxis: { position: chartOption.xAxis.position },
+                      dataZoom: [
+                        {
+                          id: 'x0Slider',
+                          top: 101 - chartConfigControl.currentGridPosition.bottom + '%',
+                        },
+                        {
+                          id: 'y0Slider',
+                          left: 101 - chartConfigControl.currentGridPosition.right + '%',
+                        },
+                      ],
+                    }
+                    chartConfig.setOption(option)
+                  }
+                }
+              "
             >
-              <a-radio-button value="top"
-              ><span style="font-size: 12px">顶部</span></a-radio-button
-              >
+              <a-radio-button value="top"><span style="font-size: 12px">顶部</span></a-radio-button>
               <a-radio-button value="bottom"
-              ><span style="font-size: 12px">底部</span></a-radio-button
+                ><span style="font-size: 12px">底部</span></a-radio-button
               >
             </a-radio-group>
           </div>
@@ -988,13 +1023,13 @@ watch(() => chartConfigControl.vertical, () => {
           <span class="label-left" style="width: 60px">标签</span>
           <div class="component-right">
             <a-switch
-                size="small"
-                v-model:checked="chartOption.xAxis.axisLabel.show"
-                @change="
-                          chartConfig.setOption({
-                            xAxis: { axisLabel: { show: chartOption.xAxis.axisLabel.show } },
-                          })
-                        "
+              size="small"
+              v-model:checked="chartOption.xAxis.axisLabel.show"
+              @change="
+                chartConfig.setOption({
+                  xAxis: { axisLabel: { show: chartOption.xAxis.axisLabel.show } },
+                })
+              "
             ></a-switch>
           </div>
         </div>
@@ -1003,20 +1038,20 @@ watch(() => chartConfigControl.vertical, () => {
           <span class="label-left" style="width: 60px">角度</span>
           <div class="component-right">
             <a-slider
-                v-model:value="chartOption.xAxis.axisLabel.rotate"
-                :min="-90"
-                :max="90"
-                :style="{ width: '100%' }"
-                :dots="true"
-                :step="15"
-                @change="
-                          chartConfig.setOption({
-                            xAxis: {
-                              axisLabel: { rotate: chartOption.xAxis.axisLabel.rotate },
-                            },
-                          })
-                        "
-                :disabled="!chartOption.xAxis.axisLabel.show"
+              v-model:value="chartOption.xAxis.axisLabel.rotate"
+              :min="-90"
+              :max="90"
+              :style="{ width: '100%' }"
+              :dots="true"
+              :step="15"
+              @change="
+                chartConfig.setOption({
+                  xAxis: {
+                    axisLabel: { rotate: chartOption.xAxis.axisLabel.rotate },
+                  },
+                })
+              "
+              :disabled="!chartOption.xAxis.axisLabel.show"
             ></a-slider>
           </div>
         </div>
@@ -1025,19 +1060,19 @@ watch(() => chartConfigControl.vertical, () => {
           <span class="label-left" style="width: 48px">离坐标轴</span>
           <div class="component-right">
             <a-input-number
-                size="small"
-                min="8"
-                :style="{ width: '100%', fontSize: '12px' }"
-                v-model:value="chartOption.xAxis.axisLabel.margin"
-                addon-after="px"
-                @change="
-                          chartConfig.setOption({
-                            xAxis: {
-                              axisLabel: { margin: chartOption.xAxis.axisLabel.margin },
-                            },
-                          })
-                        "
-                :disabled="!chartOption.xAxis.axisLabel.show"
+              size="small"
+              min="8"
+              :style="{ width: '100%', fontSize: '12px' }"
+              v-model:value="chartOption.xAxis.axisLabel.margin"
+              addon-after="px"
+              @change="
+                chartConfig.setOption({
+                  xAxis: {
+                    axisLabel: { margin: chartOption.xAxis.axisLabel.margin },
+                  },
+                })
+              "
+              :disabled="!chartOption.xAxis.axisLabel.show"
             >
             </a-input-number>
           </div>
@@ -1047,18 +1082,18 @@ watch(() => chartConfigControl.vertical, () => {
           <span class="label-left" style="width: 48px">最大长度</span>
           <div class="component-right">
             <a-input-number
-                size="small"
-                min="48"
-                max="200"
-                :style="{ width: '100%', fontSize: '12px' }"
-                v-model:value="chartOption.xAxis.axisLabel.width"
-                addon-after="px"
-                @change="
-                          chartConfig.setOption({
-                            xAxis: { axisLabel: { width: chartOption.xAxis.axisLabel.width } },
-                          })
-                        "
-                :disabled="!chartOption.xAxis.axisLabel.show"
+              size="small"
+              min="48"
+              max="200"
+              :style="{ width: '100%', fontSize: '12px' }"
+              v-model:value="chartOption.xAxis.axisLabel.width"
+              addon-after="px"
+              @change="
+                chartConfig.setOption({
+                  xAxis: { axisLabel: { width: chartOption.xAxis.axisLabel.width } },
+                })
+              "
+              :disabled="!chartOption.xAxis.axisLabel.show"
             >
             </a-input-number>
           </div>
@@ -1068,46 +1103,43 @@ watch(() => chartConfigControl.vertical, () => {
           <span class="label-left" style="width: 48px">超长后</span>
           <div class="component-right">
             <a-radio-group
-                size="small"
-                button-style="solid"
-                v-model:value="chartOption.xAxis.axisLabel.overflow"
-                @change="
-                          chartConfig.setOption({
-                            xAxis: {
-                              axisLabel: { overflow: chartOption.xAxis.axisLabel.overflow },
-                            },
-                          })
-                        "
-                :disabled="!chartOption.xAxis.axisLabel.show"
+              size="small"
+              button-style="solid"
+              v-model:value="chartOption.xAxis.axisLabel.overflow"
+              @change="
+                chartConfig.setOption({
+                  xAxis: {
+                    axisLabel: { overflow: chartOption.xAxis.axisLabel.overflow },
+                  },
+                })
+              "
+              :disabled="!chartOption.xAxis.axisLabel.show"
             >
               <a-radio-button value="truncate"
-              ><span style="font-size: 12px">截断</span></a-radio-button
+                ><span style="font-size: 12px">截断</span></a-radio-button
               >
               <a-radio-button value="break"
-              ><span style="font-size: 12px">换行</span></a-radio-button
+                ><span style="font-size: 12px">换行</span></a-radio-button
               >
             </a-radio-group>
           </div>
         </div>
         <!--标签接端：截断后呈现什么值-->
-        <div
-            class="chart-item"
-            v-show="chartOption.xAxis.axisLabel.overflow == 'truncate'"
-        >
+        <div class="chart-item" v-show="chartOption.xAxis.axisLabel.overflow == 'truncate'">
           <span class="label-left" style="width: 60px">截断提示</span>
           <div class="component-right">
             <a-input
-                size="small"
-                :style="{ width: '100%', fontSize: '12px', height: '22px' }"
-                v-model:value="chartOption.xAxis.axisLabel.ellipsis"
-                @change="
-                          chartConfig.setOption({
-                            xAxis: {
-                              axisLabel: { ellipsis: chartOption.xAxis.axisLabel.ellipsis },
-                            },
-                          })
-                        "
-                :disabled="!chartOption.xAxis.axisLabel.show"
+              size="small"
+              :style="{ width: '100%', fontSize: '12px', height: '22px' }"
+              v-model:value="chartOption.xAxis.axisLabel.ellipsis"
+              @change="
+                chartConfig.setOption({
+                  xAxis: {
+                    axisLabel: { ellipsis: chartOption.xAxis.axisLabel.ellipsis },
+                  },
+                })
+              "
+              :disabled="!chartOption.xAxis.axisLabel.show"
             >
             </a-input>
           </div>
@@ -1117,26 +1149,26 @@ watch(() => chartConfigControl.vertical, () => {
         <div class="chart-item">
           <div style="display: flex; justify-content: flex-start; align-items: center">
             <a-checkbox
-                :disabled="!chartOption.xAxis.axisLabel.show"
-                v-model:checked="chartConfigControl.xAxisIntervalChecked"
-                @change="
-                          () => {
-                            if (chartConfigControl.xAxisIntervalChecked) {
-                              chartOption.xAxis.axisLabel.interval = 0
-                              chartConfig.setOption({
-                                xAxis: {
-                                  axisLabel: { interval: 0 },
-                                },
-                              })
-                            } else {
-                              chartConfig.setOption({
-                                xAxis: {
-                                  axisLabel: { interval: 'auto' },
-                                },
-                              })
-                            }
-                          }
-                        "
+              :disabled="!chartOption.xAxis.axisLabel.show"
+              v-model:checked="chartConfigControl.xAxisIntervalChecked"
+              @change="
+                () => {
+                  if (chartConfigControl.xAxisIntervalChecked) {
+                    chartOption.xAxis.axisLabel.interval = 0
+                    chartConfig.setOption({
+                      xAxis: {
+                        axisLabel: { interval: 0 },
+                      },
+                    })
+                  } else {
+                    chartConfig.setOption({
+                      xAxis: {
+                        axisLabel: { interval: 'auto' },
+                      },
+                    })
+                  }
+                }
+              "
             >
             </a-checkbox>
             <span class="label-normal" style="margin-left: 8px">间隔</span>
@@ -1144,20 +1176,22 @@ watch(() => chartConfigControl.vertical, () => {
 
           <div class="component-right">
             <a-input-number
-                size="small"
-                min="0"
-                max="5"
-                :style="{ width: '100%', fontSize: '12px' }"
-                v-model:value="chartOption.xAxis.axisLabel.interval"
-                addon-after="个标签"
-                @change="
-                          chartConfig.setOption({
-                            xAxis: {
-                              axisLabel: { interval: chartOption.xAxis.axisLabel.interval },
-                            },
-                          })
-                        "
-                :disabled="!chartOption.xAxis.axisLabel.show || !chartConfigControl.xAxisIntervalChecked"
+              size="small"
+              min="0"
+              max="5"
+              :style="{ width: '100%', fontSize: '12px' }"
+              v-model:value="chartOption.xAxis.axisLabel.interval"
+              addon-after="个标签"
+              @change="
+                chartConfig.setOption({
+                  xAxis: {
+                    axisLabel: { interval: chartOption.xAxis.axisLabel.interval },
+                  },
+                })
+              "
+              :disabled="
+                !chartOption.xAxis.axisLabel.show || !chartConfigControl.xAxisIntervalChecked
+              "
             ></a-input-number>
           </div>
         </div>
@@ -1167,19 +1201,19 @@ watch(() => chartConfigControl.vertical, () => {
           <span class="label-left" style="width: 60px">对齐刻度线</span>
           <div class="component-right">
             <a-radio-group
-                size="small"
-                button-style="solid"
-                v-model:value="chartOption.xAxis.axisTick.alignWithLabel"
-                @change="
-                          chartConfig.setOption({
-                            xAxis: {
-                              axisTick: {
-                                alignWithLabel: chartOption.xAxis.axisTick.alignWithLabel,
-                              },
-                            },
-                          })
-                        "
-                :disabled="!chartOption.xAxis.axisLabel.show"
+              size="small"
+              button-style="solid"
+              v-model:value="chartOption.xAxis.axisTick.alignWithLabel"
+              @change="
+                chartConfig.setOption({
+                  xAxis: {
+                    axisTick: {
+                      alignWithLabel: chartOption.xAxis.axisTick.alignWithLabel,
+                    },
+                  },
+                })
+              "
+              :disabled="!chartOption.xAxis.axisLabel.show"
             >
               <a-radio :value="true"><span style="font-size: 12px">是</span></a-radio>
               <a-radio :value="false"><span style="font-size: 12px">否</span></a-radio>
@@ -1191,62 +1225,62 @@ watch(() => chartConfigControl.vertical, () => {
           <span class="label-left" style="width: 60px">分割线</span>
           <div class="component-right">
             <a-switch
-                size="small"
-                v-model:checked="chartOption.xAxis.splitLine.show"
-                @change="
-                          chartConfig.setOption({
-                            xAxis: { splitLine: { show: chartOption.xAxis.splitLine.show } },
-                          })
-                        "
+              size="small"
+              v-model:checked="chartOption.xAxis.splitLine.show"
+              @change="
+                chartConfig.setOption({
+                  xAxis: { splitLine: { show: chartOption.xAxis.splitLine.show } },
+                })
+              "
             ></a-switch>
           </div>
         </div>
         <!--x轴的分割线类型 以及 分割线粗细-->
         <div class="chart-item">
           <a-select
-              size="small"
-              v-model:value="chartOption.xAxis.splitLine.lineStyle.type"
-              @change="
-                        chartConfig.setOption({
-                          xAxis: {
-                            splitLine: {
-                              lineStyle: { type: chartOption.xAxis.splitLine.lineStyle.type },
-                            },
-                          },
-                        })
-                      "
-              :disabled="!chartOption.xAxis.splitLine.show"
+            size="small"
+            v-model:value="chartOption.xAxis.splitLine.lineStyle.type"
+            @change="
+              chartConfig.setOption({
+                xAxis: {
+                  splitLine: {
+                    lineStyle: { type: chartOption.xAxis.splitLine.lineStyle.type },
+                  },
+                },
+              })
+            "
+            :disabled="!chartOption.xAxis.splitLine.show"
           >
             <a-select-option value="solid"
-            ><span style="font-size: 12px">实线</span></a-select-option
+              ><span style="font-size: 12px">实线</span></a-select-option
             >
             <a-select-option value="dashed"
-            ><span style="font-size: 12px">虚线</span></a-select-option
+              ><span style="font-size: 12px">虚线</span></a-select-option
             >
             <a-select-option value="dotted"
-            ><span style="font-size: 12px">点线</span></a-select-option
+              ><span style="font-size: 12px">点线</span></a-select-option
             >
           </a-select>
 
           <div class="component-right">
             <a-input-number
-                size="small"
-                min="1"
-                :style="{ width: '100%', fontSize: '12px' }"
-                v-model:value="chartOption.xAxis.splitLine.lineStyle.width"
-                addon-after="px"
-                @change="
-                          chartConfig.setOption({
-                            xAxis: {
-                              splitLine: {
-                                lineStyle: {
-                                  width: chartOption.xAxis.splitLine.lineStyle.width,
-                                },
-                              },
-                            },
-                          })
-                        "
-                :disabled="!chartOption.xAxis.splitLine.show"
+              size="small"
+              min="1"
+              :style="{ width: '100%', fontSize: '12px' }"
+              v-model:value="chartOption.xAxis.splitLine.lineStyle.width"
+              addon-after="px"
+              @change="
+                chartConfig.setOption({
+                  xAxis: {
+                    splitLine: {
+                      lineStyle: {
+                        width: chartOption.xAxis.splitLine.lineStyle.width,
+                      },
+                    },
+                  },
+                })
+              "
+              :disabled="!chartOption.xAxis.splitLine.show"
             ></a-input-number>
           </div>
         </div>
@@ -1257,60 +1291,60 @@ watch(() => chartConfigControl.vertical, () => {
   <!--y轴配置-->
   <div class="chart-group">
     <a-collapse
-        v-model:activeKey="chartConfigControl.yAxisActiveKey"
-        expand-icon-position="end"
-        :style="{
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  margin: '0',
-                  padding: '0',
-                }"
+      v-model:activeKey="chartConfigControl.yAxisActiveKey"
+      expand-icon-position="end"
+      :style="{
+        border: 'none',
+        backgroundColor: 'transparent',
+        margin: '0',
+        padding: '0',
+      }"
     >
       <a-collapse-panel
-          key="1"
-          header="Y轴"
-          :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
+        key="1"
+        header="Y轴"
+        :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
       >
         <!--y轴名称开关-->
         <div class="chart-item">
           <span class="label-left" style="width: 24px">名称</span>
           <div class="component-right">
             <a-switch
-                size="small"
-                v-model:checked="chartConfigControl.yAxisNameShow"
-                @change="
-                          () => {
-                            // 1. 计算该组件所需grid让出的空间
-                            let {top,left,right,bottom} = chartConfigFunction.openAndCloseComponent(
-                              chartConfigControl.currentYAxisNamePosition,
-                              chartConfigControl.yAxisNameShow);
-                            // 2. 调整grid位置
-                            chartConfigFunction.changeGridPosition(top, left, right, bottom );
+              size="small"
+              v-model:checked="chartConfigControl.yAxisNameShow"
+              @change="
+                () => {
+                  // 1. 计算该组件所需grid让出的空间
+                  let { top, left, right, bottom } = chartConfigFunction.openAndCloseComponent(
+                    chartConfigControl.currentYAxisNamePosition,
+                    chartConfigControl.yAxisNameShow,
+                  )
+                  // 2. 调整grid位置
+                  chartConfigFunction.changeGridPosition(top, left, right, bottom)
 
-                            if (!chartConfigControl.yAxisNameShow) {
-                               chartOption.yAxis.name = undefined
-                            }
+                  if (!chartConfigControl.yAxisNameShow) {
+                    chartOption.yAxis.name = undefined
+                  }
 
-                            // 3. 设置y轴名称到图表
-                            chartConfig.setOption(
-                                { yAxis:
-                                    { name: chartOption.yAxis.name ,
-                                      nameLocation:chartOption.yAxis.nameLocation
-                                    },
-                                  dataZoom:[
-                                    {
-                                    id:'x0Slider',
-                                    top: (101 - chartConfigControl.currentGridPosition.bottom)+'%'
-                                    },
-                                    {
-                                    id:'y0Slider',
-                                    left: (101 - chartConfigControl.currentGridPosition.right) +'%'
-                                    }
-                                  ]
-                                });
-
-                          }
-                        "
+                  // 3. 设置y轴名称到图表
+                  chartConfig.setOption({
+                    yAxis: {
+                      name: chartOption.yAxis.name,
+                      nameLocation: chartOption.yAxis.nameLocation,
+                    },
+                    dataZoom: [
+                      {
+                        id: 'x0Slider',
+                        top: 101 - chartConfigControl.currentGridPosition.bottom + '%',
+                      },
+                      {
+                        id: 'y0Slider',
+                        left: 101 - chartConfigControl.currentGridPosition.right + '%',
+                      },
+                    ],
+                  })
+                }
+              "
             ></a-switch>
           </div>
         </div>
@@ -1320,14 +1354,12 @@ watch(() => chartConfigControl.vertical, () => {
           <span class="label-left"></span>
           <div class="component-right">
             <a-input
-                size="small"
-                :style="{ width: '100%', fontSize: '12px', height: '22px' }"
-                allow-clear
-                :disabled="!chartConfigControl.yAxisNameShow"
-                v-model:value="chartOption.yAxis.name"
-                @change="
-                          chartConfig.setOption({ yAxis: { name: chartOption.yAxis.name } })
-                        "
+              size="small"
+              :style="{ width: '100%', fontSize: '12px', height: '22px' }"
+              allow-clear
+              :disabled="!chartConfigControl.yAxisNameShow"
+              v-model:value="chartOption.yAxis.name"
+              @change="chartConfig.setOption({ yAxis: { name: chartOption.yAxis.name } })"
             ></a-input>
           </div>
         </div>
@@ -1337,63 +1369,60 @@ watch(() => chartConfigControl.vertical, () => {
           <span class="label-left" style="width: 48px">名称位置</span>
           <div class="component-right">
             <a-radio-group
-                size="small"
-                button-style="solid"
-                :disabled="!chartConfigControl.yAxisNameShow"
-                v-model:value="chartOption.yAxis.nameLocation"
-                @change="()=>{
+              size="small"
+              button-style="solid"
+              :disabled="!chartConfigControl.yAxisNameShow"
+              v-model:value="chartOption.yAxis.nameLocation"
+              @change="
+                () => {
+                  let changeStatus = ''
+                  if (chartOption.yAxis.position == 'left') {
+                    if (chartOption.yAxis.nameLocation == 'start') {
+                      changeStatus = 'leftBottom'
+                    } else if (chartOption.yAxis.nameLocation == 'center') {
+                      changeStatus = 'leftCenter'
+                    } else {
+                      changeStatus = 'leftTop'
+                    }
+                  } else {
+                    if (chartOption.yAxis.nameLocation == 'start') {
+                      changeStatus = 'rightBottom'
+                    } else if (chartOption.yAxis.nameLocation == 'center') {
+                      changeStatus = 'rightCenter'
+                    } else {
+                      changeStatus = 'rightTop'
+                    }
+                  }
 
-                            let changeStatus = '';
-                            if(chartOption.yAxis.position=='left'){
-                              if(chartOption.yAxis.nameLocation == 'start'){
-                                changeStatus = 'leftBottom'
-                              } else if(chartOption.yAxis.nameLocation == 'center'){
-                                changeStatus='leftCenter'
-                              } else{
-                                changeStatus='leftTop'
-                              }
-                            }else {
-                              if(chartOption.yAxis.nameLocation == 'start'){
-                                 changeStatus='rightBottom'
-                              } else if(chartOption.yAxis.nameLocation == 'center'){
-                                 changeStatus='rightCenter'
-                              } else{
-                                 changeStatus='rightTop'
-                              }
-                            }
-
-                            // 1.
-                            let {top,left,right,bottom} =chartConfigFunction.changeComponentPosition(
-                                chartConfigControl.currentYAxisNamePosition,changeStatus);
-                            // 2.
-                            chartConfigFunction.changeGridPosition(top, left, right, bottom );
-                            // 3.
-                            chartConfig.setOption({
-                            yAxis: { nameLocation: chartOption.yAxis.nameLocation },
-                            dataZoom:[
-                                {
-                                id:'x0Slider',
-                                top: (101 - chartConfigControl.currentGridPosition.bottom)+'%'
-                                },
-                                {
-                                id:'y0Slider',
-                                left: (101 - chartConfigControl.currentGridPosition.right) +'%'
-                                }
-                              ]
-                            })
-                          }
-
-                        "
+                  // 1.
+                  let { top, left, right, bottom } = chartConfigFunction.changeComponentPosition(
+                    chartConfigControl.currentYAxisNamePosition,
+                    changeStatus,
+                  )
+                  // 2.
+                  chartConfigFunction.changeGridPosition(top, left, right, bottom)
+                  // 3.
+                  chartConfig.setOption({
+                    yAxis: { nameLocation: chartOption.yAxis.nameLocation },
+                    dataZoom: [
+                      {
+                        id: 'x0Slider',
+                        top: 101 - chartConfigControl.currentGridPosition.bottom + '%',
+                      },
+                      {
+                        id: 'y0Slider',
+                        left: 101 - chartConfigControl.currentGridPosition.right + '%',
+                      },
+                    ],
+                  })
+                }
+              "
             >
-              <a-radio-button value="start"
-              ><span style="font-size: 12px">下</span></a-radio-button
-              >
+              <a-radio-button value="start"><span style="font-size: 12px">下</span></a-radio-button>
               <a-radio-button value="center"
-              ><span style="font-size: 12px">中</span></a-radio-button
+                ><span style="font-size: 12px">中</span></a-radio-button
               >
-              <a-radio-button value="end"
-              ><span style="font-size: 12px">上</span></a-radio-button
-              >
+              <a-radio-button value="end"><span style="font-size: 12px">上</span></a-radio-button>
             </a-radio-group>
           </div>
         </div>
@@ -1403,15 +1432,13 @@ watch(() => chartConfigControl.vertical, () => {
 
           <div class="component-right">
             <a-input-number
-                size="small"
-                min="8"
-                :style="{ width: '100%', fontSize: '12px' }"
-                :disabled="!chartConfigControl.yAxisNameShow"
-                v-model:value="chartOption.yAxis.nameGap"
-                addon-after="px"
-                @change="
-                            chartConfig.setOption({ yAxis: { nameGap: chartOption.yAxis.nameGap } });
-                        "
+              size="small"
+              min="8"
+              :style="{ width: '100%', fontSize: '12px' }"
+              :disabled="!chartConfigControl.yAxisNameShow"
+              v-model:value="chartOption.yAxis.nameGap"
+              addon-after="px"
+              @change="chartConfig.setOption({ yAxis: { nameGap: chartOption.yAxis.nameGap } })"
             >
             </a-input-number>
           </div>
@@ -1421,59 +1448,59 @@ watch(() => chartConfigControl.vertical, () => {
           <span class="label-left" style="width: 60px">坐标轴位置</span>
           <div class="component-right">
             <a-radio-group
-                size="small"
-                button-style="solid"
-                v-model:value="chartOption.yAxis.position"
-                @change="()=>{
+              size="small"
+              button-style="solid"
+              v-model:value="chartOption.yAxis.position"
+              @change="
+                () => {
+                  let changeStatus = ''
+                  if (chartOption.yAxis.position == 'left') {
+                    if (chartOption.yAxis.nameLocation == 'start') {
+                      changeStatus = 'leftBottom'
+                    } else if (chartOption.yAxis.nameLocation == 'center') {
+                      changeStatus = 'leftCenter'
+                    } else {
+                      changeStatus = 'leftTop'
+                    }
+                  } else {
+                    if (chartOption.yAxis.nameLocation == 'start') {
+                      changeStatus = 'rightBottom'
+                    } else if (chartOption.yAxis.nameLocation == 'center') {
+                      changeStatus = 'rightCenter'
+                    } else {
+                      changeStatus = 'rightTop'
+                    }
+                  }
+                  // 1.
+                  let { top, left, right, bottom } = chartConfigFunction.changeComponentPosition(
+                    chartConfigControl.currentYAxisNamePosition,
+                    changeStatus,
+                  )
+                  // 2.
+                  chartConfigFunction.changeGridPosition(top, left, right, bottom)
 
-                            let changeStatus = '';
-                            if(chartOption.yAxis.position=='left'){
-                              if(chartOption.yAxis.nameLocation == 'start'){
-                                changeStatus = 'leftBottom'
-                              } else if(chartOption.yAxis.nameLocation == 'center'){
-                                changeStatus='leftCenter'
-                              } else{
-                                changeStatus='leftTop'
-                              }
-                            }else {
-                              if(chartOption.yAxis.nameLocation == 'start'){
-                                 changeStatus='rightBottom'
-                              } else if(chartOption.yAxis.nameLocation == 'center'){
-                                 changeStatus='rightCenter'
-                              } else{
-                                 changeStatus='rightTop'
-                              }
-                            }
-                            // 1.
-                            let {top,left,right,bottom} = chartConfigFunction.changeComponentPosition(
-                                chartConfigControl.currentYAxisNamePosition,
-                                changeStatus);
-                            // 2.
-                            chartConfigFunction.changeGridPosition(top, left, right, bottom );
-
-                            // 3.
-                             chartConfig.setOption({
-                              yAxis: { position: chartOption.yAxis.position },
-                              dataZoom:[
-                                  {
-                                  id:'x0Slider',
-                                  top: (101 - chartConfigControl.currentGridPosition.bottom)+'%'
-                                  },
-                                  {
-                                  id:'y0Slider',
-                                  left: (101 - chartConfigControl.currentGridPosition.right) +'%'
-                                  }
-                                ]
-                              })
-                          }
-
-                        "
+                  // 3.
+                  chartConfig.setOption({
+                    yAxis: { position: chartOption.yAxis.position },
+                    dataZoom: [
+                      {
+                        id: 'x0Slider',
+                        top: 101 - chartConfigControl.currentGridPosition.bottom + '%',
+                      },
+                      {
+                        id: 'y0Slider',
+                        left: 101 - chartConfigControl.currentGridPosition.right + '%',
+                      },
+                    ],
+                  })
+                }
+              "
             >
               <a-radio-button value="left"
-              ><span style="font-size: 12px">左侧</span></a-radio-button
+                ><span style="font-size: 12px">左侧</span></a-radio-button
               >
               <a-radio-button value="right"
-              ><span style="font-size: 12px">右侧</span></a-radio-button
+                ><span style="font-size: 12px">右侧</span></a-radio-button
               >
             </a-radio-group>
           </div>
@@ -1484,13 +1511,13 @@ watch(() => chartConfigControl.vertical, () => {
           <span class="label-left" style="width: 60px">标签</span>
           <div class="component-right">
             <a-switch
-                size="small"
-                v-model:checked="chartOption.yAxis.axisLabel.show"
-                @change="
-                          chartConfig.setOption({
-                            yAxis: { axisLabel: { show: chartOption.yAxis.axisLabel.show } },
-                          })
-                        "
+              size="small"
+              v-model:checked="chartOption.yAxis.axisLabel.show"
+              @change="
+                chartConfig.setOption({
+                  yAxis: { axisLabel: { show: chartOption.yAxis.axisLabel.show } },
+                })
+              "
             ></a-switch>
           </div>
         </div>
@@ -1499,20 +1526,20 @@ watch(() => chartConfigControl.vertical, () => {
           <span class="label-left" style="width: 60px">角度</span>
           <div class="component-right">
             <a-slider
-                v-model:value="chartOption.yAxis.axisLabel.rotate"
-                :min="-90"
-                :max="90"
-                :dots="true"
-                :step="15"
-                :style="{ width: '100%' }"
-                @change="
-                          chartConfig.setOption({
-                            yAxis: {
-                              axisLabel: { rotate: chartOption.yAxis.axisLabel.rotate },
-                            },
-                          })
-                        "
-                :disabled="!chartOption.yAxis.axisLabel.show"
+              v-model:value="chartOption.yAxis.axisLabel.rotate"
+              :min="-90"
+              :max="90"
+              :dots="true"
+              :step="15"
+              :style="{ width: '100%' }"
+              @change="
+                chartConfig.setOption({
+                  yAxis: {
+                    axisLabel: { rotate: chartOption.yAxis.axisLabel.rotate },
+                  },
+                })
+              "
+              :disabled="!chartOption.yAxis.axisLabel.show"
             ></a-slider>
           </div>
         </div>
@@ -1521,19 +1548,19 @@ watch(() => chartConfigControl.vertical, () => {
           <span class="label-left" style="width: 48px">离坐标轴</span>
           <div class="component-right">
             <a-input-number
-                size="small"
-                min="8"
-                :style="{ width: '100%', fontSize: '12px' }"
-                v-model:value="chartOption.yAxis.axisLabel.margin"
-                addon-after="px"
-                @change="
-                          chartConfig.setOption({
-                            yAxis: {
-                              axisLabel: { margin: chartOption.yAxis.axisLabel.margin },
-                            },
-                          })
-                        "
-                :disabled="!chartOption.yAxis.axisLabel.show"
+              size="small"
+              min="8"
+              :style="{ width: '100%', fontSize: '12px' }"
+              v-model:value="chartOption.yAxis.axisLabel.margin"
+              addon-after="px"
+              @change="
+                chartConfig.setOption({
+                  yAxis: {
+                    axisLabel: { margin: chartOption.yAxis.axisLabel.margin },
+                  },
+                })
+              "
+              :disabled="!chartOption.yAxis.axisLabel.show"
             >
             </a-input-number>
           </div>
@@ -1545,20 +1572,20 @@ watch(() => chartConfigControl.vertical, () => {
           <div class="component-right">
             <a-tooltip title="最大值200 最小值 48">
               <a-input-number
-                  size="small"
-                  min="48"
-                  max="200"
-                  :style="{ width: '100%', fontSize: '12px' }"
-                  v-model:value="chartOption.yAxis.axisLabel.width"
-                  addon-after="px"
-                  @change="
-                            chartConfig.setOption({
-                              yAxis: {
-                                axisLabel: { width: chartOption.yAxis.axisLabel.width },
-                              },
-                            })
-                          "
-                  :disabled="!chartOption.yAxis.axisLabel.show"
+                size="small"
+                min="48"
+                max="200"
+                :style="{ width: '100%', fontSize: '12px' }"
+                v-model:value="chartOption.yAxis.axisLabel.width"
+                addon-after="px"
+                @change="
+                  chartConfig.setOption({
+                    yAxis: {
+                      axisLabel: { width: chartOption.yAxis.axisLabel.width },
+                    },
+                  })
+                "
+                :disabled="!chartOption.yAxis.axisLabel.show"
               >
               </a-input-number>
             </a-tooltip>
@@ -1570,47 +1597,44 @@ watch(() => chartConfigControl.vertical, () => {
           <span class="label-left" style="width: 36px">超长后</span>
           <div class="component-right">
             <a-radio-group
-                size="small"
-                button-style="solid"
-                v-model:value="chartOption.yAxis.axisLabel.overflow"
-                @change="
-                          chartConfig.setOption({
-                            yAxis: {
-                              axisLabel: { overflow: chartOption.yAxis.axisLabel.overflow },
-                            },
-                          })
-                        "
-                :disabled="!chartOption.yAxis.axisLabel.show"
+              size="small"
+              button-style="solid"
+              v-model:value="chartOption.yAxis.axisLabel.overflow"
+              @change="
+                chartConfig.setOption({
+                  yAxis: {
+                    axisLabel: { overflow: chartOption.yAxis.axisLabel.overflow },
+                  },
+                })
+              "
+              :disabled="!chartOption.yAxis.axisLabel.show"
             >
               <a-radio-button value="truncate"
-              ><span style="font-size: 12px">截断</span></a-radio-button
+                ><span style="font-size: 12px">截断</span></a-radio-button
               >
               <a-radio-button value="break"
-              ><span style="font-size: 12px">换行</span></a-radio-button
+                ><span style="font-size: 12px">换行</span></a-radio-button
               >
             </a-radio-group>
           </div>
         </div>
 
         <!--y轴 标签超过最大长度时，截断提示-->
-        <div
-            class="chart-item"
-            v-show="chartOption.yAxis.axisLabel.overflow == 'truncate'"
-        >
+        <div class="chart-item" v-show="chartOption.yAxis.axisLabel.overflow == 'truncate'">
           <span class="label-left" style="width: 60px">截断提示</span>
           <div class="component-right">
             <a-input
-                size="small"
-                :style="{ width: '100%', fontSize: '12px', height: '22px' }"
-                v-model:value="chartOption.yAxis.axisLabel.ellipsis"
-                @change="
-                          chartConfig.setOption({
-                            yAxis: {
-                              axisLabel: { ellipsis: chartOption.yAxis.axisLabel.ellipsis },
-                            },
-                          })
-                        "
-                :disabled="!chartOption.yAxis.axisLabel.show"
+              size="small"
+              :style="{ width: '100%', fontSize: '12px', height: '22px' }"
+              v-model:value="chartOption.yAxis.axisLabel.ellipsis"
+              @change="
+                chartConfig.setOption({
+                  yAxis: {
+                    axisLabel: { ellipsis: chartOption.yAxis.axisLabel.ellipsis },
+                  },
+                })
+              "
+              :disabled="!chartOption.yAxis.axisLabel.show"
             >
             </a-input>
           </div>
@@ -1620,49 +1644,49 @@ watch(() => chartConfigControl.vertical, () => {
         <div class="chart-item">
           <div style="display: flex; justify-content: flex-start; align-items: center">
             <a-checkbox
-                v-model:checked="chartConfigControl.yAxisIntervalChecked"
-                :disabled="!chartOption.yAxis.axisLabel.show"
-                @change="
-                          () => {
-                            if (chartConfigControl.yAxisIntervalChecked) {
-                              chartOption.yAxis.axisLabel.interval = 0
-                              chartConfig.setOption({
-                                yAxis: {
-                                  axisLabel: { interval: 0 },
-                                },
-                              })
-                            } else {
-                              chartConfig.setOption({
-                                yAxis: {
-                                  axisLabel: { interval: 'auto' },
-                                },
-                              })
-                            }
-                          }
-                        "
+              v-model:checked="chartConfigControl.yAxisIntervalChecked"
+              :disabled="!chartOption.yAxis.axisLabel.show"
+              @change="
+                () => {
+                  if (chartConfigControl.yAxisIntervalChecked) {
+                    chartOption.yAxis.axisLabel.interval = 0
+                    chartConfig.setOption({
+                      yAxis: {
+                        axisLabel: { interval: 0 },
+                      },
+                    })
+                  } else {
+                    chartConfig.setOption({
+                      yAxis: {
+                        axisLabel: { interval: 'auto' },
+                      },
+                    })
+                  }
+                }
+              "
             >
             </a-checkbox>
-            <span class="label-normal" style="margin-left: 8px; margin-left: 8px"
-            >间隔</span
-            >
+            <span class="label-normal" style="margin-left: 8px; margin-left: 8px">间隔</span>
           </div>
 
           <div class="component-right">
             <a-input-number
-                size="small"
-                min="0"
-                max="5"
-                :style="{ width: '100%', fontSize: '12px' }"
-                v-model:value="chartOption.yAxis.axisLabel.interval"
-                addon-after="个标签"
-                @change="
-                          chartConfig.setOption({
-                            yAxis: {
-                              axisLabel: { interval: chartOption.yAxis.axisLabel.interval },
-                            },
-                          })
-                        "
-                :disabled="!chartOption.yAxis.axisLabel.show || !chartConfigControl.yAxisIntervalChecked"
+              size="small"
+              min="0"
+              max="5"
+              :style="{ width: '100%', fontSize: '12px' }"
+              v-model:value="chartOption.yAxis.axisLabel.interval"
+              addon-after="个标签"
+              @change="
+                chartConfig.setOption({
+                  yAxis: {
+                    axisLabel: { interval: chartOption.yAxis.axisLabel.interval },
+                  },
+                })
+              "
+              :disabled="
+                !chartOption.yAxis.axisLabel.show || !chartConfigControl.yAxisIntervalChecked
+              "
             ></a-input-number>
           </div>
         </div>
@@ -1672,13 +1696,13 @@ watch(() => chartConfigControl.vertical, () => {
           <span class="label-left" style="width: 60px">分割线</span>
           <div class="component-right">
             <a-switch
-                size="small"
-                v-model:checked="chartOption.yAxis.splitLine.show"
-                @change="
-                          chartConfig.setOption({
-                            yAxis: { splitLine: { show: chartOption.yAxis.splitLine.show } },
-                          })
-                        "
+              size="small"
+              v-model:checked="chartOption.yAxis.splitLine.show"
+              @change="
+                chartConfig.setOption({
+                  yAxis: { splitLine: { show: chartOption.yAxis.splitLine.show } },
+                })
+              "
             ></a-switch>
           </div>
         </div>
@@ -1686,49 +1710,49 @@ watch(() => chartConfigControl.vertical, () => {
         <!--y轴 分割线类型、以及分割线宽度-->
         <div class="chart-item">
           <a-select
-              size="small"
-              v-model:value="chartOption.yAxis.splitLine.lineStyle.type"
-              @change="
-                        chartConfig.setOption({
-                          yAxis: {
-                            splitLine: {
-                              lineStyle: { type: chartOption.yAxis.splitLine.lineStyle.type },
-                            },
-                          },
-                        })
-                      "
-              :disabled="!chartOption.yAxis.splitLine.show"
+            size="small"
+            v-model:value="chartOption.yAxis.splitLine.lineStyle.type"
+            @change="
+              chartConfig.setOption({
+                yAxis: {
+                  splitLine: {
+                    lineStyle: { type: chartOption.yAxis.splitLine.lineStyle.type },
+                  },
+                },
+              })
+            "
+            :disabled="!chartOption.yAxis.splitLine.show"
           >
             <a-select-option value="solid"
-            ><span style="font-size: 12px">实线</span></a-select-option
+              ><span style="font-size: 12px">实线</span></a-select-option
             >
             <a-select-option value="dashed"
-            ><span style="font-size: 12px">虚线</span></a-select-option
+              ><span style="font-size: 12px">虚线</span></a-select-option
             >
             <a-select-option value="dotted"
-            ><span style="font-size: 12px">点线</span></a-select-option
+              ><span style="font-size: 12px">点线</span></a-select-option
             >
           </a-select>
 
           <div class="component-right">
             <a-input-number
-                size="small"
-                min="1"
-                :style="{ width: '100%', fontSize: '12px' }"
-                v-model:value="chartOption.yAxis.splitLine.lineStyle.width"
-                addon-after="px"
-                @change="
-                          chartConfig.setOption({
-                            yAxis: {
-                              splitLine: {
-                                lineStyle: {
-                                  width: chartOption.yAxis.splitLine.lineStyle.width,
-                                },
-                              },
-                            },
-                          })
-                        "
-                :disabled="!chartOption.yAxis.splitLine.show"
+              size="small"
+              min="1"
+              :style="{ width: '100%', fontSize: '12px' }"
+              v-model:value="chartOption.yAxis.splitLine.lineStyle.width"
+              addon-after="px"
+              @change="
+                chartConfig.setOption({
+                  yAxis: {
+                    splitLine: {
+                      lineStyle: {
+                        width: chartOption.yAxis.splitLine.lineStyle.width,
+                      },
+                    },
+                  },
+                })
+              "
+              :disabled="!chartOption.yAxis.splitLine.show"
             ></a-input-number>
           </div>
         </div>
@@ -1738,53 +1762,52 @@ watch(() => chartConfigControl.vertical, () => {
 
   <!--数据系列-->
   <div class="chart-group">
-
     <!--数据系列配置一致-->
     <div class="chart-item" style="margin-bottom: 8px">
       <span class="label-left" style="width: 48px">数据系列</span>
       <div class="component-right">
         <a-checkbox
-            v-model:checked="chartConfigControl.allSeriesEqual"
-            @change="
-                      () => {
-                        if (chartConfigControl.allSeriesEqual) {
-                          chartConfigControl.allSeriesConfigShow = [chartOption.series[0].id || '0']
-                        } else {
-                          chartConfigControl.allSeriesConfigShow = []
-                        }
-                      }
-                    "
-        ><span style="font-size: 12px">各系列一致</span>
+          v-model:checked="chartConfigControl.allSeriesEqual"
+          @change="
+            () => {
+              if (chartConfigControl.allSeriesEqual) {
+                chartConfigControl.allSeriesConfigShow = [chartOption.series[0].id || '0']
+              } else {
+                chartConfigControl.allSeriesConfigShow = []
+              }
+            }
+          "
+          ><span style="font-size: 12px">各系列一致</span>
         </a-checkbox>
       </div>
     </div>
 
     <a-collapse
-        v-model:activeKey="chartConfigControl.allSeriesConfigShow"
-        expand-icon-position="end"
-        :style="{
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  margin: '0',
-                  padding: '0',
-                }"
+      v-model:activeKey="chartConfigControl.allSeriesConfigShow"
+      expand-icon-position="end"
+      :style="{
+        border: 'none',
+        backgroundColor: 'transparent',
+        margin: '0',
+        padding: '0',
+      }"
     >
       <a-collapse-panel
-          :style="{ border: 'none', marginTop: '8px', padding: '0', fontSize: '12px' }"
-          v-for="(item, index) in chartOption.series"
-          :key="item.id || index"
+        :style="{ border: 'none', marginTop: '8px', padding: '0', fontSize: '12px' }"
+        v-for="(item, index) in chartOption.series"
+        :key="item.id || index"
       >
         <template #header>
           <div :style="{ display: 'flex', justifyContent: 'space-between' }">
-                      <span>
-                        {{ item.name }}
-                      </span>
+            <span>
+              {{ item.name }}
+            </span>
             <span v-if="item.type == 'bar'">
-                        <BarChartOutlined :style="{ color: chartConfigControl.currentColors[index] }"/>
-                      </span>
+              <BarChartOutlined :style="{ color: chartConfigControl.currentColors[index] }" />
+            </span>
             <span v-else-if="item.type == 'line'">
-                        <LineChartOutlined :style="{ color: chartConfigControl.currentColors[index] }"/>
-                      </span>
+              <LineChartOutlined :style="{ color: chartConfigControl.currentColors[index] }" />
+            </span>
           </div>
         </template>
 
@@ -1794,14 +1817,14 @@ watch(() => chartConfigControl.vertical, () => {
 
           <div class="component-right">
             <a-input
-                v-model:value="item.name"
-                size="small"
-                :style="{ width: '100%', fontSize: '12px', height: '22px' }"
-                @change="
-                          () => {
-                            chartConfig.setOption({ series: [{ id: item.id, name: item.name }] })
-                          }
-                        "
+              v-model:value="item.name"
+              size="small"
+              :style="{ width: '100%', fontSize: '12px', height: '22px' }"
+              @change="
+                () => {
+                  chartConfig.setOption({ series: [{ id: item.id, name: item.name }] })
+                }
+              "
             >
             </a-input>
           </div>
@@ -1813,17 +1836,17 @@ watch(() => chartConfigControl.vertical, () => {
 
           <div class="component-right">
             <a-select
-                v-model:value="item.type"
-                size="small"
-                @change="
-                          (value: string) => {
-                            if (chartConfigControl.allSeriesEqual) {
-                              chartConfigFunction.changeAllSeriesType(value);
-                            } else {
-                              chartConfig.setOption({ series: { id: item.id, type: value } })
-                            }
-                          }
-                        "
+              v-model:value="item.type"
+              size="small"
+              @change="
+                (value: string) => {
+                  if (chartConfigControl.allSeriesEqual) {
+                    chartConfigFunction.changeAllSeriesType(value)
+                  } else {
+                    chartConfig.setOption({ series: { id: item.id, type: value } })
+                  }
+                }
+              "
             >
               <a-select-option value="bar">
                 <span class="label-normal">柱状图</span>
@@ -1841,49 +1864,48 @@ watch(() => chartConfigControl.vertical, () => {
 
           <div class="component-right">
             <a-checkbox
-                v-model:checked="chartConfigControl.seriesLabelShow[item.id]"
-                @change="
-                          () => {
-                            if (chartConfigControl.allSeriesEqual) {
-                              chartConfigFunction.changAllSeriesLabelControl(item)
-                            } else {
-                              chartConfigFunction.seriesLabelControl(item)
-                            }
-                          }
-                        "
+              v-model:checked="chartConfigControl.seriesLabelShow[item.id]"
+              @change="
+                () => {
+                  if (chartConfigControl.allSeriesEqual) {
+                    chartConfigFunction.changAllSeriesLabelControl(item)
+                  } else {
+                    chartConfigFunction.seriesLabelControl(item)
+                  }
+                }
+              "
             >
               <span class="label-normal">显示</span>
             </a-checkbox>
 
             <a-select
-                v-model:value="item.label.position"
-                size="small"
-                @change="
-                          () => {
-                            if (chartConfigControl.allSeriesEqual) {
-                              chartConfigFunction.changeAllLabelPosition(item)
-                            } else {
-                              chartConfig.setOption({
-                                series: [{ id: item.id, label: { position: item.label.position } }],
-                              })
-                            }
-                          }
-                        "
-                :disabled="
-                          chartConfigControl.seriesLabelShow[item.id] == null || chartConfigControl.seriesLabelShow[item.id] == ''
-                        "
+              v-model:value="item.label.position"
+              size="small"
+              @change="
+                () => {
+                  if (chartConfigControl.allSeriesEqual) {
+                    chartConfigFunction.changeAllLabelPosition(item)
+                  } else {
+                    chartConfig.setOption({
+                      series: [{ id: item.id, label: { position: item.label.position } }],
+                    })
+                  }
+                }
+              "
+              :disabled="
+                chartConfigControl.seriesLabelShow[item.id] == null ||
+                chartConfigControl.seriesLabelShow[item.id] == ''
+              "
             >
-              <a-select-option value="top"
-              ><span class="label-normal">顶部</span></a-select-option
-              >
+              <a-select-option value="top"><span class="label-normal">顶部</span></a-select-option>
               <a-select-option value="inside"
-              ><span class="label-normal">内中</span></a-select-option
+                ><span class="label-normal">内中</span></a-select-option
               >
               <a-select-option value="insideBottom"
-              ><span class="label-normal">内下</span></a-select-option
+                ><span class="label-normal">内下</span></a-select-option
               >
               <a-select-option value="insideTop"
-              ><span class="label-normal">内上</span></a-select-option
+                ><span class="label-normal">内上</span></a-select-option
               >
             </a-select>
           </div>
@@ -1895,26 +1917,27 @@ watch(() => chartConfigControl.vertical, () => {
 
           <div class="component-right">
             <a-slider
-                v-model:value="item.label.rotate"
-                :min="-90"
-                :max="90"
-                :dots="true"
-                :step="15"
-                :style="{ width: '100%' }"
-                @change="
-                          () => {
-                            if (chartConfigControl.allSeriesEqual) {
-                              chartConfigFunction.changeAllRotate(item)
-                            } else {
-                              chartConfig.setOption({
-                                series: { id: item.id, label: { rotate: item.label.rotate } },
-                              })
-                            }
-                          }
-                        "
-                :disabled="
-                          chartConfigControl.seriesLabelShow[item.id] == null || chartConfigControl.seriesLabelShow[item.id] == ''
-                        "
+              v-model:value="item.label.rotate"
+              :min="-90"
+              :max="90"
+              :dots="true"
+              :step="15"
+              :style="{ width: '100%' }"
+              @change="
+                () => {
+                  if (chartConfigControl.allSeriesEqual) {
+                    chartConfigFunction.changeAllRotate(item)
+                  } else {
+                    chartConfig.setOption({
+                      series: { id: item.id, label: { rotate: item.label.rotate } },
+                    })
+                  }
+                }
+              "
+              :disabled="
+                chartConfigControl.seriesLabelShow[item.id] == null ||
+                chartConfigControl.seriesLabelShow[item.id] == ''
+              "
             >
             </a-slider>
           </div>
@@ -1926,29 +1949,23 @@ watch(() => chartConfigControl.vertical, () => {
 
           <div class="component-right">
             <a-radio-group
-                v-model:value="item.emphasis.focus"
-                size="small"
-                @change="
-                          () => {
-                            if (chartConfigControl.allSeriesEqual) {
-                             chartConfigFunction.changeAllSeriesEmphasis(item);
-                            } else {
-                              chartConfig.setOption({
-                                series: { id: item.id, emphasis: { focus: item.emphasis.focus } },
-                              })
-                            }
-                          }
-                        "
+              v-model:value="item.emphasis.focus"
+              size="small"
+              @change="
+                () => {
+                  if (chartConfigControl.allSeriesEqual) {
+                    chartConfigFunction.changeAllSeriesEmphasis(item)
+                  } else {
+                    chartConfig.setOption({
+                      series: { id: item.id, emphasis: { focus: item.emphasis.focus } },
+                    })
+                  }
+                }
+              "
             >
-              <a-radio-button value="none"
-              ><span class="label-normal">无</span></a-radio-button
-              >
-              <a-radio-button value="series"
-              ><span class="label-normal">系列</span></a-radio-button
-              >
-              <a-radio-button value="self"
-              ><span class="label-normal">自身</span></a-radio-button
-              >
+              <a-radio-button value="none"><span class="label-normal">无</span></a-radio-button>
+              <a-radio-button value="series"><span class="label-normal">系列</span></a-radio-button>
+              <a-radio-button value="self"><span class="label-normal">自身</span></a-radio-button>
             </a-radio-group>
           </div>
         </div>
@@ -1962,35 +1979,36 @@ watch(() => chartConfigControl.vertical, () => {
       <span class="label-left" style="width: 48px">条形图</span>
       <div class="component-right">
         <a-checkbox
-            v-model:checked="chartConfigControl.vertical"
-            value="vertical"
-            @change="
-                      () => {
-                        if (chartConfigControl.vertical) {
-                          chartOption.xAxis.type = 'value'
-                          chartOption.yAxis.type = 'category'
-                          chartConfig.setOption({
-                            xAxis: { type: 'value', axisLabel: chartOption.xAxis.axisLabel },
-                            yAxis: { type: 'category', axisLabel: chartOption.yAxis.axisLabel },
-                          })
+          v-model:checked="chartConfigControl.vertical"
+          value="vertical"
+          @change="
+            () => {
+              if (chartConfigControl.vertical) {
+                chartOption.xAxis.type = 'value'
+                chartOption.yAxis.type = 'category'
+                chartConfig.setOption({
+                  xAxis: { type: 'value', axisLabel: chartOption.xAxis.axisLabel },
+                  yAxis: { type: 'category', axisLabel: chartOption.yAxis.axisLabel },
+                })
 
-                          // 重新设置下截断和换行
-                          chartConfig.setOption({
-                            xAxis: {
-                              axisLabel: { overflow: chartOption.xAxis.axisLabel.overflow },
-                            },
-                          })
-                        } else {
-                          chartOption.xAxis.type = 'category'
-                          chartOption.yAxis.type = 'value'
-                          chartConfig.setOption({
-                            xAxis: { type: 'category', axisLabel: chartOption.xAxis.axisLabel },
-                            yAxis: { type: 'value', axisLabel: chartOption.yAxis.axisLabel },
-                          })
-                        }
-                      }
-                    "
-        ><span class="label-normal">切换</span></a-checkbox>
+                // 重新设置下截断和换行
+                chartConfig.setOption({
+                  xAxis: {
+                    axisLabel: { overflow: chartOption.xAxis.axisLabel.overflow },
+                  },
+                })
+              } else {
+                chartOption.xAxis.type = 'category'
+                chartOption.yAxis.type = 'value'
+                chartConfig.setOption({
+                  xAxis: { type: 'category', axisLabel: chartOption.xAxis.axisLabel },
+                  yAxis: { type: 'value', axisLabel: chartOption.yAxis.axisLabel },
+                })
+              }
+            }
+          "
+          ><span class="label-normal">切换</span></a-checkbox
+        >
       </div>
     </div>
   </div>
@@ -1998,12 +2016,25 @@ watch(() => chartConfigControl.vertical, () => {
     <div class="chart-item">
       <span class="label-left" style="width: 48px">缩放组件</span>
       <div class="component-right">
-        <a-checkbox-group
-            v-model:value="chartConfigControl.zoomShow">
-          <a-checkbox value="x" @change="(v:any)=>{chartConfigControl.xZoomShow = v.target.checked}"><span
-              class="label-normal">横向</span></a-checkbox>
-          <a-checkbox value="y" @change="(v:any)=>{chartConfigControl.yZoomShow = v.target.checked}"><span
-              class="label-normal">纵向</span></a-checkbox>
+        <a-checkbox-group v-model:value="chartConfigControl.zoomShow">
+          <a-checkbox
+            value="x"
+            @change="
+              (v: any) => {
+                chartConfigControl.xZoomShow = v.target.checked
+              }
+            "
+            ><span class="label-normal">横向</span></a-checkbox
+          >
+          <a-checkbox
+            value="y"
+            @change="
+              (v: any) => {
+                chartConfigControl.yZoomShow = v.target.checked
+              }
+            "
+            ><span class="label-normal">纵向</span></a-checkbox
+          >
         </a-checkbox-group>
       </div>
     </div>
@@ -2011,55 +2042,65 @@ watch(() => chartConfigControl.vertical, () => {
     <div class="chart-item" v-show="chartConfigControl.xZoomShow">
       <span class="label-left" style="width: 48px">横向</span>
       <div class="component-right">
-        <a-checkbox-group
-            v-model:value="chartConfigControl.xZoom"
-        >
-          <a-checkbox value="inside" @change="(v:any)=>{
-                       let x0InsideDisabled = !v.target.checked;
+        <a-checkbox-group v-model:value="chartConfigControl.xZoom">
+          <a-checkbox
+            value="inside"
+            @change="
+              (v: any) => {
+                let x0InsideDisabled = !v.target.checked
 
-                        let option = [
-                          {
-                            id: 'x0Inside',
-                            disabled: x0InsideDisabled,
-                          },
-                        ]
-                        for (let i = 0; i < chartOption.dataZoom.length; i++) {
-                          if (chartOption.dataZoom[i].id == 'x0Inside') {
-                            chartOption.dataZoom[i].disabled = x0InsideDisabled;
-                            break;
-                          }
-                        }
-                        chartConfig.setOption({ dataZoom: option });
-                    }"><span class="label-normal">内置</span></a-checkbox>
-          <a-checkbox value="slider" @change="(v:any)=>{
-                       let x0SliderShow = v.target.checked;
+                let option = [
+                  {
+                    id: 'x0Inside',
+                    disabled: x0InsideDisabled,
+                  },
+                ]
+                for (let i = 0; i < chartOption.dataZoom.length; i++) {
+                  if (chartOption.dataZoom[i].id == 'x0Inside') {
+                    chartOption.dataZoom[i].disabled = x0InsideDisabled
+                    break
+                  }
+                }
+                chartConfig.setOption({ dataZoom: option })
+              }
+            "
+            ><span class="label-normal">内置</span></a-checkbox
+          >
+          <a-checkbox
+            value="slider"
+            @change="
+              (v: any) => {
+                let x0SliderShow = v.target.checked
 
-                       // 1.
-                       let {top,left,right,bottom} =  chartConfigFunction.openAndCloseComponent(
-                           chartConfigControl.currentXZoomPosition,
-                           x0SliderShow);
+                // 1.
+                let { top, left, right, bottom } = chartConfigFunction.openAndCloseComponent(
+                  chartConfigControl.currentXZoomPosition,
+                  x0SliderShow,
+                )
 
-                       //2.
-                        chartConfigFunction.changeGridPosition(top, left, right, bottom );
+                //2.
+                chartConfigFunction.changeGridPosition(top, left, right, bottom)
 
-                        let option = [
-                          {
-                            id: 'x0Slider',
-                            show: x0SliderShow,
-                            top: (101 - chartConfigControl.currentGridPosition.bottom)+'%'
-                          },
-                        ];
+                let option = [
+                  {
+                    id: 'x0Slider',
+                    show: x0SliderShow,
+                    top: 101 - chartConfigControl.currentGridPosition.bottom + '%',
+                  },
+                ]
 
-                        for (let i = 0; i < chartOption.dataZoom.length; i++) {
-                         if (chartOption.dataZoom[i].id == 'x0Slider') {
-                            chartOption.dataZoom[i].show = x0SliderShow;
-                            break;
-                          }
-                        }
-                        //3.
-                        chartConfig.setOption({ dataZoom: option });
-
-                    }"><span class="label-normal">滑块</span></a-checkbox>
+                for (let i = 0; i < chartOption.dataZoom.length; i++) {
+                  if (chartOption.dataZoom[i].id == 'x0Slider') {
+                    chartOption.dataZoom[i].show = x0SliderShow
+                    break
+                  }
+                }
+                //3.
+                chartConfig.setOption({ dataZoom: option })
+              }
+            "
+            ><span class="label-normal">滑块</span></a-checkbox
+          >
         </a-checkbox-group>
       </div>
     </div>
@@ -2068,29 +2109,29 @@ watch(() => chartConfigControl.vertical, () => {
       <span class="label-left" style="width: 48px">范围</span>
       <div class="component-right">
         <a-slider
-            v-model:value="chartConfigControl.xZoomRange"
-            range
-            :style="{ width: '100%' }"
-            :dots="true"
-            :step="5"
-            @change="
-                      () => {
-                        let option = {
-                          id: 'x0Inside',
-                          start: chartConfigControl.xZoomRange[0],
-                          end: chartConfigControl.xZoomRange[1],
-                        }
-                        chartConfig.setOption({ dataZoom: option })
+          v-model:value="chartConfigControl.xZoomRange"
+          range
+          :style="{ width: '100%' }"
+          :dots="true"
+          :step="5"
+          @change="
+            () => {
+              let option = {
+                id: 'x0Inside',
+                start: chartConfigControl.xZoomRange[0],
+                end: chartConfigControl.xZoomRange[1],
+              }
+              chartConfig.setOption({ dataZoom: option })
 
-                        for (let i = 0; i < chartOption.dataZoom.length; i++) {
-                          if (chartOption.dataZoom[i].id == 'x0Inside') {
-                            chartOption.dataZoom[i].start = chartConfigControl.xZoomRange[0]
-                            chartOption.dataZoom[i].end = chartConfigControl.xZoomRange[1]
-                            break
-                          }
-                        }
-                      }
-                    "
+              for (let i = 0; i < chartOption.dataZoom.length; i++) {
+                if (chartOption.dataZoom[i].id == 'x0Inside') {
+                  chartOption.dataZoom[i].start = chartConfigControl.xZoomRange[0]
+                  chartOption.dataZoom[i].end = chartConfigControl.xZoomRange[1]
+                  break
+                }
+              }
+            }
+          "
         ></a-slider>
       </div>
     </div>
@@ -2098,51 +2139,60 @@ watch(() => chartConfigControl.vertical, () => {
     <div class="chart-item" v-show="chartConfigControl.yZoomShow">
       <span class="label-left" style="width: 48px">纵向</span>
       <div class="component-right">
-        <a-checkbox-group
-            v-model:value="chartConfigControl.yZoom"
-        >
-          <a-checkbox value="inside" @change="(v:any)=>{
-                       let y0InsideDisabled = !v.target.checked
-                        let option = [
-                          {
-                            id: 'y0Inside',
-                            disabled: y0InsideDisabled,
-                          },
-                        ]
-                        chartConfig.setOption({ dataZoom: option });
-                        for (let i = 0; i < chartOption.dataZoom.length; i++) {
-                          if (chartOption.dataZoom[i].id == 'y0Inside') {
-                            chartOption.dataZoom[i].disabled = y0InsideDisabled;
-                            break;
-                          }
-                        }
-                    }"><span class="label-normal">内置</span></a-checkbox>
-          <a-checkbox value="slider" @change="(v:any)=>{
-                       let y0SliderShow = v.target.checked;
-                       let {top,left,right,bottom} =  chartConfigFunction.openAndCloseComponent(
-                           chartConfigControl.currentYZoomPosition,
-                           y0SliderShow);
-                       chartConfigFunction.changeGridPosition(top, left, right, bottom );
+        <a-checkbox-group v-model:value="chartConfigControl.yZoom">
+          <a-checkbox
+            value="inside"
+            @change="
+              (v: any) => {
+                let y0InsideDisabled = !v.target.checked
+                let option = [
+                  {
+                    id: 'y0Inside',
+                    disabled: y0InsideDisabled,
+                  },
+                ]
+                chartConfig.setOption({ dataZoom: option })
+                for (let i = 0; i < chartOption.dataZoom.length; i++) {
+                  if (chartOption.dataZoom[i].id == 'y0Inside') {
+                    chartOption.dataZoom[i].disabled = y0InsideDisabled
+                    break
+                  }
+                }
+              }
+            "
+            ><span class="label-normal">内置</span></a-checkbox
+          >
+          <a-checkbox
+            value="slider"
+            @change="
+              (v: any) => {
+                let y0SliderShow = v.target.checked
+                let { top, left, right, bottom } = chartConfigFunction.openAndCloseComponent(
+                  chartConfigControl.currentYZoomPosition,
+                  y0SliderShow,
+                )
+                chartConfigFunction.changeGridPosition(top, left, right, bottom)
 
-                        let option = [
-                          {
-                            id: 'y0Slider',
-                            show: y0SliderShow,
-                            left: (101 - chartConfigControl.currentGridPosition.right) +'%'
-                          },
-                        ]
+                let option = [
+                  {
+                    id: 'y0Slider',
+                    show: y0SliderShow,
+                    left: 101 - chartConfigControl.currentGridPosition.right + '%',
+                  },
+                ]
 
-                        chartConfig.setOption({ dataZoom: option });
+                chartConfig.setOption({ dataZoom: option })
 
-                        for (let i = 0; i < chartOption.dataZoom.length; i++) {
-                          if (chartOption.dataZoom[i].id == 'y0Slider') {
-                            chartOption.dataZoom[i].show = y0SliderShow;
-                            break;
-                          }
-                        }
-
-
-                    }"><span class="label-normal">滑块</span></a-checkbox>
+                for (let i = 0; i < chartOption.dataZoom.length; i++) {
+                  if (chartOption.dataZoom[i].id == 'y0Slider') {
+                    chartOption.dataZoom[i].show = y0SliderShow
+                    break
+                  }
+                }
+              }
+            "
+            ><span class="label-normal">滑块</span></a-checkbox
+          >
         </a-checkbox-group>
       </div>
     </div>
@@ -2151,29 +2201,29 @@ watch(() => chartConfigControl.vertical, () => {
       <span class="label-left" style="width: 48px">范围</span>
       <div class="component-right">
         <a-slider
-            v-model:value="chartConfigControl.yZoomRange"
-            range
-            :style="{ width: '100%' }"
-            :dots="true"
-            :step="5"
-            @change="
-                      () => {
-                        let option = {
-                          id: 'y0Inside',
-                          start: chartConfigControl.yZoomRange[0],
-                          end: chartConfigControl.yZoomRange[1],
-                        }
-                        chartConfig.setOption({ dataZoom: option })
+          v-model:value="chartConfigControl.yZoomRange"
+          range
+          :style="{ width: '100%' }"
+          :dots="true"
+          :step="5"
+          @change="
+            () => {
+              let option = {
+                id: 'y0Inside',
+                start: chartConfigControl.yZoomRange[0],
+                end: chartConfigControl.yZoomRange[1],
+              }
+              chartConfig.setOption({ dataZoom: option })
 
-                        for (let i = 0; i < chartOption.dataZoom.length; i++) {
-                          if (chartOption.dataZoom[i].id == 'y0Inside') {
-                            chartOption.dataZoom[i].start = chartConfigControl.yZoomRange[0]
-                            chartOption.dataZoom[i].end = chartConfigControl.yZoomRange[1]
-                            break
-                          }
-                        }
-                      }
-                    "
+              for (let i = 0; i < chartOption.dataZoom.length; i++) {
+                if (chartOption.dataZoom[i].id == 'y0Inside') {
+                  chartOption.dataZoom[i].start = chartConfigControl.yZoomRange[0]
+                  chartOption.dataZoom[i].end = chartConfigControl.yZoomRange[1]
+                  break
+                }
+              }
+            }
+          "
         ></a-slider>
       </div>
     </div>
@@ -2181,5 +2231,128 @@ watch(() => chartConfigControl.vertical, () => {
 </template>
 
 <style scoped>
+:deep(.ant-collapse .ant-collapse-item .ant-collapse-header) {
+  margin: 0;
+  padding: 0;
+}
 
+:deep(.ant-collapse .ant-collapse-item .ant-collapse-content) {
+  border: none;
+}
+
+:deep(.ant-collapse .ant-collapse-item .ant-collapse-content .ant-collapse-content-box) {
+  padding: 0;
+}
+
+:deep(.ant-input-number-group-wrapper .ant-input-number-group .ant-input-number-group-addon) {
+  font-size: 12px;
+  height: 14px;
+  line-height: 14px;
+}
+
+:deep(.ant-form .ant-form-item) {
+  margin-bottom: 0;
+  height: 32px;
+  line-height: 32px;
+}
+
+.stackContainer {
+  border: #e8e8e8 1px solid;
+  padding: 1px;
+  margin: 1px;
+  border-radius: 3px;
+}
+
+.stackContainer .stackItem {
+  border: 1px #eee solid;
+  border-radius: 3px;
+  cursor: move;
+}
+.chart-group {
+  padding: 8px 16px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.chart-group .chart-item {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  justify-content: space-between;
+}
+
+.label-left,
+.label-normal {
+  font-size: 12px;
+  height: 14px;
+  line-height: 14px;
+}
+
+.component-right {
+  width: 140px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.legend-position {
+  display: flex;
+  align-items: center;
+  height: 72px;
+  justify-content: space-between;
+  margin-top: 2px;
+}
+
+.legend-position .legend-position-container {
+  width: 140px;
+  display: flex;
+  align-items: center;
+  height: 72px;
+}
+
+.legend-position .legend-position-container .legend-position-control {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 140px;
+  height: 72px;
+}
+
+/* 控制按钮位置 */
+.legend-position .legend-position-container .legend-position-control .btn {
+  line-height: 24px;
+  height: 24px;
+  width: 100%;
+  border-radius: 0;
+}
+
+.legend-position .legend-position-container .legend-position-control .left {
+  padding-left: 6px;
+  margin-left: 1px;
+}
+
+.legend-position .legend-position-container .legend-position-control .center {
+  text-align: center;
+}
+
+.legend-position .legend-position-container .legend-position-control .right {
+  padding-left: 20px;
+}
+
+.legend-position .legend-position-container .legend-position-control .btn.top.left {
+  border-top-left-radius: 4px;
+  margin-left: 0;
+}
+
+.legend-position .legend-position-container .legend-position-control .btn.top.right {
+  border-top-right-radius: 4px;
+}
+
+.legend-position .legend-position-container .legend-position-control .btn.bottom.left {
+  border-bottom-left-radius: 4px;
+}
+
+.legend-position .legend-position-container .legend-position-control .btn.bottom.right {
+  border-bottom-right-radius: 4px;
+}
 </style>

@@ -129,7 +129,14 @@ let allChartsInstance: EChartsType[] = [];
 let allResizeObserver: ResizeObserver[] = []
 // 配置图表时临时变量，临时渲染容器、临时echarts实例、临时监听器
 let tempChartContainer = ref()
-let tempChart: EChartsType
+let tempChart: EChartsType;
+const getTempChart = ()=>{return tempChart};
+const setTempChart = (value:EChartsType)=>{
+  if(tempChart) {
+    tempChart.dispose()
+  }
+  tempChart = value
+};
 let tempObserver: ResizeObserver
 
 // 使用change事件，监听添加事件。似乎echarts有bug，仅change事件【added】能够拿到echarts clone后的对象
@@ -151,7 +158,7 @@ const change = function change(event: Event) {
       if (newEchartsInstance) newEchartsInstance.resize()
     })
     observer.observe(newContainer as Element)
-    allResizeObserver.push(observer)
+    allResizeObserver.push(observer);
   }
 }
 // 将对象数据转换为数组数据
@@ -529,8 +536,6 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   ],
 })
 
-let stackItems = reactive([[]]);
-
 const tempChartModal = reactive<{ open: boolean; ok: (reject: any) => void ,cancel: () => void }>({
   open: false,
   ok: (reject: any) => {
@@ -579,12 +584,7 @@ const sqlSelectorModal = reactive<{
         })
         tempObserver = observer;
         observer.observe(container as Element)
-        // // 堆叠配置
-        // let colors = currentColors.value
-        // // 4 * 8 32 3*8 = 24
-        // for (let i = 0; i < dimensions.length - 1; i++) {
-        //   stackItems[i] = [{name: dimensions[i + 1], id: i + 1, color: colors[i]}]
-        // }
+
       })
     }
   },
@@ -765,8 +765,9 @@ onBeforeUnmount(() => {
         </template>
       </draggable>
       <!-- 图形配置模态框-->
-      <!--        :open="chartData.open"-->
+      <!-- v-if 控制销毁模态框以及模态框中的组件-->
       <a-modal
+          v-if="tempChartModal.open"
           :open="tempChartModal.open"
           @ok="tempChartModal.ok"
           ok-text="确认"
@@ -817,7 +818,10 @@ onBeforeUnmount(() => {
               width="240px"
               class="viewConfig"
           >
-          <BarConfig :chartConfig="tempChart" :chartOption="tempChartOption" :chartContainer="tempChartContainer"></BarConfig>
+          <BarConfig :getChartConfig="getTempChart"
+                     :setChartConfig ="setTempChart"
+                     :chartOption="tempChartOption"
+                     :chartContainer="tempChartContainer"></BarConfig>
           </a-layout-sider>
         </a-layout>
       </a-modal>
@@ -826,66 +830,6 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.legend-position {
-  display: flex;
-  align-items: center;
-  height: 72px;
-  justify-content: space-between;
-  margin-top: 2px;
-}
-
-.legend-position .legend-position-container {
-  width: 140px;
-  display: flex;
-  align-items: center;
-  height: 72px;
-}
-
-.legend-position .legend-position-container .legend-position-control {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  width: 140px;
-  height: 72px;
-}
-
-/* 控制按钮位置 */
-.legend-position .legend-position-container .legend-position-control .btn {
-  line-height: 24px;
-  height: 24px;
-  width: 100%;
-  border-radius: 0;
-}
-
-.legend-position .legend-position-container .legend-position-control .left {
-  padding-left: 6px;
-  margin-left: 1px;
-}
-
-.legend-position .legend-position-container .legend-position-control .center {
-  text-align: center;
-}
-
-.legend-position .legend-position-container .legend-position-control .right {
-  padding-left: 20px;
-}
-
-.legend-position .legend-position-container .legend-position-control .btn.top.left {
-  border-top-left-radius: 4px;
-  margin-left: 0;
-}
-
-.legend-position .legend-position-container .legend-position-control .btn.top.right {
-  border-top-right-radius: 4px;
-}
-
-.legend-position .legend-position-container .legend-position-control .btn.bottom.left {
-  border-bottom-left-radius: 4px;
-}
-
-.legend-position .legend-position-container .legend-position-control .btn.bottom.right {
-  border-bottom-right-radius: 4px;
-}
 
 .diagramContainer .diagramTitle {
   font-size: 1em;
@@ -906,19 +850,6 @@ onBeforeUnmount(() => {
 .chartIconContainer .chart {
   border: black 1px solid;
   margin: 1px;
-}
-
-.stackContainer {
-  border: #e8e8e8 1px solid;
-  padding: 1px;
-  margin: 1px;
-  border-radius: 3px;
-}
-
-.stackContainer .stackItem {
-  border: 1px #eee solid;
-  border-radius: 3px;
-  cursor: move;
 }
 
 :global(.full-modal .ant-modal) {
@@ -942,62 +873,6 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
-:deep(.ant-collapse .ant-collapse-item .ant-collapse-header) {
-  margin: 0;
-  padding: 0;
-}
-
-:deep(.ant-collapse .ant-collapse-item .ant-collapse-content) {
-  border: none;
-}
-
-:deep(.ant-collapse .ant-collapse-item .ant-collapse-content .ant-collapse-content-box) {
-  padding: 0;
-}
-
-:deep(.ant-input-number-group-wrapper .ant-input-number-group .ant-input-number-group-addon) {
-  font-size: 12px;
-  height: 14px;
-  line-height: 14px;
-}
-
-:deep(.ant-form .ant-form-item) {
-  margin-bottom: 0;
-  height: 32px;
-  line-height: 32px;
-}
-
-.chart-group {
-  padding: 8px 16px;
-  border-bottom: 1px solid #e8e8e8;
-}
-
-.chart-group .chart-item {
-  display: flex;
-  align-items: center;
-  height: 32px;
-  justify-content: space-between;
-}
-
-.label-left,
-.label-normal {
-  font-size: 12px;
-  height: 14px;
-  line-height: 14px;
-}
-
-.component-right {
-  width: 140px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.pileContainers::-webkit-scrollbar {
-  height: 4px;
-}
-
 .viewConfig::-webkit-scrollbar {
   width: 4px;
 }
@@ -1012,4 +887,9 @@ onBeforeUnmount(() => {
 .viewConfig::-webkit-scrollbar-track {
   background-color: #f0f0f0;
 }
+
+.pileContainers::-webkit-scrollbar {
+  height: 4px;
+}
+
 </style>
