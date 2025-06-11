@@ -79,7 +79,9 @@ function formatSQL() {
   if (editor != null) {
     const formattedContent = sqlFormatter.format(editor.state.doc.toString(), {
       language: 'sqlite',
-    })
+    });
+    sqlConfig.sqlContent = formattedContent;
+
     editor.dispatch({
       changes: {from: 0, to: editor.state.doc.length, insert: formattedContent},
     })
@@ -173,6 +175,7 @@ let editor = reactive<EditorView>(new EditorView())
 // 提供给事件注册使用的保存配置
 async function _saveSQLConfig() {
   let sqlContent = editor.state.doc.toString()
+  sqlConfig.sqlContent = sqlContent;
   return await saveSQL({
     sqlId: sqlConfig.sqlId,
     sourceId: sqlConfig.sourceId,
@@ -271,7 +274,8 @@ let refreshObj = reactive({
   showData: false,
   showExplain: false,
   paramRefreshFunc: () => {
-    refreshObj.paramRefresh = false
+    refreshObj.paramRefresh = false;
+    sqlConfig.sqlContent = editor.state.doc.toString();
     let slice = sqlConfig.sqlParamList.slice()
     sqlConfig.sqlParamList.length = 0
     setTimeout(() => {
@@ -302,7 +306,8 @@ let refreshObj = reactive({
     }, 500)
   },
   dataRefreshFunc: () => {
-    refreshObj.dataRefresh = false
+    refreshObj.dataRefresh = false;
+    sqlConfig.sqlContent = editor.state.doc.toString();
     setTimeout(() => {
       // 在切换tab后 点击刷新时调用
       emitter.emit('DBObjectOrSQL:refreshData', {
@@ -318,7 +323,8 @@ let refreshObj = reactive({
     }, 1000)
   },
   explainRefreshFunc: () => {
-    refreshObj.explainRefresh = false
+    refreshObj.explainRefresh = false;
+    sqlConfig.sqlContent = editor.state.doc.toString();
     setTimeout(() => {
       //getSQLExplainData
 
