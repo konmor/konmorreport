@@ -140,6 +140,11 @@ let lastEchartsContainerID: string;
 let lastSQLId: string;
 
 let fieldContainerActiveKey = ref('fieldContainer');
+
+let dimensionsFields = reactive<SQLResultField[]>([])
+let metricsFields = reactive<SQLResultField[]>([])
+
+
 const getTempChart = () => {
   return tempChart
 };
@@ -841,7 +846,7 @@ watch(() => sqlSelectorModal.selected, (value) => {
         <a-layout :style="{ height: '100%', width: '100%', backgroundColor: 'transparent' }">
           <!-- 配置模态框 左侧字段选择区域-->
           <a-layout-sider :style="{ height: '100%', backgroundColor: 'transparent',
-          borderTop:'1px solid black',borderBottom:'1px solid black' }" width="240px">
+            borderTop:'1px solid black',borderBottom:'1px solid black' }" width="240px">
             <div class="chart-group">
               <a-collapse
                   v-model:activeKey="fieldContainerActiveKey"
@@ -873,16 +878,16 @@ watch(() => sqlSelectorModal.selected, (value) => {
                           @click="
                       () => {
                       }
-                    ">
-                  <span v-if="element.fieldType2 == 'Number' " class="field-label">
-                    <FieldNumberOutlined :style="{ color: '#6fd845' }"/> {{ element.fieldAlias }}
-                  </span>
-                        <span v-else-if="element.fieldType2 == 'Time' " class="field-label">
-                    <FieldTimeOutlined :style="{ color: '#1890ff' }"/> {{ element.fieldAlias }}
-                  </span>
-                        <span v-else class="field-label">
-                    <FieldStringOutlined :style="{ color: '#efb056' }"/> {{ element.fieldAlias }}
-                  </span>
+                      ">
+                        <span v-if="element.fieldType2 == 'Number' " class="field-label">
+                          <FieldNumberOutlined :style="{ color: '#6fd845' }"/> {{ element.fieldAlias }}
+                        </span>
+                              <span v-else-if="element.fieldType2 == 'Time' " class="field-label">
+                          <FieldTimeOutlined :style="{ color: '#1890ff' }"/> {{ element.fieldAlias }}
+                        </span>
+                              <span v-else class="field-label">
+                          <FieldStringOutlined :style="{ color: '#efb056' }"/> {{ element.fieldAlias }}
+                        </span>
 
                       </div>
                     </template>
@@ -898,9 +903,67 @@ watch(() => sqlSelectorModal.selected, (value) => {
           <a-layout>
             <!-- 配置模态框 中间 维度配置区域-->
             <a-layout-header
-                :style="{ backgroundColor: 'transparent', border: '1px solid black', height: '15%' }"
+                :style="{ backgroundColor: 'transparent', border: '1px solid black', height: '15%',
+                  maxHeight:'124px',padding:'8px 16px' }"
             >
-              <div>hello world</div>
+              <div class="fieldsDimensionsAndMetrics">
+                <div class="dimensions">
+                  <draggable
+                      class="dimensionsContainer"
+                      :list="dimensionsFields"
+                      :group="{ name: 'dimensionsContainer', pull: true, put: true }"
+                      animation="300"
+                      item-key="fieldId"
+                      tag="div"
+                  >
+                    <template #item="{ element }">
+                      <div
+                          :id="element.fieldId"
+                          class="field"
+                          @click="() => {}">
+                        <span v-if="element.fieldType2 == 'Number' " class="field-label">
+                          <FieldNumberOutlined :style="{ color: '#6fd845' }"/> {{ element.fieldAlias }}
+                        </span>
+                        <span v-else-if="element.fieldType2 == 'Time' " class="field-label">
+                          <FieldTimeOutlined :style="{ color: '#1890ff' }"/> {{ element.fieldAlias }}
+                        </span>
+                        <span v-else class="field-label">
+                          <FieldStringOutlined :style="{ color: '#efb056' }"/> {{ element.fieldAlias }}
+                        </span>
+                      </div>
+                    </template>
+                  </draggable>
+                </div>
+
+                <div class="metrics">
+                  <draggable
+                      class="metricsContainer"
+                      :list="metricsFields"
+                      :group="{ name: 'metricsContainer', pull: true, put: true }"
+                      animation="300"
+                      item-key="fieldId"
+                      tag="div"
+                  >
+                    <template #item="{ element }">
+                      <div
+                          :id="element.fieldId"
+                          class="field"
+                          @click="() => {}">
+                        <span v-if="element.fieldType2 == 'Number' " class="field-label">
+                          <FieldNumberOutlined :style="{ color: '#6fd845' }"/> {{ element.fieldAlias }}
+                        </span>
+                        <span v-else-if="element.fieldType2 == 'Time' " class="field-label">
+                          <FieldTimeOutlined :style="{ color: '#1890ff' }"/> {{ element.fieldAlias }}
+                        </span>
+                        <span v-else class="field-label">
+                          <FieldStringOutlined :style="{ color: '#efb056' }"/> {{ element.fieldAlias }}
+                        </span>
+
+                      </div>
+                    </template>
+                  </draggable>
+                </div>
+              </div>
             </a-layout-header>
 
             <!-- 配置模态框 中间 图表渲染区域-->
@@ -1047,5 +1110,36 @@ watch(() => sqlSelectorModal.selected, (value) => {
   line-height: 30px;
   height: 30px;
 }
+
+.fieldsDimensionsAndMetrics{
+  height: 100%;
+  width: 100%;
+  background-color:#6fd845;
+  border: 1px solid black;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.fieldsDimensionsAndMetrics .dimensions{
+  width: 100%;
+  height: 50%;
+  max-height: 32px;
+  background-color: #1890ff;
+  border: 1px solid black;
+}
+
+.fieldsDimensionsAndMetrics .metrics {
+  width: 100%;
+  height: 50%;
+  max-height: 32px;
+  background-color: #efb056;
+  border: 1px solid black;
+}
+/*dimensions
+dimensionsContainer
+metrics
+metricsContainer
+field*/
 
 </style>
