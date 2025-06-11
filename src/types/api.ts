@@ -152,7 +152,7 @@ export interface TableDataDTO extends PageData<Map<string, any>> {
 export interface SQLQuery {
     sourceId: string | number,
     sqlId: string | number,
-    sqlContent: string,
+    sqlContent?: string,
     queryBySQLContent:boolean,
     sqlParamList?: SQLParam[],
     pageInfo: PageInfo,

@@ -1,6 +1,7 @@
 import type {ItemType} from 'ant-design-vue'
 import {h, reactive, VueElement} from 'vue'
-import {getDatasourceList} from '@/api/datasoure.ts'
+import {deletePrefix, getDatasourceList} from '@/api/datasoure.ts'
+import type {DatasourceAndSQLTree} from "@/types/api.ts";
 
 export const SOURCE_ID_PREFIX = '_sourceId:';
 export const SQL_ID_PREFIX = '_sqlId:';
@@ -18,13 +19,15 @@ export const OBJECT_EMPTY_ID_PREFIX = "_objectEmptyId:";
 export const FIELD_EMPTY_ID_PREFIX = "_fieldEmptyId:";
 
 export default function () {
-    let dataSourceConfigArray: ItemType[] = reactive([])
-    let sqlArray: ItemType[] = reactive([])
+    let dataSourceConfigArray= reactive< ItemType[] >([]);
+    let sqlArray = reactive<ItemType[]>([]);
+    let originalResult = reactive<DatasourceAndSQLTree[]>([]);
 
     function refreshDatasourceConfigList() {
         let m = getDatasourceList()
         m.then((result) => {
             if (result.data.length > 0) {
+                Object.assign(originalResult,result.data);
                 let sqlCount = 0;
                 for (let i = 0; i < result.data.length; i++) {
                     var item = result.data[i]
@@ -76,5 +79,19 @@ export default function () {
         } as ItemType
     }
 
-    return {refreshDatasourceList: refreshDatasourceConfigList, data: dataSourceConfigArray, sqlArray}
+    function findSourceIdBySQLID(sqlId:string|number):string|number|undefined{
+        sqlId = deletePrefix(sqlId,SQL_ID_PREFIX,SQL_EMPTY_ID_PREFIX) as number;
+        let sourceId:string|number|undefined;
+        for (let i = originalResult.length - 1; i >= 0; i--) {
+            if(originalResult[i].sqlNameList !=null &&
+                originalResult[i].sqlNameList.filter((sql) => sql.sqlId == sqlId).length>0){
+                sourceId = originalResult[i].sourceId;
+                break;
+            }
+        }
+
+        return sourceId;
+    }
+
+    return {refreshDatasourceList: refreshDatasourceConfigList, data: dataSourceConfigArray, sqlArray,findSourceIdBySQLID}
 }

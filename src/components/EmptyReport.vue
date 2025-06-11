@@ -9,15 +9,12 @@ import draggable from 'vuedraggable'
 import CloseCircleOutlined from '@ant-design/icons-vue/CloseCircleOutlined'
 import 'perfect-scrollbar/css/perfect-scrollbar.css'
 import {
-  inject,
   nextTick,
   onBeforeUnmount,
   onMounted,
   onUnmounted,
   reactive,
-  ref,
-  toRaw,
-  watch,
+  ref, watch,
 } from 'vue'
 import Filter from '@/components/Filter.vue'
 import {getUuid} from 'ant-design-vue/es/vc-notification/HookNotification'
@@ -27,7 +24,9 @@ import useNavigator from '@/composable/useNavigator.ts'
 import type {EChartsType} from 'echarts'
 import type {ECBasicOption} from 'echarts/types/dist/shared'
 import BarConfig from "@/components/chart/BarConfig.vue";
-
+import {sqlQueryData} from "@/api/sql.ts";
+import type {SQLQuery, SQLResultField} from "@/types/api.ts";
+import {FieldStringOutlined, FieldNumberOutlined, FieldTimeOutlined} from "@ant-design/icons-vue";
 
 const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number }[]>([
   {
@@ -111,8 +110,8 @@ const moveTest = (event: Event) => {
   console.log('chart move', event)
 }
 
-const {sqlArray, refreshDatasourceList} = useNavigator()
-refreshDatasourceList()
+const {sqlArray, refreshDatasourceList, findSourceIdBySQLID} = useNavigator();
+refreshDatasourceList();
 
 const addTest = (event: Event) => {
   // __draggable_context = {element,index}
@@ -124,15 +123,28 @@ const addTest = (event: Event) => {
   // 二 开始配置 配置内容由 selectData.open 点击ok后的模态框决定
 }
 
+// 仪表板内部的所有echarts的 实例
 let allChartsInstance: EChartsType[] = [];
-// 容器大小变化的监听者，数组
-let allResizeObserver: ResizeObserver[] = []
+// 仪表板内部的所有echarts的 容器大小变化的监听者
+let allResizeObserver: ResizeObserver[] = [];
+
+
 // 配置图表时临时变量，临时渲染容器、临时echarts实例、临时监听器
-let tempChartContainer = ref()
+let tempChartContainer = ref();
+// 配置时的echarts实例
 let tempChart: EChartsType;
-const getTempChart = ()=>{return tempChart};
-const setTempChart = (value:EChartsType)=>{
-  if(tempChart) {
+
+// 最新的echarts实例绑定的div容器的id值
+let lastEchartsContainerID: string;
+// 最新的sql主建id，用于该sql数据和返回字段查询。
+let lastSQLId: string;
+
+let fieldContainerActiveKey = ref('fieldContainer');
+const getTempChart = () => {
+  return tempChart
+};
+const setTempChart = (value: EChartsType) => {
+  if (tempChart) {
     tempChart.dispose()
   }
   tempChart = value
@@ -144,8 +156,8 @@ const change = function change(event: Event) {
   // 监听添加事件
   if ('added' in event) {
     // window.console.log(event['added'])
-    let id = event['added'].element.id;
-    let newContainer = document.getElementById(id)
+    lastEchartsContainerID = event['added'].element.id;
+    let newContainer = document.getElementById(lastEchartsContainerID);
     // 2.初始化echarts 挂载的位置
     let newEchartsInstance = echarts.init(newContainer) // 参数是dom节点
     // 3. 设置默认数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
@@ -161,6 +173,7 @@ const change = function change(event: Event) {
     allResizeObserver.push(observer);
   }
 }
+
 // 将对象数据转换为数组数据
 function transferDataToArray() {
   let data = [
@@ -288,6 +301,7 @@ function transferDataToArray() {
 
   return data.map((item) => [item.userName, item.salary1, item.salary2, item.salary3, item.salary4])
 }
+
 // 维度
 let dimensions = ['userName', 'salary1', 'salary2', 'salary3', 'salary4']
 
@@ -536,19 +550,38 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   ],
 })
 
-const tempChartModal = reactive<{ open: boolean; ok: (reject: any) => void ,cancel: () => void }>({
+let allFields = reactive<SQLResultField[]>([]);
+let allData = reactive<Array<Map<string, object>>>([]);
+
+const tempChartModal = reactive<{ open: boolean; ok: (reject: any) => void, cancel: () => void }>({
   open: false,
   ok: (reject: any) => {
     tempChartModal.open = false;
 
     // 配置好之后从 temChart 中获取数据，并渲染给最后一个 chartArray 中的chart
-    allChartsInstance[allChartsInstance.length-1].setOption(tempChart.getOption(),true);
+    allChartsInstance[allChartsInstance.length - 1].setOption(tempChart.getOption(), true);
     tempChart.dispose();
   },
-  cancel:()=>{
+  cancel: () => {
     tempChartModal.open = false;
+    removeLastEchartsInstance();
   }
 });
+
+function removeLastEchartsInstance() {
+  //删除刚刚创建的数据,删除echarts实例，删除draagabel的元素
+  let lastEchartsInstance = allChartsInstance.pop();
+  if (lastEchartsInstance != undefined) {
+    lastEchartsInstance.dispose();
+    lastEchartsInstance.clear();
+  }
+  for (let i = items.length - 1; i >= 0; i--) {
+    if (items[i].id == lastEchartsContainerID) {
+      items.splice(i, 1);
+      break;
+    }
+  }
+}
 
 const sqlSelectorModal = reactive<{
   open: boolean,
@@ -567,6 +600,24 @@ const sqlSelectorModal = reactive<{
       sqlSelectorModal.open = false
       // 打开图表配置模态框
       tempChartModal.open = true
+
+      // 查询数据拿到字段和数据
+      let sqlQuery: SQLQuery = {
+        sourceId: findSourceIdBySQLID(lastSQLId)!,
+        sqlId: lastSQLId,
+        queryBySQLContent: false,
+        pageInfo: {page: 1, size: 5000, total: 0},
+      }
+
+      sqlQueryData(sqlQuery).then((response) => {
+        // 访问正常
+        if (response.code == 0) {
+          for (let i = 0; i < response.data.columns.length; i++) {
+            allFields[i] = response.data.columns[i];
+          }
+          allData = response.data.data;
+        }
+      });
 
       // 保证已经渲染完毕
       nextTick(() => {
@@ -588,19 +639,14 @@ const sqlSelectorModal = reactive<{
       })
     }
   },
-  cancel:()=>{
+  cancel: () => {
     sqlSelectorModal.open = false;
+    removeLastEchartsInstance();
   },
   selected: '',
-  data:
-      sqlArray != null && sqlArray.length > 0
-          ? sqlArray.map((item) => {
-            return {value: item?.key, label: item?.label}
-          })
-          : [{label: '测试选项-1', value: 'key1'}],
+  data: [{label: '测试选项-1', value: 'key1'}],
   showError: false,
 })
-
 
 
 onMounted(() => {
@@ -622,26 +668,26 @@ onMounted(() => {
 
   // 代码调试，后续删除 todo
   // 开始渲染图表
- /* // let container = document.getElementById('chartContainer');
-  let container = tempChartContainer.value
-  // 2.初始化echarts 挂载的位置
-  let myEcharts = echarts.init(container) // 参数是dom节点
-  tempChart = myEcharts
-  // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
-  myEcharts.setOption(toRaw(tempChartOption))
+  /* // let container = document.getElementById('chartContainer');
+   let container = tempChartContainer.value
+   // 2.初始化echarts 挂载的位置
+   let myEcharts = echarts.init(container) // 参数是dom节点
+   tempChart = myEcharts
+   // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
+   myEcharts.setOption(toRaw(tempChartOption))
 
-  let observer = new ResizeObserver(() => {
-    if (myEcharts) myEcharts.resize()
-  })
-  tempObserver = observer
-  observer.observe(container as Element)
+   let observer = new ResizeObserver(() => {
+     if (myEcharts) myEcharts.resize()
+   })
+   tempObserver = observer
+   observer.observe(container as Element)
 
-  // // 堆叠配置 待删除
-  // let colors = currentColors.value
-  // // 4 * 8 32 3*8 = 24
-  // for (let i = 0; i < dimensions.length - 1; i++) {
-  //   stackItems[i] = [{name: dimensions[i + 1], id: i + 1, color: colors[i]}]
-  // }*/
+   // // 堆叠配置 待删除
+   // let colors = currentColors.value
+   // // 4 * 8 32 3*8 = 24
+   // for (let i = 0; i < dimensions.length - 1; i++) {
+   //   stackItems[i] = [{name: dimensions[i + 1], id: i + 1, color: colors[i]}]
+   // }*/
 })
 
 onUnmounted(() => {
@@ -664,6 +710,19 @@ onBeforeUnmount(() => {
   if (tempChart) {
     tempChart.dispose()
   }
+})
+
+watch(sqlArray, (sqlItems) => {
+  // sql选择框的下拉数据
+  sqlSelectorModal.data = sqlItems != null && sqlItems.length > 0
+      ? sqlItems.map((item) => {
+        return {value: item?.key, label: item?.label}
+      })
+      : [{label: '测试选项-1', value: 'key1'}];
+});
+
+watch(() => sqlSelectorModal.selected, (value) => {
+  lastSQLId = value;
 })
 
 </script>
@@ -694,6 +753,7 @@ onBeforeUnmount(() => {
           v-model:open="sqlSelectorModal.open"
           title="请选择需要渲染的数据！"
           @ok="sqlSelectorModal.ok"
+          @cancel="sqlSelectorModal.cancel"
           ok-text="确认"
           cancel-text="取消"
       >
@@ -760,7 +820,6 @@ onBeforeUnmount(() => {
               }
             "
           >
-            <!--            {{ element.value }}-->
           </div>
         </template>
       </draggable>
@@ -770,6 +829,7 @@ onBeforeUnmount(() => {
           v-if="tempChartModal.open"
           :open="tempChartModal.open"
           @ok="tempChartModal.ok"
+          @cancel="tempChartModal.cancel"
           ok-text="确认"
           cancel-text="取消"
           :style="{ backgroundColor: 'transparent' }"
@@ -780,8 +840,59 @@ onBeforeUnmount(() => {
 
         <a-layout :style="{ height: '100%', width: '100%', backgroundColor: 'transparent' }">
           <!-- 配置模态框 左侧字段选择区域-->
-          <a-layout-sider :style="{ height: '100%', width: '100%', backgroundColor: 'transparent' }">
-            hello
+          <a-layout-sider :style="{ height: '100%', backgroundColor: 'transparent',
+          borderTop:'1px solid black',borderBottom:'1px solid black' }" width="240px">
+            <div class="chart-group">
+              <a-collapse
+                  v-model:activeKey="fieldContainerActiveKey"
+                  expand-icon-position="end"
+                  :style="{
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  margin: '0',
+                  padding: '0',
+                }">
+                <a-collapse-panel
+                    key="fieldContainer"
+                    header="字段"
+                    :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
+                >
+                  <draggable
+                      class="fieldsContainer"
+                      :list="allFields"
+                      :sort="false"
+                      :group="{ name: 'fieldsContainer', pull: 'clone', put: false }"
+                      animation="300"
+                      item-key="fieldId"
+                      tag="div"
+                  >
+                    <template #item="{ element }">
+                      <div
+                          :id="element.fieldId"
+                          class="field"
+                          @click="
+                      () => {
+                      }
+                    ">
+                  <span v-if="element.fieldType2 == 'Number' " class="field-label">
+                    <FieldNumberOutlined :style="{ color: '#6fd845' }"/> {{ element.fieldAlias }}
+                  </span>
+                        <span v-else-if="element.fieldType2 == 'Time' " class="field-label">
+                    <FieldTimeOutlined :style="{ color: '#1890ff' }"/> {{ element.fieldAlias }}
+                  </span>
+                        <span v-else class="field-label">
+                    <FieldStringOutlined :style="{ color: '#efb056' }"/> {{ element.fieldAlias }}
+                  </span>
+
+                      </div>
+                    </template>
+                  </draggable>
+
+                </a-collapse-panel>
+              </a-collapse>
+            </div>
+
+
           </a-layout-sider>
           <!-- 配置模态框 中间-->
           <a-layout>
@@ -818,10 +929,10 @@ onBeforeUnmount(() => {
               width="240px"
               class="viewConfig"
           >
-          <BarConfig :getChartConfig="getTempChart"
-                     :setChartConfig ="setTempChart"
-                     :chartOption="tempChartOption"
-                     :chartContainer="tempChartContainer"></BarConfig>
+            <BarConfig :getChartConfig="getTempChart"
+                       :setChartConfig="setTempChart"
+                       :chartOption="tempChartOption"
+                       :chartContainer="tempChartContainer"></BarConfig>
           </a-layout-sider>
         </a-layout>
       </a-modal>
@@ -830,6 +941,19 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+
+:deep(.ant-collapse .ant-collapse-item .ant-collapse-header) {
+  margin: 0;
+  padding: 0;
+}
+
+:deep(.ant-collapse .ant-collapse-item .ant-collapse-content) {
+  border: none;
+}
+
+:deep(.ant-collapse .ant-collapse-item .ant-collapse-content .ant-collapse-content-box) {
+  padding: 0;
+}
 
 .diagramContainer .diagramTitle {
   font-size: 1em;
@@ -864,7 +988,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   height: calc(100vh);
-  padding: 20px 0 20px 24px;
+  padding: 20px 0 20px 0;
   overflow: hidden;
 }
 
@@ -890,6 +1014,38 @@ onBeforeUnmount(() => {
 
 .pileContainers::-webkit-scrollbar {
   height: 4px;
+}
+
+.chart-group {
+  padding: 8px 16px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.chart-group .fieldsContainer {
+  max-height: 100%;
+  width: 100%;
+  background-color: transparent;
+}
+
+.chart-group .fieldsContainer .field {
+  width: 100%;
+  height: 30px;
+  border-radius: 4px;
+}
+
+.chart-group .fieldsContainer .field:hover {
+  border-radius: 4px;
+  background-color: #85c647;
+  cursor: move;
+  transition: transform 0.1s ease; /*, font-size 0.4s ease*/
+  transform: scale(1.2);
+  color: #ffffff;
+}
+
+.chart-group .fieldsContainer .field .field-label {
+  padding-left: 2px;
+  line-height: 30px;
+  height: 30px;
 }
 
 </style>
