@@ -579,6 +579,7 @@ function removeLastEchartsInstance() {
   }
 }
 
+
 const sqlSelectorModal = reactive<{
   open: boolean
   ok: (reject: any) => void
@@ -910,7 +911,11 @@ watch(
                       class="dimensionsContainer"
                       :list="dimensionsFields"
                       :order="false"
-                      :group="{ name: 'fieldsContainer', pull: false, put: true }"
+                      :move="()=>false"
+                      :group="{ name: 'dimensionsContainer', pull: false, put:(to,from,htmlElement,dragEvent)=>{
+                        // 没找到允许添加
+                        return dimensionsFields.find(value=>{return value.fieldId == htmlElement.id}) == undefined;
+                      }}"
                       animation="300"
                       item-key="fieldId"
                       tag="div"
@@ -940,7 +945,10 @@ watch(
                       class="metricsContainer"
                       :list="metricsFields"
                       :order="false"
-                      :group="{ name: 'fieldsContainer', pull: false, put: true }"
+                      :group="{ name: 'metricsContainer', pull: false, put:(to,from,htmlElement,dragEvent)=>{
+                        // 没找到允许添加
+                        return metricsFields.find(value=>{ return value.fieldId == htmlElement.id}) == undefined;
+                      }}"
                       animation="300"
                       item-key="fieldId"
                       tag="div"
