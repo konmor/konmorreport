@@ -18,8 +18,8 @@ import type { EChartsType } from 'echarts'
 import type { ECBasicOption } from 'echarts/types/dist/shared'
 import BarConfig from '@/components/chart/BarConfig.vue'
 import { sqlQueryData } from '@/api/sql.ts'
-import type { SQLQuery, SQLResultField } from '@/types/api.ts'
-import { FieldStringOutlined, FieldNumberOutlined, FieldTimeOutlined } from '@ant-design/icons-vue'
+import type { SQLQuery, SQLResultField } from '@/types/api.ts';
+import { FieldStringOutlined, FieldNumberOutlined, FieldTimeOutlined,CloseOutlined } from '@ant-design/icons-vue'
 import {message, Modal} from "ant-design-vue";
 
 const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number }[]>([
@@ -300,7 +300,7 @@ function transferDataToArray() {
 }
 
 // 维度
-let dimensions = ['userName', 'salary1', 'salary2', 'salary3', 'salary4']
+let dimensions:Array<string> = ['userName', 'salary1', 'salary2', 'salary3', 'salary4']
 
 let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   // 标题属性
@@ -580,6 +580,42 @@ function removeLastEchartsInstance() {
   }
 }
 
+function dimensionsPut(to:any,from:any,htmlElement:any,dragEvent:any):boolean{
+  // 没找到则，允许添加
+  let notExistDimensions = dimensionsFields.find(value=>{return value.fieldId == htmlElement.id}) == undefined
+  let notExistMetrics = metricsFields.find(value=>{ return value.fieldId == htmlElement.id}) == undefined;
+  return notExistDimensions && notExistMetrics;
+}
+
+function metricsPut(to:any,from:any,htmlElement:any,dragEvent:any):boolean{
+
+  // 没找到则，允许添加
+  let notExistDimensions = dimensionsFields.find(value=>{return value.fieldId == htmlElement.id}) == undefined
+  let notExistMetrics = metricsFields.find(value=>{ return value.fieldId == htmlElement.id}) == undefined;
+  let isNumber = allFields.find(value=>{ return value.fieldId == htmlElement.id})?.fieldType2 == 'Number'
+  return notExistDimensions && notExistMetrics&&isNumber;
+}
+
+const removeDimensionsById = (id:string)=>{
+  if(id != null && id != ''){
+    let index =  dimensionsFields.findIndex(value => {return  value.fieldId==id});
+    if(index>-1){
+      // 删除
+      dimensionsFields.splice(index,1);
+    }
+  }
+}
+
+const removeMetricsById = (id:string)=>{
+  if(id != null && id != ''){
+    let index =  metricsFields.findIndex(value => {return  value.fieldId==id});
+    if(index>-1){
+      // 删除
+      metricsFields.splice(index,1);
+    }
+  }
+}
+
 
 const sqlSelectorModal = reactive<{
   open: boolean
@@ -724,6 +760,164 @@ watch(
     lastSQLId = value
   },
 )
+
+
+function getMapData(data:Map<string,object>,keys:string[]):Array<object>{
+  let arr = [];
+  for (let i = 0; i < keys.length; i++) {
+    let newVar = data[keys[i]];
+    if(newVar){
+      arr[i] = newVar;
+    }
+  }
+
+  return arr;
+}
+// 监听字段的变化去渲染数据
+watch(dimensionsFields,()=>{
+
+  // 图表渲染
+  let tempOption = {
+    dataset: {
+      dimensions: [],
+      source: [],
+    },
+    series:[{}]
+  };
+  dimensions.length =0;
+  dimensions[0] = dimensionsFields[0].fieldAlias;
+
+  for (let i = 0; i < metricsFields.length; i++) {
+    let index = i+1;
+    dimensions[index] = metricsFields[i].fieldAlias;
+    tempOption.series[i] ={
+      id: index.toString(),
+      type: 'bar',
+      name: dimensions[index],
+      barMaxWidth: '50',
+      barMinWidth: '1',
+      stack: 'group'+index,
+      stackStrategy: 'samesign',
+      /**
+       * 'samesign' 只在要堆叠的值与当前累积的堆叠值具有相同的正负符号时才堆叠。
+       * 'all' 堆叠所有的值，不管当前或累积的堆叠值的正负符号是什么。
+       * 'positive' 只堆积正值。
+       * 'negative' 只堆叠负值。
+       */
+      label: {
+        show: false,
+        position: 'top', // top inside insideTop insideBottom
+        rotate: 0, // -90 90
+      },
+      emphasis: {
+        disabled: false,
+        focus: 'series', // none \ self \ series
+        label: {
+          show: false,
+        },
+      },
+    }
+  }
+
+  if(dimensions.length <2){
+    tempChart.setOption(
+        {
+          dataset: {
+            dimensions: [],
+            source: [],
+          },
+          series:[{}]
+        },
+        {
+          replaceMerge: ['series']
+        });
+    return;
+  }
+  let source:Array<Array<object>> =allData.map((item)=>getMapData(item,dimensions));
+
+  tempOption.dataset.dimensions = dimensions;
+  tempOption.dataset.source =source;
+
+  tempChart.setOption(tempOption,{
+    replaceMerge: ['series']
+  });
+
+  //dimensions
+  //tempChartOption
+
+  // 同步修改 tempChartOption 的值
+
+})
+
+// 监听字段的变化去渲染数据
+watch(metricsFields,()=>{
+  // 图表渲染
+  let tempOption = {
+    dataset: {
+      dimensions: [],
+      source: [],
+    },
+    series:[{}]
+  };
+  dimensions.length =0;
+  dimensions[0] = dimensionsFields[0].fieldAlias;
+
+  for (let i = 0; i < metricsFields.length; i++) {
+    let index = i+1;
+    dimensions[index] = metricsFields[i].fieldAlias;
+    tempOption.series[i] ={
+      id: index.toString(),
+      type: 'bar',
+      name: dimensions[index],
+      barMaxWidth: '50',
+      barMinWidth: '1',
+      stack: 'group'+index,
+      stackStrategy: 'samesign',
+      /**
+       * 'samesign' 只在要堆叠的值与当前累积的堆叠值具有相同的正负符号时才堆叠。
+       * 'all' 堆叠所有的值，不管当前或累积的堆叠值的正负符号是什么。
+       * 'positive' 只堆积正值。
+       * 'negative' 只堆叠负值。
+       */
+      label: {
+        show: false,
+        position: 'top', // top inside insideTop insideBottom
+        rotate: 0, // -90 90
+      },
+      emphasis: {
+        disabled: false,
+        focus: 'series', // none \ self \ series
+        label: {
+          show: false,
+        },
+      },
+    }
+  }
+
+  if(dimensions.length <2){
+    tempChart.setOption(
+        {
+          dataset: {
+            dimensions: [],
+            source: [],
+          },
+          series:[{}]
+        },
+        {
+      replaceMerge: ['series']
+    });
+    return;
+  }
+  let source:Array<Array<object>> =allData.map((item)=>getMapData(item,dimensions));
+
+  tempOption.dataset.dimensions = dimensions;
+  tempOption.dataset.source =source;
+
+  tempChart.setOption(tempOption,{
+    replaceMerge: ['series']
+  });
+
+})
 </script>
 
 <template>
@@ -868,12 +1062,12 @@ watch(
                     :list="allFields"
                     :sort="false"
                     :group="{ name: 'fieldsContainer', pull: 'clone', put: false }"
-                    animation="300"
+                    animation="100"
                     item-key="fieldId"
                     tag="div"
                   >
                     <template #item="{ element }">
-                      <div :id="element.fieldId" class="field" @click="() => {}">
+                      <div :id="element.fieldId" class="field">
                         <span v-if="element.fieldType2 == 'Number'" class="field-label">
                           <FieldNumberOutlined :style="{ color: '#6fd845' }" />
                           {{ element.fieldAlias }}
@@ -913,18 +1107,13 @@ watch(
                       :list="dimensionsFields"
                       :order="false"
                       :move="()=>false"
-                      :group="{ name: 'dimensionsContainer', pull: false, put:(to,from,htmlElement,dragEvent)=>{
-                        // 没找到则，允许添加
-                        let notExistDimensions = dimensionsFields.find(value=>{return value.fieldId == htmlElement.id}) == undefined
-                        let notExistMetrics = metricsFields.find(value=>{ return value.fieldId == htmlElement.id}) == undefined;
-                        return notExistDimensions && notExistMetrics;
-                      }}"
-                      animation="300"
+                      :group="{ name: 'dimensionsContainer', pull: false, put:dimensionsPut}"
+                      animation="100"
                       item-key="fieldId"
                       tag="div"
                   >
                     <template #item="{ element }">
-                      <div class="field">
+                      <div class="field" :id="element.fieldId">
                         <span   class="field-label" v-if="element.fieldType2 == 'Number'">
                           <FieldNumberOutlined :style="{ color: '#6fd845' }" />
                           {{ element.fieldAlias }}
@@ -937,6 +1126,10 @@ watch(
                           <FieldStringOutlined :style="{ color: '#efb056' }" />
                           {{ element.fieldAlias }}
                         </span>
+                        <a-button @click="removeDimensionsById(element.fieldId)" size="small"
+                                  class="close-btn">
+                          <template #icon> <CloseOutlined /></template>
+                        </a-button>
                       </div>
                     </template>
                   </draggable>
@@ -948,19 +1141,13 @@ watch(
                       class="metricsContainer"
                       :list="metricsFields"
                       :order="false"
-                      :group="{ name: 'metricsContainer', pull: false, put:(to,from,htmlElement,dragEvent)=>{
-                        // 没找到则，允许添加
-                        let notExistDimensions = dimensionsFields.find(value=>{return value.fieldId == htmlElement.id}) == undefined
-                        let notExistMetrics = metricsFields.find(value=>{ return value.fieldId == htmlElement.id}) == undefined;
-                        let isNumber = allFields.find(value=>{ return value.fieldId == htmlElement.id})?.fieldType2 == 'Number'
-                        return notExistDimensions && notExistMetrics&&isNumber;
-                      }}"
-                      animation="300"
+                      :group="{ name: 'metricsContainer', pull: false, put:metricsPut}"
+                      animation="100"
                       item-key="fieldId"
                       tag="div"
                   >
                     <template #item="{ element }">
-                      <div class="field">
+                      <div class="field" :id="element.fieldId">
                         <span class="field-label" v-if="element.fieldType2 == 'Number'">
                           <FieldNumberOutlined :style="{ color: '#6fd845' }" />
                           {{ element.fieldAlias }}
@@ -973,6 +1160,9 @@ watch(
                           <FieldStringOutlined :style="{ color: '#efb056' }" />
                           {{ element.fieldAlias }}
                         </span>
+                        <a-button @click="removeMetricsById(element.fieldId)" size="small" class="close-btn" >
+                          <template #icon> <CloseOutlined /></template>
+                        </a-button>
                       </div>
                     </template>
                   </draggable>
@@ -1177,12 +1367,19 @@ watch(
   display: flex;
   align-items: center;
   margin: 1px 2px;
-  cursor: pointer;
+  padding-right: 24px;
+
+  position: relative;
+
+  border: black 1px solid;
+  background-color: #ff4218;
+  border-radius: 4px 2px 4px 4px;
 }
 .fieldsDimensionsAndMetrics .dimensions .dimensionsContainer .field:hover ,
 .fieldsDimensionsAndMetrics .metrics .metricsContainer .field:hover {
   transition: transform 0.1s ease;
   transform: scale(1.2);
+  z-index: 1;
 }
 
 
@@ -1190,11 +1387,32 @@ watch(
 .fieldsDimensionsAndMetrics .metrics .metricsContainer .field .field-label {
   height: 28px;
   line-height: 28px;
-  border: black 1px solid;
-  background-color: #ff4218;
-  border-radius: 4px 2px 4px 4px;
   font-size: 12px;
   padding: 0 10px;
+}
+
+.fieldsDimensionsAndMetrics .dimensions .dimensionsContainer .field:hover .close-btn,
+.fieldsDimensionsAndMetrics .metrics .metricsContainer .field:hover .close-btn {
+  display: inline-block;
+}
+
+.fieldsDimensionsAndMetrics .dimensions .dimensionsContainer .field .close-btn,
+.fieldsDimensionsAndMetrics .metrics .metricsContainer .field .close-btn {
+  display: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  font-size: 8px;
+  width: 12px;
+  height: 12px;
+  line-height: 12px;
+  border-radius: 0;
+
+  background-color: transparent;
+
+  position: absolute;
+  top: 0;
+  right: 2px;
 }
 
 
