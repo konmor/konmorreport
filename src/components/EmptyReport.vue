@@ -20,6 +20,7 @@ import BarConfig from '@/components/chart/BarConfig.vue'
 import { sqlQueryData } from '@/api/sql.ts'
 import type { SQLQuery, SQLResultField } from '@/types/api.ts'
 import { FieldStringOutlined, FieldNumberOutlined, FieldTimeOutlined } from '@ant-design/icons-vue'
+import {message, Modal} from "ant-design-vue";
 
 const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number }[]>([
   {
@@ -913,8 +914,10 @@ watch(
                       :order="false"
                       :move="()=>false"
                       :group="{ name: 'dimensionsContainer', pull: false, put:(to,from,htmlElement,dragEvent)=>{
-                        // 没找到允许添加
-                        return dimensionsFields.find(value=>{return value.fieldId == htmlElement.id}) == undefined;
+                        // 没找到则，允许添加
+                        let notExistDimensions = dimensionsFields.find(value=>{return value.fieldId == htmlElement.id}) == undefined
+                        let notExistMetrics = metricsFields.find(value=>{ return value.fieldId == htmlElement.id}) == undefined;
+                        return notExistDimensions && notExistMetrics;
                       }}"
                       animation="300"
                       item-key="fieldId"
@@ -946,8 +949,11 @@ watch(
                       :list="metricsFields"
                       :order="false"
                       :group="{ name: 'metricsContainer', pull: false, put:(to,from,htmlElement,dragEvent)=>{
-                        // 没找到允许添加
-                        return metricsFields.find(value=>{ return value.fieldId == htmlElement.id}) == undefined;
+                        // 没找到则，允许添加
+                        let notExistDimensions = dimensionsFields.find(value=>{return value.fieldId == htmlElement.id}) == undefined
+                        let notExistMetrics = metricsFields.find(value=>{ return value.fieldId == htmlElement.id}) == undefined;
+                        let isNumber = allFields.find(value=>{ return value.fieldId == htmlElement.id})?.fieldType2 == 'Number'
+                        return notExistDimensions && notExistMetrics&&isNumber;
                       }}"
                       animation="300"
                       item-key="fieldId"
