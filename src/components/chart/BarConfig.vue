@@ -83,7 +83,7 @@ let chartConfigControl = reactive({
   yAxisIntervalChecked: false,
 
   allSeriesEqual: false, // 数据系列的配置，各系列全一一致
-  allSeriesConfigShow: [], // 数据系列：默认展开的内容
+  allSeriesConfigShow: [] as Array<string>, // 数据系列：默认展开的内容
   seriesLabelShow: {} as Record<string, 'show' | 'hover' | ''>, // key 是该系列的id，value是 'show' | 'hover' | ''
 
   vertical: false, // 是否条形图
@@ -680,7 +680,13 @@ onUnmounted(()=>{
               // 2. 调整grid，让x-y坐标系 让出位置
               chartConfigFunction.changeGridPosition(top, left, right, bottom)
               // 3. 设置图例、以及设置缩放组件的布局。
-              let option = {
+              let option:{
+               legend:{
+                 show?:boolean,
+                 top?: string
+               },
+               dataZoom:Array<{id:string,top?:string,left?:string}>
+              } = {
                 legend: {
                   show: chartOption.legend.show,
                 },
@@ -1793,8 +1799,10 @@ onUnmounted(()=>{
           v-model:checked="chartConfigControl.allSeriesEqual"
           @change="
             () => {
+                chartConfigControl.allSeriesConfigShow.length = 0;
+                chartConfigControl.allSeriesConfigShow[0] = chartOption.series[0].id||'0'
               if (chartConfigControl.allSeriesEqual) {
-                chartConfigControl.allSeriesConfigShow = [chartOption.series[0].id || '0']
+
               } else {
                 chartConfigControl.allSeriesConfigShow = []
               }
@@ -1866,7 +1874,13 @@ onUnmounted(()=>{
                   if (chartConfigControl.allSeriesEqual) {
                     chartConfigFunction.changeAllSeriesType(value)
                   } else {
-                    let option = { series: { id: item.id, type: value } }
+                    let option:{
+                      series: {
+                        id: string,
+                        type: string,
+                        barMaxWidth?:string
+                        barMinWidth?:string }
+                        } = { series: { id: item.id, type: value } }
                     if(value =='bar'){
                       option.series.barMaxWidth = '50'
                       option.series.barMinWidth = '1'
