@@ -205,10 +205,25 @@ const chartConfigFunction = {
   },
   // 变更所有系列的类型，如柱状图全部变为折线图
   changeAllSeriesType: (value: string) => {
-    let option = []
+    let option = [];
     for (let i = 0; i < chartOption.series.length; i++) {
-      option.push({id: chartOption.series[i].id, type: value})
-      chartOption.series[i].type = value
+      if(value == 'bar'){
+        option.push({
+          id: chartOption.series[i].id,
+          barMaxWidth: '50',
+          barMinWidth: '1',
+          type: value});
+
+        chartOption.series[i].type = value
+        chartOption.series[i].barMaxWidth = '50'
+        chartOption.series[i].barMinWidth = '1'
+      }else {
+        option.push({
+          id: chartOption.series[i].id,
+          type: value});
+
+        chartOption.series[i].type = value
+      }
     }
     chartConfig.setOption({series: option})
   },
@@ -376,6 +391,14 @@ watch(() => chartConfigControl.currentThem, (them) => {
     }
   }
 })
+
+// series 变化
+
+watch(()=>chartOption.series,(value)=>{
+  // series 发生变化则重新初始化堆叠内容
+  chartConfigFunction.initStackItems();
+})
+
 // 堆叠变化
 watch(chartConfigControl.stackItems, (items: Array<Array<{ id: string, name: string, color: string }>>) => {
   let option: { series: Array<any> } = {series: []};
@@ -1843,7 +1866,12 @@ onUnmounted(()=>{
                   if (chartConfigControl.allSeriesEqual) {
                     chartConfigFunction.changeAllSeriesType(value)
                   } else {
-                    chartConfig.setOption({ series: { id: item.id, type: value } })
+                    let option = { series: { id: item.id, type: value } }
+                    if(value =='bar'){
+                      option.series.barMaxWidth = '50'
+                      option.series.barMinWidth = '1'
+                    }
+                    chartConfig.setOption(option);
                   }
                 }
               "

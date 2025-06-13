@@ -305,7 +305,7 @@ let dimensions:Array<string> = ['userName', 'salary1', 'salary2', 'salary3', 'sa
 let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
   // 标题属性
   title: {
-    text: '測試',
+    text: '标题',
     left: 'left',
     show: true,
     top: '0.5%',
@@ -341,7 +341,7 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({
       show: true,
     },
     formatter: function (name: string) {
-      return echarts.format.truncateText(name, 84, '14px Microsoft Yahei', '…')
+      return echarts.format.truncateText(name, 84, '12px Microsoft Yahei', '…')
     },
   },
   dataset: {
@@ -777,7 +777,7 @@ function getMapData(data:Map<string,object>,keys:string[]):Array<object>{
 watch(dimensionsFields,()=>{
 
   // 图表渲染
-  let tempOption = {
+  let option = {
     dataset: {
       dimensions: [],
       source: [],
@@ -790,7 +790,7 @@ watch(dimensionsFields,()=>{
   for (let i = 0; i < metricsFields.length; i++) {
     let index = i+1;
     dimensions[index] = metricsFields[i].fieldAlias;
-    tempOption.series[i] ={
+    option.series[i] ={
       id: index.toString(),
       type: 'bar',
       name: dimensions[index],
@@ -798,12 +798,6 @@ watch(dimensionsFields,()=>{
       barMinWidth: '1',
       stack: 'group'+index,
       stackStrategy: 'samesign',
-      /**
-       * 'samesign' 只在要堆叠的值与当前累积的堆叠值具有相同的正负符号时才堆叠。
-       * 'all' 堆叠所有的值，不管当前或累积的堆叠值的正负符号是什么。
-       * 'positive' 只堆积正值。
-       * 'negative' 只堆叠负值。
-       */
       label: {
         show: false,
         position: 'top', // top inside insideTop insideBottom
@@ -835,10 +829,13 @@ watch(dimensionsFields,()=>{
   }
   let source:Array<Array<object>> =allData.map((item)=>getMapData(item,dimensions));
 
-  tempOption.dataset.dimensions = dimensions;
-  tempOption.dataset.source =source;
+  option.dataset.dimensions = dimensions;
+  option.dataset.source =source;
 
-  tempChart.setOption(tempOption,{
+  tempChartOption.dataset = option.dataset;
+  tempChartOption.series = option.series
+
+  tempChart.setOption(option,{
     replaceMerge: ['series']
   });
 
@@ -852,7 +849,7 @@ watch(dimensionsFields,()=>{
 // 监听字段的变化去渲染数据
 watch(metricsFields,()=>{
   // 图表渲染
-  let tempOption = {
+  let option = {
     dataset: {
       dimensions: [],
       source: [],
@@ -865,7 +862,7 @@ watch(metricsFields,()=>{
   for (let i = 0; i < metricsFields.length; i++) {
     let index = i+1;
     dimensions[index] = metricsFields[i].fieldAlias;
-    tempOption.series[i] ={
+    option.series[i] ={
       id: index.toString(),
       type: 'bar',
       name: dimensions[index],
@@ -873,12 +870,6 @@ watch(metricsFields,()=>{
       barMinWidth: '1',
       stack: 'group'+index,
       stackStrategy: 'samesign',
-      /**
-       * 'samesign' 只在要堆叠的值与当前累积的堆叠值具有相同的正负符号时才堆叠。
-       * 'all' 堆叠所有的值，不管当前或累积的堆叠值的正负符号是什么。
-       * 'positive' 只堆积正值。
-       * 'negative' 只堆叠负值。
-       */
       label: {
         show: false,
         position: 'top', // top inside insideTop insideBottom
@@ -910,10 +901,13 @@ watch(metricsFields,()=>{
   }
   let source:Array<Array<object>> =allData.map((item)=>getMapData(item,dimensions));
 
-  tempOption.dataset.dimensions = dimensions;
-  tempOption.dataset.source =source;
+  option.dataset.dimensions = dimensions;
+  option.dataset.source =source;
 
-  tempChart.setOption(tempOption,{
+  tempChartOption.dataset = option.dataset;
+  tempChartOption.series = option.series
+
+  tempChart.setOption(option,{
     replaceMerge: ['series']
   });
 
