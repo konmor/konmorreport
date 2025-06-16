@@ -192,8 +192,11 @@ const clearCurrentConfig = ()=> {
 
   tempChart.dispose();
   tempChart.clear();
+  // 清空tempChartOption的属性
+  for (let key in tempChartOption) {
+    delete tempChartOption[key];
+  }
 
-  Object.assign(tempChartOption,{});
 }
 
 const tempChartModal = reactive<{ open: boolean; ok: (reject: any) => void; cancel: () => void }>({
@@ -285,7 +288,7 @@ const sqlSelectorModal = reactive<{
       tempChartModal.open = true
 
       // 设置默认配置
-      Object.assign(tempChartOption,chartTemplate('标题',lastChartType.value));
+      Object.assign(tempChartOption,chartTemplate('标题1',lastChartType.value));
 
       // 查询数据拿到字段和数据
       let sqlQuery: SQLQuery = {
@@ -314,7 +317,7 @@ const sqlSelectorModal = reactive<{
         let newEchartsInstance = echarts.init(container)
         tempChart = newEchartsInstance // 交给外部临时变量
         // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
-        newEchartsInstance.setOption(tempChartOption)
+        newEchartsInstance.setOption(tempChartOption);
 
         let observer = new ResizeObserver(() => {
           if (newEchartsInstance) newEchartsInstance.resize()
@@ -503,12 +506,12 @@ function renderChart() {
 }
 
 // 监听字段的变化去渲染数据
-watch(dimensionsFields, renderChart);
-
-// 监听字段的变化去渲染数据
-watch(metricsFields,
-  renderChart
-)
+// watch(dimensionsFields, renderChart);
+//
+// // 监听字段的变化去渲染数据
+// watch(metricsFields,
+//   renderChart
+// )
 </script>
 
 <template>
@@ -797,6 +800,7 @@ watch(metricsFields,
             <BarConfig v-if="lastChartType == 'barChart'"
               :getChartConfig="getTempChart"
               :setChartConfig="setTempChart"
+              :clearCurrentConfig="clearCurrentConfig"
               :chartOption="tempChartOption"
               :chartContainer="tempChartContainer"
             ></BarConfig>
@@ -804,6 +808,7 @@ watch(metricsFields,
             <PieConfig v-else-if="lastChartType == 'pieChart'"
                        :getChartConfig="getTempChart"
                        :setChartConfig="setTempChart"
+                       :clearCurrentConfig="clearCurrentConfig"
                        :chartOption="tempChartOption"
                        :chartContainer="tempChartContainer">
 

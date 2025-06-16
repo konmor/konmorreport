@@ -28,7 +28,9 @@ interface ComponentPosition {
   position: { top: number; left: number; right: number; bottom: number } | undefined
   allStatus: GridPosition
 }
-let {getChartConfig,setChartConfig,chartOption, chartContainer} = defineProps(['getChartConfig','setChartConfig', 'chartOption', 'chartContainer']);
+let {getChartConfig,setChartConfig,chartOption, chartContainer, clearCurrentConfig} =
+    defineProps(['getChartConfig','setChartConfig', 'chartOption', 'chartContainer', 'clearCurrentConfig']);
+
 let chartConfig:any;
 
 const chartConfigConstParams = {
@@ -460,10 +462,8 @@ onMounted(()=>{
   })
 })
 
-
-
 onUnmounted(()=>{
-  chartConfig.dispose();
+  clearCurrentConfig();
 })
 </script>
 

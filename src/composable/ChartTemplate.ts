@@ -166,7 +166,9 @@ export const BAR_TEMPLATE: ECBasicOption = {
 export const PIE_TEMPLATE: ECBasicOption = {
     title: {
         text: '标题',
-        left: 'center'
+        left: 'left',
+        show: false,
+        top: '0.5%',
     },
     tooltip: {
         show: true,
@@ -178,6 +180,8 @@ export const PIE_TEMPLATE: ECBasicOption = {
         orient: 'vertical',
         left: 'left',
         top: 'top',
+        right:'',
+        bottom:'',
         type: 'scroll'
     },
     dataset: {
@@ -231,6 +235,7 @@ export const PIE_TEMPLATE: ECBasicOption = {
     },
     series: [
         {
+            id: '1',
             name: '2015年-饮品销量',
             type: 'pie',
             // 是否顺时针排布饼图，
@@ -238,7 +243,7 @@ export const PIE_TEMPLATE: ECBasicOption = {
             // 开始角度
             startAngle: 90,
             // 结束角度为自动
-            endAngle: 360,
+            endAngle: 'auto',
             padAngle: 0.5,
             encode: {
                 itemName: 'product',
@@ -255,8 +260,8 @@ export const PIE_TEMPLATE: ECBasicOption = {
             // 'radius' 扇区圆心角展现数据的百分比，半径展现数据的大小。
             // 'area' 所有扇区圆心角相同，仅通过半径展现数据大小。
             roseType: false,
-            top: '20%',
-            left: '10%',
+            top: '3%',
+            left: '',
             right: '',
             bottom: '',
             label: {
@@ -360,7 +365,7 @@ export function chartTemplate(title: string, type: string): ECBasicOption {
 
 export function pieTemplate(title: string): ECBasicOption {
     let option: ECBasicOption = {};
-    Object.assign(option, PIE_TEMPLATE)
+    Object.assign(option, PIE_TEMPLATE);
     if (title) {
         // @ts-ignore
         option.title.text = title;
