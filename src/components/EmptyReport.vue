@@ -432,7 +432,7 @@ function getMapData(data:Map<string,object>,keys:string[]):Array<object>{
   return arr;
 }
 
-function renderChart() {
+function renderBarChart(){
   dimensions.length = 0;
   // 图表渲染
   let option = {
@@ -478,16 +478,16 @@ function renderChart() {
   // 必须要有至少两个字段，其中一个必须为维度字段
   if (dimensions.length < 2) {
     tempChart.setOption(
-        {
-          dataset: {
-            dimensions: [],
-            source: [],
-          },
-          series: [{}]
+      {
+        dataset: {
+          dimensions: [],
+          source: [],
         },
-        {
-          replaceMerge: ['series']
-        });
+        series: [{}]
+      },
+      {
+        replaceMerge: ['series']
+      });
     return;
   }
   let source: Array<Array<object>> = allData.map((item) => getMapData(item, dimensions));
@@ -504,6 +504,130 @@ function renderChart() {
     replaceMerge: ['series']
   });
 }
+
+function renderPieChart(){
+  dimensions.length = 0;
+  // 图表渲染
+  let option = {
+    dataset: {
+      dimensions: [] as Array<string>,
+      source: [] as Array<Array<object>>,
+    },
+    series: [{}] as Array<object>,
+  };
+
+  // 必须要有维度字段;
+  if (dimensionsFields.length > 0) {
+    dimensions[0] = dimensionsFields[0].fieldAlias;
+
+    for (let i = 0; i < metricsFields.length; i++) {
+      let index = i + 1;
+      dimensions[index] = metricsFields[i].fieldAlias;
+
+      option.series[i] = {
+        id: index.toString(),
+        name: metricsFields[i].fieldAlias,
+        type: 'pie',
+        // 是否顺时针排布饼图，
+        clockwise: false,
+        // 开始角度
+        startAngle: 90,
+        // 结束角度为自动
+        endAngle: 'auto',
+        padAngle: 0.5,
+        encode: {
+          itemName: dimensions[0],
+          value: metricsFields[i].fieldAlias
+        },
+        selectedMode: true,
+        //　分离距离
+        selectedOffset: 10,
+        roseType: false,
+        top: '3%',
+        left: '',
+        right: '',
+        bottom: '',
+        label: {
+          show: true,
+          // outside 、inner | inside 、 center
+          position: 'outside',
+          formatter: undefined,
+          // true | radial  径向排布 \tangential 切向排布 -90 ~ 90
+          rotate: 'tangential'
+        },
+        // 视觉引导线，当 label 在position outside 情况下有用
+        labelLine: {
+          show: true
+        },
+        labelLayout: {
+          // 是否隐藏重叠的标签。
+          hideOverlap: true,
+          draggable: true
+        },
+        itemStyle: {
+          // 阴影效果
+          shadowBlur: 5,
+          shadowOffsetX: 0.5,
+          shadowOffsetY: 0.5,
+          // 圆角半径
+          borderRadius: 5
+        },
+        emphasis: {
+          disabled: false,
+          scale: true,
+          scaleSize: 5,
+
+          itemStyle: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.5)'
+          }
+        },
+        // 内圆半径，外圆半径
+        radius: [0, '80%'],
+      }
+    }
+  }
+
+  // 必须要有至少两个字段，其中一个必须为维度字段
+  if (dimensions.length < 2) {
+    tempChart.setOption(
+      {
+        dataset: {
+          dimensions: [],
+          source: [],
+        },
+        series: [{}]
+      },
+      {
+        replaceMerge: ['series']
+      });
+    return;
+  }
+  let source: Array<Array<object>> = allData.map((item) => getMapData(item, dimensions));
+
+  option.dataset.dimensions = dimensions;
+  option.dataset.source = source;
+
+  // 设置给变量
+  tempChartOption.dataset = option.dataset;
+  tempChartOption.series = option.series
+
+  // 设置图标配置
+  tempChart.setOption(option, {
+    replaceMerge: ['series','dataset']
+  });
+}
+
+function renderChart() {
+  if(lastChartType.value == 'barChart'){
+    renderBarChart();
+  } else if(lastChartType.value == 'pieChart'){
+    renderPieChart();
+  }
+}
+
+
 
 // 监听字段的变化去渲染数据
 watch(dimensionsFields, renderChart);

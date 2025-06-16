@@ -15,6 +15,7 @@ import LeftCenter from '@/assets/icon/legend/LeftCenter.vue'
 import BottomLeft from '@/assets/icon/legend/BottomLeft.vue'
 import BottomRight from '@/assets/icon/legend/BottomRight.vue'
 import { BarChartOutlined, PieChartOutlined } from '@ant-design/icons-vue'
+import { a } from 'vite/dist/node/moduleRunnerTransport.d-CXw_Ws6P'
 
 interface GridPosition {
   [key: string]: { top: number; left: number; right: number; bottom: number }
@@ -72,10 +73,10 @@ let chartConfigControl = reactive({
   roseTypeArea: false,
 
   // label 要显示的内容
-  labelContent: [] as Array<string>,
+  labelContent: [] as string[],
   radius: [0, 80] as Array<number>,
 
-  emphasisShow:false,
+  emphasisShow:true,
 
   currentTitlePosition: {
     currentStatus: 'left',
@@ -193,6 +194,7 @@ const chartConfigFunction = {
     } else if (chartConfigControl.labelContent.length == 2) {
       formatter = `{@${nameField}}, {@${valueField}} : {d}%`
     }
+
     chartConfig.setOption({
       series: { id: item.id, label: { formatter: formatter } },
     })
@@ -533,6 +535,7 @@ onUnmounted(() => {
     </div>
   </div>
 
+<!--  数据系列-->
   <div class="chart-group">
     <div class="chart-item">
       <span class="label-left" style="width: 48px">数据系列</span>
@@ -629,6 +632,11 @@ onUnmounted(() => {
                 (v: any) => {
                   if (v.target.checked) {
                     item.endAngle = 270
+                    chartConfig.setOption({
+                      series: { id: item.id, endAngle: item.endAngle },
+                    })
+                  }else{
+                    item.endAngle='auto';
                     chartConfig.setOption({
                       series: { id: item.id, endAngle: item.endAngle },
                     })
@@ -787,7 +795,7 @@ onUnmounted(() => {
                   series: { id: item.id, label: { position: item.label.position } },
                 })
               "
-              :disabled="!chartOption.xAxis.splitLine.show"
+              :disabled="!item.label.show"
             >
               <a-select-option value="outside"
                 ><span style="font-size: 12px">饼图外</span></a-select-option
@@ -807,13 +815,25 @@ onUnmounted(() => {
           <span class="label-left" style="width: 48px">标签格式</span>
           <div class="component-right">
             <a-checkbox-group
-              v-model:value="chartConfigControl.labelContent"
-              :disabled="chartOption.dataset.dimensions.length <= 1"
             >
               <a-checkbox
                 value="value"
                 @change="
-                  () => {
+                  (v:any) => {
+                    if(v.target.checked){
+                      if(chartConfigControl.labelContent.length>0){
+                       chartConfigControl.labelContent = ['value','percent'];
+                      }else {
+                        chartConfigControl.labelContent = ['value']
+                      }
+                    } else {
+                       if(chartConfigControl.labelContent.length > 1 ){
+                         chartConfigControl.labelContent= ['percent'];
+                      } else if (chartConfigControl.labelContent.length == 1) {
+                         chartConfigControl.labelContent = []
+                      }
+                    }
+
                     chartConfigFunction.labelFormatter(item)
                   }
                 "
@@ -823,7 +843,20 @@ onUnmounted(() => {
               <a-checkbox
                 value="percent"
                 @change="
-                  () => {
+                  (v:any) => {
+                    if(v.target.checked){
+                      if(chartConfigControl.labelContent.length>0){
+                       chartConfigControl.labelContent = ['value','percent'];
+                      } else {
+                        chartConfigControl.labelContent = ['percent']
+                      }
+                    } else {
+                       if(chartConfigControl.labelContent.length > 1 ){
+                         chartConfigControl.labelContent= ['value'];
+                      } else if (chartConfigControl.labelContent.length == 1) {
+                         chartConfigControl.labelContent = []
+                      }
+                    }
                     chartConfigFunction.labelFormatter(item)
                   }
                 "
@@ -838,7 +871,6 @@ onUnmounted(() => {
         <div class="chart-item">
           <span class="label-left" style="width: 48px">排布方式</span>
           <div class="component-right">
-            径向排布、切向排布
             <a-select
               size="small"
               v-model:value="item.label.rotate"
@@ -847,7 +879,7 @@ onUnmounted(() => {
                   series: { id: item.id, label: { rotate: item.label.rotate } },
                 })
               "
-              :disabled="!chartOption.xAxis.splitLine.show"
+              :disabled="!item.label.show"
             >
               <a-select-option value="radial"
                 ><span style="font-size: 12px">径向排布</span></a-select-option
@@ -936,7 +968,7 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- 饼图-->
+        <!-- 饼图内径-->
         <div class="chart-item">
           <span class="label-left" style="width: 48px">饼图内径</span>
           <div class="component-right">
@@ -965,7 +997,7 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- 饼图-->
+        <!-- 饼图外径-->
         <div class="chart-item">
           <span class="label-left" style="width: 48px">饼图外径</span>
           <div class="component-right">
@@ -993,6 +1025,7 @@ onUnmounted(() => {
             </a-slider>
           </div>
         </div>
+
       </a-collapse-panel>
     </a-collapse>
   </div>

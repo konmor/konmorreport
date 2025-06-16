@@ -185,8 +185,8 @@ export const PIE_TEMPLATE: ECBasicOption = {
         type: 'scroll'
     },
     dataset: {
-        dimensions: ['product', '2015', '2016', '2017'],
-        source: [
+        dimensions: [/*'product', '2015', '2016', '2017'*/],
+        source: [/*
             ['Matcha Latte', 43.3, 85.8, 93.7],
             ['Matcha Latte1', 43.3, 85.8, 93.7],
             ['Matcha Latte2', 43.3, 85.8, 93.7],
@@ -230,11 +230,11 @@ export const PIE_TEMPLATE: ECBasicOption = {
 
             ['Milk Tea', 83.1, 73.4, 55.1],
             ['Cheese Cocoa', 86.4, 65.2, 82.5],
-            ['Walnut Brownie', 72.4, 53.9, 39.1]
+            ['Walnut Brownie', 72.4, 53.9, 39.1]*/
         ]
     },
     series: [
-        {
+        /*{
             id: '1',
             name: '2015年-饮品销量',
             type: 'pie',
@@ -268,7 +268,7 @@ export const PIE_TEMPLATE: ECBasicOption = {
                 show: true,
                 // outside 、inner | inside 、 center
                 position: 'outside',
-                /*
+                /!*
                 字符串模板 模板变量有：
 
                 {a}：系列名。
@@ -277,7 +277,7 @@ export const PIE_TEMPLATE: ECBasicOption = {
                 {d}：百分比。
                 {@xxx}：数据中名为 'xxx' 的维度的值，如 {@product} 表示名为 'product' 的维度的值。
                 {@[n]}：数据中维度 n 的值，如 {@[3]} 表示维度 3 的值，从 0 开始计数。
-                */
+                *!/
                 formatter: '{@product}, {@2015} : {d}%',
                 // true | radial  径向排布 \tangential 切向排布 -90 ~ 90
                 rotate: 'tangential'
@@ -335,7 +335,7 @@ export const PIE_TEMPLATE: ECBasicOption = {
             // 'transition' 默认：通过改变起始和终止角度，从之前的数据过渡到新的数据。
             // 'expansion' 数据将整体重新沿圆弧展开。
             animationTypeUpdate: 'transition'
-        }
+        }*/
     ]
 };
 
