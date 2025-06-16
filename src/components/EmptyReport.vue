@@ -506,12 +506,12 @@ function renderChart() {
 }
 
 // 监听字段的变化去渲染数据
-// watch(dimensionsFields, renderChart);
-//
-// // 监听字段的变化去渲染数据
-// watch(metricsFields,
-//   renderChart
-// )
+watch(dimensionsFields, renderChart);
+
+// 监听字段的变化去渲染数据
+watch(metricsFields,
+  renderChart
+)
 </script>
 
 <template>
