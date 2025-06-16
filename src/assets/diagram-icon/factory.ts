@@ -21,39 +21,39 @@ export function initDiagrams(icons?: Array<DiagramIconComponent>) {
     } else {
         // 使用默认的
         all = [
-            {
+            {// @ts-ignore
                 component: TableOutlined,
                 meta: {instance: {id: getUuid()}, type: 'table', name: 'table', title: '表格'}
             },
-            {
+            {// @ts-ignore
                 component: PieChartOutlined,
                 meta: {instance: {id: getUuid()}, type: 'pieChart', name: 'pieChart', title: '饼图'}
             },
-            {
+            {// @ts-ignore
                 component: BarChartOutlined,
                 meta: {instance: {id: getUuid()}, type: 'barChart', name: 'barChart', title: '柱状图'}
             },
-            {
+            {// @ts-ignore
                 component: DotChartOutlined,
                 meta: {instance: {id: getUuid()}, type: 'dotChart', name: 'dotChart', title: '点图'}
             },
-            {
+            {// @ts-ignore
                 component: LineChartOutlined,
                 meta: {instance: {id: getUuid()}, type: 'lineChart', name: 'lineChart', title: '折线图'}
             },
-            {
+            {// @ts-ignore
                 component: RadarChartOutlined,
                 meta: {instance: {id: getUuid()}, type: 'radarChart', name: 'radarChart', title: '雷达图'}
             },
-            {
+            {// @ts-ignore
                 component: DashboardOutlined,
                 meta: {instance: {id: getUuid()}, type: 'guage', name: 'guage', title: '仪表'}
             },
-            {
+            {// @ts-ignore
                 component: shallowRef(Tag),
                 meta: {instance: {id: getUuid()}, type: 'tag', name: 'tag', title: '标签'}
             },
-            {
+            {// @ts-ignore
                 component: shallowRef(Tab),
                 meta: {instance: {id: getUuid()}, type: 'tab', name: 'tab', title: '页签'}
             },

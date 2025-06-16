@@ -12,7 +12,7 @@ import { nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref, watch
 import Filter from '@/components/Filter.vue'
 import { getUuid } from 'ant-design-vue/es/vc-notification/HookNotification'
 import * as echarts from 'echarts'
-import { barTemplate } from '@/composable/ChartTemplate.ts'
+import {barTemplate, chartTemplate} from '@/composable/ChartTemplate.ts'
 import useNavigator from '@/composable/useNavigator.ts'
 import type { EChartsType } from 'echarts'
 import type { ECBasicOption } from 'echarts/types/dist/shared'
@@ -21,6 +21,7 @@ import { sqlQueryData } from '@/api/sql.ts'
 import type { SQLQuery, SQLResultField } from '@/types/api.ts';
 import { FieldStringOutlined, FieldNumberOutlined, FieldTimeOutlined,CloseOutlined } from '@ant-design/icons-vue'
 import {message, Modal} from "ant-design-vue";
+import PieConfig from "@/components/chart/PieConfig.vue";
 
 const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number }[]>([
   {
@@ -131,6 +132,8 @@ let tempChart: EChartsType
 let lastEchartsContainerID: string
 // 最新的sql主建id，用于该sql数据和返回字段查询。
 let lastSQLId: string
+// 最新的创建的数据图表类型
+let lastChartType = ref<string>('')
 
 let fieldContainerActiveKey = ref('fieldContainer')
 
@@ -152,13 +155,15 @@ let tempObserver: ResizeObserver
 const change = function change(event: Event) {
   // 监听添加事件
   if ('added' in event) {
-    // window.console.log(event['added'])
+    // @ts-ignore 刚刚拖拽进来的图表类型，也许不是图表
+    lastChartType.value = event['added'].element.type;
+    // @ts-ignore window.console.log(event['added'])
     lastEchartsContainerID = event['added'].element.id
     let newContainer = document.getElementById(lastEchartsContainerID)
     // 2.初始化echarts 挂载的位置
     let newEchartsInstance = echarts.init(newContainer) // 参数是dom节点
     // 3. 设置默认数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
-    newEchartsInstance.setOption(barTemplate('test2'))
+    newEchartsInstance.setOption(chartTemplate('test2',lastChartType.value));
 
     // 放入allChartsInstance容器中
     allChartsInstance.push(newEchartsInstance)
@@ -167,7 +172,7 @@ const change = function change(event: Event) {
       if (newEchartsInstance) newEchartsInstance.resize()
     })
     observer.observe(newContainer as Element)
-    allResizeObserver.push(observer)
+    allResizeObserver.push(observer);
   }
 }
 
@@ -179,12 +184,14 @@ let tempChartOption: ECBasicOption = reactive<ECBasicOption>({});
 let allFields = reactive<SQLResultField[]>([])
 let allData = reactive<Array<Map<string, object>>>([])
 
-const clearCurrentConfig = ()=>{
+const clearCurrentConfig = ()=> {
   metricsFields.length = 0;
   dimensionsFields.length = 0;
 
-  // tempChart.dispose();
-  // tempChart.clear();
+  lastChartType.value = '';
+
+  tempChart.dispose();
+  tempChart.clear();
 
   Object.assign(tempChartOption,{});
 }
@@ -192,7 +199,7 @@ const clearCurrentConfig = ()=>{
 const tempChartModal = reactive<{ open: boolean; ok: (reject: any) => void; cancel: () => void }>({
   open: false,
   ok: (reject: any) => {
-    tempChartModal.open = false
+    tempChartModal.open = false;
     // 配置好之后从 temChart 中获取数据，并渲染给最后一个 chartArray 中的chart
     allChartsInstance[allChartsInstance.length - 1].setOption(tempChart.getOption(), true);
     clearCurrentConfig();
@@ -208,15 +215,16 @@ const tempChartModal = reactive<{ open: boolean; ok: (reject: any) => void; canc
 
 function removeLastEchartsInstance() {
   //删除刚刚创建的数据,删除echarts实例，删除draagabel的元素
-  let lastEchartsInstance = allChartsInstance.pop()
+  let lastEchartsInstance = allChartsInstance.pop();
   if (lastEchartsInstance != undefined) {
-    lastEchartsInstance.dispose()
-    lastEchartsInstance.clear()
+    lastEchartsInstance.dispose();
+    lastEchartsInstance.clear();
   }
+
   for (let i = items.length - 1; i >= 0; i--) {
     if (items[i].id == lastEchartsContainerID) {
-      items.splice(i, 1)
-      break
+      items.splice(i, 1);
+      break;
     }
   }
 }
@@ -277,7 +285,7 @@ const sqlSelectorModal = reactive<{
       tempChartModal.open = true
 
       // 设置默认配置
-      Object.assign(tempChartOption,barTemplate('标题'));
+      Object.assign(tempChartOption,chartTemplate('标题',lastChartType.value));
 
       // 查询数据拿到字段和数据
       let sqlQuery: SQLQuery = {
@@ -317,7 +325,8 @@ const sqlSelectorModal = reactive<{
     }
   },
   cancel: () => {
-    sqlSelectorModal.open = false
+    sqlSelectorModal.open = false;
+    lastChartType.value = '';
     removeLastEchartsInstance()
   },
   selected: '',
@@ -785,12 +794,20 @@ watch(metricsFields,
             width="240px"
             class="viewConfig verticalScrollBar"
           >
-            <BarConfig
+            <BarConfig v-if="lastChartType == 'barChart'"
               :getChartConfig="getTempChart"
               :setChartConfig="setTempChart"
               :chartOption="tempChartOption"
               :chartContainer="tempChartContainer"
             ></BarConfig>
+
+            <PieConfig v-else-if="lastChartType == 'pieChart'"
+                       :getChartConfig="getTempChart"
+                       :setChartConfig="setTempChart"
+                       :chartOption="tempChartOption"
+                       :chartContainer="tempChartContainer">
+
+            </PieConfig>
           </a-layout-sider>
         </a-layout>
       </a-modal>
