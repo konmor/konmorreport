@@ -22,6 +22,7 @@ import type { SQLQuery, SQLResultField } from '@/types/api.ts';
 import { FieldStringOutlined, FieldNumberOutlined, FieldTimeOutlined,CloseOutlined } from '@ant-design/icons-vue'
 import {message, Modal} from "ant-design-vue";
 import PieConfig from "@/components/chart/PieConfig.vue";
+import LineConfig from '@/components/chart/LineConfig.vue'
 
 const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number }[]>([
   {
@@ -619,11 +620,96 @@ function renderPieChart(){
   });
 }
 
+function renderLineChart(){
+  dimensions.length = 0;
+  // 图表渲染
+  let option = {
+    dataset: {
+      dimensions: [] as Array<string>,
+      source: [] as Array<Array<object>>,
+    },
+    series: [{}] as Array<object>,
+  };
+
+  // 必须要有维度字段;
+  if (dimensionsFields.length > 0) {
+    dimensions[0] = dimensionsFields[0].fieldAlias;
+
+    for (let i = 0; i < metricsFields.length; i++) {
+      let index = i + 1;
+      dimensions[index] = metricsFields[i].fieldAlias;
+
+      option.series[i] = {
+        id: index.toString(),
+        type: 'line',
+        name: dimensions[index],
+        // 有可能会有柱状图
+        barMaxWidth: '50',
+        barMinWidth: '1',
+        stack: 'group' + index,
+        /**
+         * 'samesign' 只在要堆叠的值与当前累积的堆叠值具有相同的正负符号时才堆叠。
+         * 'all' 堆叠所有的值，不管当前或累积的堆叠值的正负符号是什么。
+         * 'positive' 只堆积正值。
+         * 'negative' 只堆叠负值。
+         */
+        stackStrategy: 'samesign',
+        smooth:false,
+        /*areaStyle: {}*/
+        label: {
+          show: false,
+          position: 'top', // top inside insideTop insideBottom
+          rotate: 0, // -90 90
+        },
+        emphasis: {
+          disabled: false,
+          focus: 'none', // none \ self \ series
+          label: {
+            show: false,
+          },
+        },
+      }
+    }
+  }
+
+  // 必须要有至少两个字段，其中一个必须为维度字段
+  if (dimensions.length < 2) {
+    tempChart.setOption(
+      {
+        dataset: {
+          dimensions: [],
+          source: [],
+        },
+        series: [{}]
+      },
+      {
+        replaceMerge: ['series']
+      });
+    return;
+  }
+  let source: Array<Array<object>> = allData.map((item) => getMapData(item, dimensions));
+
+  option.dataset.dimensions = dimensions;
+  option.dataset.source = source;
+
+  // 设置给变量
+  tempChartOption.dataset = option.dataset;
+  tempChartOption.series = option.series
+
+  // 设置图标配置
+  tempChart.setOption(option, {
+    replaceMerge: ['series']
+  });
+};
+
+
 function renderChart() {
   if(lastChartType.value == 'barChart'){
     renderBarChart();
   } else if(lastChartType.value == 'pieChart'){
     renderPieChart();
+  }else if(lastChartType.value == 'pieChart'){
+    renderLineChart();
   }
 }
 
@@ -937,6 +1023,15 @@ watch(metricsFields,
                        :chartContainer="tempChartContainer">
 
             </PieConfig>
+
+            <LineConfig v-else-if="lastChartType == 'lineChart'"
+                       :getChartConfig="getTempChart"
+                       :setChartConfig="setTempChart"
+                       :clearCurrentConfig="clearCurrentConfig"
+                       :chartOption="tempChartOption"
+                       :chartContainer="tempChartContainer">
+
+            </LineConfig>
           </a-layout-sider>
         </a-layout>
       </a-modal>
