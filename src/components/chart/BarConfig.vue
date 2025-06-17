@@ -136,6 +136,7 @@ let chartConfigControl = reactive({
   } as ComponentPosition,
 
 });
+
 const chartConfigFunction = {
   changeThem: (themName: string) => {
     if(chartConfig==null){
@@ -806,7 +807,6 @@ onUnmounted(()=>{
                   },
                 ],
               }
-
               chartConfig.setOption(option)
             }
           "

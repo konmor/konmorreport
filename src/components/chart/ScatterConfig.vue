@@ -663,11 +663,22 @@ onUnmounted(() => {
                 legend: {
                   show?: boolean
                   top?: string
-                }
+                },
+                dataZoom:Array<{id:string,top?:string,left?:string}>
               } = {
                 legend: {
                   show: chartOption.legend.show,
                 },
+                dataZoom: [
+                  {
+                    id: 'x0Slider',
+                    top: 101 - chartConfigControl.currentGridPosition.bottom + '%',
+                  },
+                  {
+                    id: 'y0Slider',
+                    left: 101 - chartConfigControl.currentGridPosition.right + '%',
+                  },
+                ],
               }
               //当只有图例时，图例的顶部空间仅保留 0.5%
               if (
@@ -763,6 +774,16 @@ onUnmounted(() => {
                   left: thisPosition.left,
                   bottom: thisPosition.bottom,
                 },
+                dataZoom: [
+                  {
+                    id: 'x0Slider',
+                    top: 101 - chartConfigControl.currentGridPosition.bottom + '%',
+                  },
+                  {
+                    id: 'y0Slider',
+                    left: 101 - chartConfigControl.currentGridPosition.right + '%',
+                  },
+                ],
               }
 
               chartConfig.setOption(option)
