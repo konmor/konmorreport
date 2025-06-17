@@ -88,6 +88,8 @@ let chartConfigControl = reactive({
   yAxisNameShow: false,
   yAxisIntervalChecked: false,
 
+  valueAxis:true,
+
   allSeriesEqual: false, // 数据系列的配置，各系列全一一致
   allSeriesConfigShow: [] as Array<string>, // 数据系列：默认展开的内容
   emphasisShow:{} as Record<string, boolean>,
@@ -233,7 +235,7 @@ const chartConfigFunction = {
       series: { id: item.id, label: { formatter: formatter } },
     })*/
   },
-  changeAllSeriesEmphasis: (item: any) => {
+  changeAllSeriesEmphasisFocus: (item: any) => {
     let focus = item.emphasis.focus
     let option = []
     for (let i = 0; i < chartOption.series.length; i++) {
@@ -242,6 +244,133 @@ const chartConfigFunction = {
         emphasis: { focus: focus },
       })
       chartOption.series[i].emphasis.focus = focus
+    }
+    chartConfig.setOption({ series: option })
+  },
+  changeAllSeriesShape:(item:any)=>{
+    let symbol = item.symbol;
+    let option = []
+    for (let i = 0; i < chartOption.series.length; i++) {
+      option.push({
+        id: chartOption.series[i].id,
+        symbol: symbol,
+      });
+      chartOption.series[i].symbol = symbol;
+    }
+    chartConfig.setOption({ series: option })
+  },
+
+  changeAllSeriesSize:(item:any)=>{
+    let symbolSize = item.symbolSize;
+
+    let option = []
+    for (let i = 0; i < chartOption.series.length; i++) {
+      option.push({
+        id: chartOption.series[i].id,
+        symbolSize: symbolSize,
+      });
+      chartOption.series[i].symbolSize = symbolSize;
+    }
+    chartConfig.setOption({ series: option })
+  },
+  changeAllSeriesLabelShow:(item:any)=>{
+    let show = item.label.show;
+    let option = [];
+    for (let i = 0; i < chartOption.series.length; i++) {
+      if(show) {
+        option.push({
+          id: chartOption.series[i].id,
+          label:{
+            show: true,
+            position: chartOption.series[i].label.position,
+          },
+        });
+      } else {
+        option.push({
+          id: chartOption.series[i].id,
+          label: {
+            show: false,
+          },
+        });
+      }
+      chartOption.series[i].label.show = show;
+    }
+    chartConfig.setOption({ series: option })
+  },
+  changeAllSeriesLabelPosition:(item:any)=>{
+    let position = item.label.position;
+
+    let option = []
+    for (let i = 0; i < chartOption.series.length; i++) {
+      option.push({
+        id: chartOption.series[i].id,
+        label:{position:position} ,
+      });
+      chartOption.series[i].label.position = position;
+    }
+    chartConfig.setOption({ series: option })
+  },
+  changeAllSeriesBubbleStyle:(showBubbleStyle:boolean)=>{
+
+    let option = {series:[] as Array<any>};
+
+    for (let i = 0; i < chartOption.series.length; i++) {
+      let id = chartOption.series[i].id || i.toString();
+
+      if(showBubbleStyle){
+        let itemStyle = {
+          shadowBlur: 10,
+          shadowColor: 'rgba(0, 0, 0, 0.5)',
+          shadowOffsetY: 5,
+          shadowOffsetX: 0,
+          color: chartConfigFunction.getThemedBubbleColor(chartConfigControl.currentColors[i])
+        };
+
+        option.series[i] = {
+          id:id,
+          itemStyle:itemStyle};
+
+        chartOption.series[i].itemStyle = itemStyle;
+      } else {
+        let itemStyle = {
+          shadowBlur: 0,
+          shadowColor: chartConfigControl.currentColors[i],
+          shadowOffsetY: 0,
+          shadowOffsetX: 0,
+          color: chartConfigControl.currentColors[i]
+        };
+        option.series[i] = {
+          id:id,
+          itemStyle:itemStyle}
+
+        chartOption.series[i].itemStyle = itemStyle;
+      }
+    }
+    chartConfig.setOption(option);
+  },
+  changeAllSeriesEmphasisShow:(emphasisShow:boolean)=>{
+    let option = []
+    for (let i = 0; i < chartOption.series.length; i++) {
+      option.push({
+        id: chartOption.series[i].id,
+        emphasis:{disabled:!emphasisShow} ,
+      });
+      chartOption.series[i].emphasis.disabled = !emphasisShow;
+    }
+    chartConfig.setOption({ series: option })
+  },
+  changeAllSeriesEmphasisLabelShow:(emphasisLabelShow:boolean)=>{
+    let option = []
+    for (let i = 0; i < chartOption.series.length; i++) {
+      option.push({
+        id: chartOption.series[i].id,
+        label:{show:!emphasisLabelShow},
+        emphasis:{label:{show:emphasisLabelShow}}
+      });
+
+      chartOption.series[i].label.show = !emphasisLabelShow;
+      chartOption.series[i].emphasis.label.show = emphasisLabelShow;
+
     }
     chartConfig.setOption({ series: option })
   },
@@ -341,7 +470,38 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
 watch(
     () => chartConfigControl.currentThem,
     (them) => {
-      chartConfigControl.currentColors = themArray.find((item) => item.themeName == them)!.theme.color
+      chartConfigControl.currentColors = themArray.find((item) => item.themeName == them)!.theme.color;
+
+      // 调整颜色 各个图的颜色
+
+      let option = {series:[] as Array<any>};
+
+      for (let i = 0; i < chartOption.series.length; i++) {
+        let id = chartOption.series[i].id || i.toString();
+
+        if(chartConfigControl.bubbleStyle[id]){
+          option.series[i] = {
+            id:id,
+            itemStyle:{
+            shadowBlur: 10,
+            shadowColor: 'rgba(0, 0, 0, 0.5)',
+            shadowOffsetY: 5,
+            shadowOffsetX: 0,
+            color: chartConfigFunction.getThemedBubbleColor(chartConfigControl.currentColors[i])
+            }}
+        } else {
+          option.series[i] = {
+            id:id,
+            itemStyle:{
+              shadowBlur: 0,
+              shadowColor: chartConfigControl.currentColors[i],
+              shadowOffsetY: 0,
+              shadowOffsetX: 0,
+              color: chartConfigControl.currentColors[i]
+            }}
+        }
+      }
+      chartConfig.setOption(option);
     },
 )
 
@@ -655,6 +815,39 @@ onUnmounted(() => {
                   show: chartOption.tooltip.show,
                 },
               })
+            }
+          "
+        >
+        </a-checkbox>
+      </div>
+    </div>
+  </div>
+
+  <!--  类目轴和数值轴的切换-->
+  <div class="chart-group">
+    <div class="chart-item">
+      <span class="label-left" style="width: 36px">数值轴</span>
+      <div class="component-right">
+        <a-checkbox
+            v-model:checked="chartConfigControl.valueAxis"
+            @change="
+            (v:any) => {
+              if(v.target.checked){
+                chartConfig.setOption({
+                  xAxis: {
+                    type:'value',
+                    boundaryGap: ['5%', '5%'],
+                  },
+                })
+              } else {
+               chartConfig.setOption({
+                  xAxis: {
+                    type:'category',
+                    boundaryGap: true,
+                  },
+                })
+              }
+
             }
           "
         >
@@ -1643,7 +1836,14 @@ onUnmounted(() => {
             <a-select
                 size="small"
                 v-model:value="item.symbol"
-                @change="chartConfig.setOption({ series: [{ id: item.id, symbol: item.symbol}] })">
+                @change="()=>{
+                  if(chartConfigControl.allSeriesEqual) {
+                    chartConfigFunction.changeAllSeriesShape(item);
+                  } else {
+                    chartConfig.setOption({ series: [{ id: item.id, symbol: item.symbol}] })
+                  }
+                }
+                ">
               <a-select-option value="circle"><span style="font-size: 12px">圆形</span></a-select-option>
               <a-select-option value="rect"><span style="font-size: 12px">矩形</span></a-select-option>
               <a-select-option value="roundRect"><span style="font-size: 12px">圆角矩形</span></a-select-option>
@@ -1665,7 +1865,14 @@ onUnmounted(() => {
                 :dots="true"
                 :step="1"
                 :style="{ width: '100%' }"
-                @change="chartConfig.setOption({ series: [{ id: item.id, symbolSize: item.symbolSize}] })">
+                @change="
+                ()=>{
+                  if(chartConfigControl.allSeriesEqual) {
+                    chartConfigFunction.changeAllSeriesSize(item);
+                  } else {
+                    chartConfig.setOption({ series: [{ id: item.id, symbolSize: item.symbolSize}] })
+                  }}
+                ">
               >
             </a-slider>
           </div>
@@ -1679,20 +1886,24 @@ onUnmounted(() => {
                 v-model:checked="item.label.show"
                 @change="
                 (v: any) => {
-                  if (v.target.checked) {
-                    chartConfig.setOption({
-                      series: {
-                        id: item.id,
-                        label: {
-                          show: true,
-                          position: item.label.position,
-                        },
-                      },
-                    })
+                   if(chartConfigControl.allSeriesEqual) {
+                    chartConfigFunction.changeAllSeriesLabelShow(item);
                   } else {
-                    chartConfig.setOption({
-                      series: { id: item.id, label: { show: false } },
-                    })
+                    if (v.target.checked) {
+                      chartConfig.setOption({
+                        series: {
+                          id: item.id,
+                          label: {
+                            show: true,
+                            position: item.label.position,
+                          },
+                        },
+                      })
+                    } else {
+                      chartConfig.setOption({
+                        series: { id: item.id, label: { show: false } },
+                      })
+                    }
                   }
                 }
               "
@@ -1708,10 +1919,15 @@ onUnmounted(() => {
             <a-select
                 size="small"
                 v-model:value="item.label.position"
-                @change="
-                chartConfig.setOption({
-                  series: { id: item.id, label: { position: item.label.position } },
-                })
+                @change="()=>{
+                  if(chartConfigControl.allSeriesEqual) {
+                    chartConfigFunction.changeAllSeriesLabelPosition(item);
+                  } else {
+                    chartConfig.setOption({
+                      series: { id: item.id, label: { position: item.label.position } },
+                    })
+                  }
+                }
               "
                 :disabled="!item.label.show"
             >
@@ -1730,7 +1946,6 @@ onUnmounted(() => {
 
         <!-- 标签格式化 todo-->
 
-
         <!--  风格 -->
         <div class="chart-item">
           <span class="label-left" style="width: 48px">气泡风格</span>
@@ -1738,29 +1953,34 @@ onUnmounted(() => {
             <a-checkbox
                 v-model:checked="chartConfigControl.bubbleStyle[item.id]"
                 @change="(v:any)=>{
-              if(v.target.checked){
-                 chartConfig.setOption({
-                  series: { id: item.id,
-                    itemStyle: {
-                      shadowBlur: 10,
-                      shadowColor: 'rgba(0, 0, 0, 0.5)',
-                      shadowOffsetY: 5,
-                      shadowOffsetX: 0,
-                      color: chartConfigFunction.getThemedBubbleColor(chartConfigControl.currentColors[index])
-                    } },
-                })
-              } else{
-                 chartConfig.setOption({
-                  series: { id: item.id,
-                    itemStyle: {
-                      shadowBlur: 0,
-                      shadowColor: chartConfigControl.currentColors[index],
-                      shadowOffsetY: 0,
-                      shadowOffsetX: 0,
-                      color: chartConfigControl.currentColors[index]
-                    } },
-                })
-              }
+                  if(chartConfigControl.allSeriesEqual) {
+                    chartConfigFunction.changeAllSeriesBubbleStyle(v.target.checked);
+                  } else {
+                    if(v.target.checked){
+                     chartConfig.setOption({
+                      series: { id: item.id,
+                        itemStyle: {
+                          shadowBlur: 10,
+                          shadowColor: 'rgba(0, 0, 0, 0.5)',
+                          shadowOffsetY: 5,
+                          shadowOffsetX: 0,
+                          color: chartConfigFunction.getThemedBubbleColor(chartConfigControl.currentColors[index])
+                        } },
+                      })
+                    } else{
+                       chartConfig.setOption({
+                        series: { id: item.id,
+                          itemStyle: {
+                            shadowBlur: 0,
+                            shadowColor: chartConfigControl.currentColors[index],
+                            shadowOffsetY: 0,
+                            shadowOffsetX: 0,
+                            color: chartConfigControl.currentColors[index]
+                          } },
+                      })
+                    }
+                  }
+
             }">
             </a-checkbox>
           </div>
@@ -1774,12 +1994,16 @@ onUnmounted(() => {
             <a-checkbox
                 v-model:checked="chartConfigControl.emphasisShow[item.id]"
                 @change="
-                () => {
-                  item.emphasis.disabled =!chartConfigControl.emphasisShow[item.id];
+                (v:any) => {
+                   if(chartConfigControl.allSeriesEqual) {
+                    chartConfigFunction.changeAllSeriesEmphasisShow(v.target.checked);
+                  } else {
+                    item.emphasis.disabled =!chartConfigControl.emphasisShow[item.id];
 
-                  chartConfig.setOption({
-                    series: { id: item.id, emphasis: { disabled: !chartConfigControl.emphasisShow[item.id] } },
-                  })
+                    chartConfig.setOption({
+                      series: { id: item.id, emphasis: { disabled: !chartConfigControl.emphasisShow[item.id] } },
+                    })
+                  }
                 }
               "
             >
@@ -1798,7 +2022,7 @@ onUnmounted(() => {
                 @change="
                 () => {
                   if (chartConfigControl.allSeriesEqual) {
-                    chartConfigFunction.changeAllSeriesEmphasis(item)
+                    chartConfigFunction.changeAllSeriesEmphasisFocus(item)
                   } else {
                     chartConfig.setOption({
                       series: { id: item.id, emphasis: { focus: item.emphasis.focus } },
@@ -1823,19 +2047,15 @@ onUnmounted(() => {
                 v-model:checked="chartConfigControl.emphasisLabelShow[item.id]"
                 @change="
                 (v:any) => {
-                  if(v.target.checked){
-                    item.emphasis.label.show = true;
-                    item.label.show = false;
+                   if (chartConfigControl.allSeriesEqual) {
+                    chartConfigFunction.changeAllSeriesEmphasisLabelShow(v.target.checked)
+                  } else {
+                      item.emphasis.label.show = v.target.checked;
+                      item.label.show = !v.target.checked;
 
-                    chartConfig.setOption({
-                    series:{id:item.id,label:{show:false},emphasis:{label:{show:true}}}
-                    })
-                  }else {
-                    item.emphasis.label.show = false;
-                    item.label.show = true;
-                    chartConfig.setOption({
-                    series:{id:item.id,label:{show:true},emphasis:{label:{show:false}}}
-                    })
+                      chartConfig.setOption({
+                      series:{id:item.id,label:{show:!v.target.checked},emphasis:{label:{show:v.target.checked}}}
+                      })
                   }
                 }
               "
