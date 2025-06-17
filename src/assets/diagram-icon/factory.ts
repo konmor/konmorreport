@@ -35,7 +35,7 @@ export function initDiagrams(icons?: Array<DiagramIconComponent>) {
             },
             {// @ts-ignore
                 component: DotChartOutlined,
-                meta: {instance: {id: getUuid()}, type: 'dotChart', name: 'dotChart', title: '点图'}
+                meta: {instance: {id: getUuid()}, type: 'scatter', name: 'scatter', title: '散点图'}
             },
             {// @ts-ignore
                 component: LineChartOutlined,

@@ -12,7 +12,7 @@ import { nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref, watch
 import Filter from '@/components/Filter.vue'
 import { getUuid } from 'ant-design-vue/es/vc-notification/HookNotification'
 import * as echarts from 'echarts'
-import {barTemplate, chartTemplate} from '@/composable/ChartTemplate.ts'
+import {chartTemplate} from '@/composable/ChartTemplate.ts'
 import useNavigator from '@/composable/useNavigator.ts'
 import type { EChartsType } from 'echarts'
 import type { ECBasicOption } from 'echarts/types/dist/shared'
@@ -20,31 +20,31 @@ import BarConfig from '@/components/chart/BarConfig.vue'
 import { sqlQueryData } from '@/api/sql.ts'
 import type { SQLQuery, SQLResultField } from '@/types/api.ts';
 import { FieldStringOutlined, FieldNumberOutlined, FieldTimeOutlined,CloseOutlined } from '@ant-design/icons-vue'
-import {message, Modal} from "ant-design-vue";
 import PieConfig from "@/components/chart/PieConfig.vue";
 import LineConfig from '@/components/chart/LineConfig.vue'
+import ScatterConfig from "@/components/chart/ScatterConfig.vue";
 
 const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number }[]>([
   {
-    value: 1,
+    value: 'pieChart',
     id: getUuid(),
     xSpan: 9,
     ySpan: 5,
   },
   {
-    value: 'radarChart',
+    value: 'pieChart',
     id: getUuid(),
     xSpan: 3,
     ySpan: 4,
   },
   {
-    value: 'radarChart',
+    value: 'pieChart',
     id: getUuid(),
     xSpan: 5,
     ySpan: 6,
   },
   {
-    value: 'dotChart',
+    value: 'scatter',
     id: getUuid(),
     xSpan: 5,
     ySpan: 6,
@@ -56,43 +56,43 @@ const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?
     ySpan: 6,
   },
   {
-    value: 0,
+    value: 'pieChart',
     id: getUuid(),
     xSpan: 4,
     ySpan: 4,
   },
   {
-    value: 2,
+    value: 'pieChart',
     id: getUuid(),
     xSpan: 1,
     ySpan: 1,
   },
   {
-    value: 4,
+    value: 'pieChart',
     id: getUuid(),
     xSpan: 3,
     ySpan: 3,
   },
   {
-    value: 'radarChart',
+    value: 'pieChart',
     id: getUuid(),
     xSpan: 3,
     ySpan: 4,
   },
   {
-    value: 'radarChart',
+    value: 'pieChart',
     id: getUuid(),
     xSpan: 3,
     ySpan: 4,
   },
   {
-    value: 3,
+    value: 'pieChart',
     id: getUuid(),
     xSpan: 1,
     ySpan: 1,
   },
   {
-    value: 5,
+    value: 'pieChart',
     id: getUuid(),
     xSpan: 1,
     ySpan: 1,
@@ -346,7 +346,7 @@ onMounted(() => {
     // 2.初始化echarts 挂载的位置
     let myEcharts = echarts.init(container) // 参数是dom节点
     // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
-    let ecBasicOption = barTemplate('test1');
+    let ecBasicOption = chartTemplate('test1',items[i].value);
 
     myEcharts.setOption(ecBasicOption);
 
@@ -703,7 +703,11 @@ function renderLineChart(){
   tempChart.setOption(option, {
     replaceMerge: ['series']
   });
-};
+}
+
+function renderScatter(){
+
+}
 
 
 function renderChart() {
@@ -713,6 +717,8 @@ function renderChart() {
     renderPieChart();
   }else if(lastChartType.value == 'lineChart'){
     renderLineChart();
+  } else if(lastChartType.value == 'scatter'){
+    renderScatter();
   }
 }
 
@@ -1035,6 +1041,15 @@ watch(metricsFields,
                        :chartContainer="tempChartContainer">
 
             </LineConfig>
+
+            <ScatterConfig v-else-if="lastChartType == 'scatter'"
+                        :getChartConfig="getTempChart"
+                        :setChartConfig="setTempChart"
+                        :clearCurrentConfig="clearCurrentConfig"
+                        :chartOption="tempChartOption"
+                        :chartContainer="tempChartContainer">
+
+            </ScatterConfig>
           </a-layout-sider>
         </a-layout>
       </a-modal>

@@ -15,7 +15,6 @@ import LeftCenter from '@/assets/icon/legend/LeftCenter.vue'
 import BottomLeft from '@/assets/icon/legend/BottomLeft.vue'
 import BottomRight from '@/assets/icon/legend/BottomRight.vue'
 import { BarChartOutlined, PieChartOutlined } from '@ant-design/icons-vue'
-import { a } from 'vite/dist/node/moduleRunnerTransport.d-CXw_Ws6P'
 
 interface GridPosition {
   [key: string]: { top: number; left: number; right: number; bottom: number }
