@@ -516,7 +516,7 @@ onMounted(() => {
   // 在页面渲染完成之后设置数据，这样才能拿到父级中的该变量  getChartConfig();
   nextTick(() => {
     // 初始化堆叠配置
-    chartConfig = getChartConfig()
+    chartConfig = getChartConfig();
   })
 })
 
