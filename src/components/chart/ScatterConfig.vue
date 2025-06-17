@@ -88,7 +88,7 @@ let chartConfigControl = reactive({
   yAxisNameShow: false,
   yAxisIntervalChecked: false,
 
-  valueAxis:true,
+  valueAxis:false,
 
   allSeriesEqual: false, // 数据系列的配置，各系列全一一致
   allSeriesConfigShow: [] as Array<string>, // 数据系列：默认展开的内容
@@ -504,6 +504,10 @@ watch(
       chartConfig.setOption(option);
     },
 )
+
+watch(()=>chartOption.xAxis.type,(type)=> {
+  chartConfigControl.valueAxis = type == 'value';
+});
 
 onMounted(() => {
   // 初始化

@@ -606,105 +606,17 @@ export const SCATTER_TEMPLATE: ECBasicOption = {
     },
     dataset: {
         source: [
-            [8.04, 24, 41],
+            /*[8.04, 24, 41],
             [6.95, 12, 28],
             [-7.58, -13, 21],
             [-5.36, -104, 90],
             [6.58, 189, 102],
-            [8.81, 12, 204]
+            [8.81, 12, 204]*/
         ],
-        dimensions: ['name', 'value', 'size']
+        dimensions: [/*'name', 'value', 'size'*/]
     },
 
-    series: [
-        {
-            id: '1',
-            name: 'value',
-            type: 'scatter',
-            // 'circle', 'rect', 'roundRect', 'triangle', 'diamond', 'pin', 'arrow', 'none'
-            symbol: 'circle',
-            symbolSize: 50,
-            label: {
-                show: false,
-                position: 'top', // right \ top \ inside
-                formatter: '{b}'
-            },
-            // itemStyle: {
-            //   opacity:0.8,
-            //   shadowColor: 'rgba(0, 0, 0, 0.3)',
-            //   shadowOffsetX: 0,
-            //   shadowOffsetY: 0,
-            //   shadowBlur: 10
-            // },
-            itemStyle: {
-                shadowBlur: 10,
-                shadowColor: 'rgba(120, 36, 50, 0.5)',
-                shadowOffsetY: 5,
-                color: new echarts.graphic.RadialGradient(0.4, 0.3, 1, [
-                    {
-                        offset: 0,
-                        color: 'rgb(251, 118, 123)'
-                    },
-                    {
-                        offset: 1,
-                        color: 'rgb(204, 46, 72)'
-                    }
-                ])
-            },
-            emphasis: {
-                disabled: false,
-                // self \ none \  series
-                focus: 'series',
-                // 强调时显示label
-                label: {show: true}
-            },
-            encode: {x: 'name', y: 'value', itemName: 'name'}
-        },
-        {
-
-            id: '2',
-            name: 'size',
-            type: 'scatter',
-            // 'circle', 'rect', 'roundRect', 'triangle', 'diamond', 'pin', 'arrow', 'none'
-            symbol: 'circle',
-            symbolSize: 20,
-            label: {
-                show: false,
-                position: 'top', // right \ top \ inside
-                formatter: '{b}'
-            },
-            // itemStyle: {
-            //   opacity:0.8,
-            //   shadowColor: 'rgba(0, 0, 0, 0.3)',
-            //   shadowOffsetX: 0,
-            //   shadowOffsetY: 0,
-            //   shadowBlur: 10
-            // },
-            itemStyle: {
-                shadowBlur: 10,
-                shadowColor: 'rgba(120, 36, 50, 0.5)',
-                shadowOffsetY: 5,
-                color: new echarts.graphic.RadialGradient(0.4, 0.3, 1, [
-                    {
-                        offset: 0,
-                        color: 'rgb(251, 118, 123)'
-                    },
-                    {
-                        offset: 1,
-                        color: 'rgb(204, 46, 72)'
-                    }
-                ])
-            },
-            emphasis: {
-                disabled: false,
-                // self \ none \  series
-                focus: 'series',
-                // 强调时显示label
-                label: {show: true}
-            },
-            encode: {x: 'name', y: 'size', itemName: 'name'}
-        }
-    ],
+    series: [],
     dataZoom: [
         {
             id: 'x0Inside',

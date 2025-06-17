@@ -706,6 +706,91 @@ function renderLineChart(){
 }
 
 function renderScatter(){
+  dimensions.length = 0;
+  // 图表渲染
+  let option = {
+    dataset: {
+      dimensions: [] as Array<string>,
+      source: [] as Array<Array<object>>,
+    },
+    series: [{}] as Array<object>,
+    xAxis: {} as any,
+  };
+
+  // 必须要有维度字段;
+  if (dimensionsFields.length > 0) {
+    dimensions[0] = dimensionsFields[0].fieldAlias;
+
+    for (let i = 0; i < metricsFields.length; i++) {
+      let index = i + 1;
+      dimensions[index] = metricsFields[i].fieldAlias;
+
+      option.series[i] = {
+        id: index.toString(),
+        name: metricsFields[i].fieldAlias,
+        type: 'scatter',
+        symbol: 'circle',
+        symbolSize: 50,
+        label: {
+          show: false,
+          position: 'top',
+          formatter: '{b}'
+        },
+        itemStyle: {
+          opacity:0.8,
+          shadowColor: 'rgba(0, 0, 0, 0.3)',
+          shadowOffsetX: 0,
+          shadowOffsetY: 0,
+          shadowBlur: 10
+        },
+        emphasis: {
+          disabled: false,
+          focus: 'series',
+          // 强调时显示label
+          label: {show: true}
+        },
+        encode: {x: dimensions[0], y: metricsFields[i].fieldAlias, itemName: dimensions[0]}
+      }
+    }
+  }
+
+  // 必须要有至少两个字段，其中一个必须为维度字段
+  if (dimensions.length < 2) {
+    tempChart.setOption(
+        {
+          dataset: {
+            dimensions: [],
+            source: [],
+          },
+          series: [{}]
+        },
+        {
+          replaceMerge: ['series','dataset'],
+        });
+    return;
+  }
+  let source: Array<Array<object>> = allData.map((item) => getMapData(item, dimensions));
+
+  option.dataset.dimensions = dimensions;
+  option.dataset.source = source;
+
+  // 设置给变量
+  tempChartOption.value.dataset = option.dataset;
+  tempChartOption.value.series = option.series
+
+  //
+  if(dimensionsFields[0].fieldType2 == 'Number'){
+    option.xAxis.type = 'value';
+    option.xAxis.boundaryGap = ['5%', '5%'];
+  }else {
+    option.xAxis.type = 'category';
+    option.xAxis.boundaryGap = true;
+  }
+  // 设置图标配置
+  tempChart.setOption(option, {
+    replaceMerge: ['series','dataset'],
+  });
+
 
 }
 
