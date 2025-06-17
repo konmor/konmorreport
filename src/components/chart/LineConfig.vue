@@ -1,21 +1,20 @@
 <script setup lang="ts">
-
-import {themArray} from "@/echartsThem/registerThem.ts";
-import LeftCenter from "@/assets/icon/legend/LeftCenter.vue";
-import TopCenter from "@/assets/icon/legend/TopCenter.vue";
-import Position from "@/assets/icon/legend/Position.vue";
-import RightCenter from "@/assets/icon/legend/RightCenter.vue";
-import Right from "@/assets/icon/Right.vue";
-import BottomCenter from "@/assets/icon/legend/BottomCenter.vue";
-import BottomLeft from "@/assets/icon/legend/BottomLeft.vue";
-import Left from "@/assets/icon/Left.vue";
-import {BarChartOutlined, LineChartOutlined} from "@ant-design/icons-vue";
-import TopLeft from "@/assets/icon/legend/TopLeft.vue";
-import BottomRight from "@/assets/icon/legend/BottomRight.vue";
-import Center from "@/assets/icon/Center.vue";
-import TopRight from "@/assets/icon/legend/TopRight.vue";
-import {nextTick, onMounted, onUnmounted, reactive, ref, toRaw, watch} from "vue";
-import * as echarts from "echarts";
+import { themArray } from '@/echartsThem/registerThem.ts'
+import LeftCenter from '@/assets/icon/legend/LeftCenter.vue'
+import TopCenter from '@/assets/icon/legend/TopCenter.vue'
+import Position from '@/assets/icon/legend/Position.vue'
+import RightCenter from '@/assets/icon/legend/RightCenter.vue'
+import Right from '@/assets/icon/Right.vue'
+import BottomCenter from '@/assets/icon/legend/BottomCenter.vue'
+import BottomLeft from '@/assets/icon/legend/BottomLeft.vue'
+import Left from '@/assets/icon/Left.vue'
+import { BarChartOutlined, LineChartOutlined } from '@ant-design/icons-vue'
+import TopLeft from '@/assets/icon/legend/TopLeft.vue'
+import BottomRight from '@/assets/icon/legend/BottomRight.vue'
+import Center from '@/assets/icon/Center.vue'
+import TopRight from '@/assets/icon/legend/TopRight.vue'
+import { nextTick, onMounted, onUnmounted, reactive, ref, toRaw, watch } from 'vue'
+import * as echarts from 'echarts'
 import draggable from 'vuedraggable'
 
 interface GridPosition {
@@ -28,44 +27,51 @@ interface ComponentPosition {
   position: { top: number; left: number; right: number; bottom: number } | undefined
   allStatus: GridPosition
 }
-let {getChartConfig,setChartConfig,chartOption, chartContainer, clearCurrentConfig} =
-    defineProps(['getChartConfig','setChartConfig', 'chartOption', 'chartContainer', 'clearCurrentConfig']);
 
-let chartConfig:any;
+let { getChartConfig, setChartConfig, chartOption, chartContainer, clearCurrentConfig } =
+  defineProps([
+    'getChartConfig',
+    'setChartConfig',
+    'chartOption',
+    'chartContainer',
+    'clearCurrentConfig',
+  ])
+
+let chartConfig: any
 
 const chartConfigConstParams = {
   titleGridPosition: {
-    left: {top: 2.5, left: 0, right: 0, bottom: 0},
-    right: {top: 2.5, left: 0, right: 0, bottom: 0},
-    center: {top: 2.5, left: 0, right: 0, bottom: 0},
+    left: { top: 2.5, left: 0, right: 0, bottom: 0 },
+    right: { top: 2.5, left: 0, right: 0, bottom: 0 },
+    center: { top: 2.5, left: 0, right: 0, bottom: 0 },
   } as GridPosition,
   legendGridPosition: {
-    topLeft: {top: 2.5, left: 0, right: 0, bottom: 0},
-    topCenter: {top: 2.5, left: 0, right: 0, bottom: 0},
-    topRight: {top: 2.5, left: 0, right: 0, bottom: 0},
-    leftCenter: {top: 0, left: 5, right: 0, bottom: 0},
-    rightCenter: {top: 0, left: 0, right: 5, bottom: 0},
-    bottomLeft: {top: 0, left: 0, right: 0, bottom: 3.5},
-    bottomRight: {top: 0, left: 0, right: 0, bottom: 3.5},
-    bottomCenter: {top: 0, left: 0, right: 0, bottom: 3.5},
+    topLeft: { top: 2.5, left: 0, right: 0, bottom: 0 },
+    topCenter: { top: 2.5, left: 0, right: 0, bottom: 0 },
+    topRight: { top: 2.5, left: 0, right: 0, bottom: 0 },
+    leftCenter: { top: 0, left: 7, right: 0, bottom: 0 },
+    rightCenter: { top: 0, left: 0, right: 7, bottom: 0 },
+    bottomLeft: { top: 0, left: 0, right: 0, bottom: 3.5 },
+    bottomRight: { top: 0, left: 0, right: 0, bottom: 3.5 },
+    bottomCenter: { top: 0, left: 0, right: 0, bottom: 3.5 },
   } as GridPosition,
   xAxisNamePosition: {
-    start: {top: 0, left: 3, right: 0, bottom: 0},
-    end: {top: 0, left: 0, right: 3, bottom: 0},
-    topCenter: {top: 2.5, left: 0, right: 0, bottom: 0},
-    bottomCenter: {top: 0, left: 0, right: 0, bottom: 2.5},
+    start: { top: 0, left: 3, right: 0, bottom: 0 },
+    end: { top: 0, left: 0, right: 3, bottom: 0 },
+    topCenter: { top: 2.5, left: 0, right: 0, bottom: 0 },
+    bottomCenter: { top: 0, left: 0, right: 0, bottom: 2.5 },
   } as GridPosition,
   yAxisNamePosition: {
-    leftTop: {top: 2.5, left: 0, right: 0, bottom: 0},
-    leftCenter: {top: 0, left: 0, right: 0, bottom: 0},
-    leftBottom: {top: 0, left: 0, right: 0, bottom: 2.5},
-    rightTop: {top: 2.5, left: 0, right: 0, bottom: 0},
-    rightCenter: {top: 0, left: 0, right: 0, bottom: 0},
-    rightBottom: {top: 0, left: 0, right: 0, bottom: 2.5},
+    leftTop: { top: 2.5, left: 0, right: 0, bottom: 0 },
+    leftCenter: { top: 0, left: 0, right: 0, bottom: 0 },
+    leftBottom: { top: 0, left: 0, right: 0, bottom: 2.5 },
+    rightTop: { top: 2.5, left: 0, right: 0, bottom: 0 },
+    rightCenter: { top: 0, left: 0, right: 0, bottom: 0 },
+    rightBottom: { top: 0, left: 0, right: 0, bottom: 2.5 },
   } as GridPosition,
   zoomPosition: {
-    right: {top: 0, left: 0, right: 3, bottom: 0},
-    bottom: {top: 0, left: 0, right: 0, bottom: 7},
+    right: { top: 0, left: 0, right: 3, bottom: 0 },
+    bottom: { top: 0, left: 0, right: 0, bottom: 7 },
   } as GridPosition,
 }
 
@@ -74,7 +80,7 @@ let chartConfigControl = reactive({
   currentThem: 'customized', // 当前主题
   currentColors: themArray.find((item) => item.themeName == 'customized')!.theme.color, // 当前主题的颜色
   pileActiveKey: '', // 展开堆叠折叠面板
-  stackItems: [[]] as Array<Array<{ id: string, name: string, color: string }>>, // 堆叠的内容[[{name,id,color}]]
+  stackItems: [[]] as Array<Array<{ id: string; name: string; color: string }>>, // 堆叠的内容[[{name,id,color}]]
   legendPosition: 'topCenter', // 图例的位置
   xAxisActiveKey: '', // 展开x轴折叠面板
   xAxisNameShow: false, // x轴名称显示开关
@@ -96,9 +102,8 @@ let chartConfigControl = reactive({
   yZoom: [],
   xZoomRange: [0, 100],
   yZoomRange: [0, 100],
-  currentGridPosition:
-      {top: 7, left: 0.5, right: 0.5, bottom: 0.5},
-
+  currentGridPosition: { top: 7, left: 0.5, right: 0.5, bottom: 0.5 },
+  areaShow: {} as Record<string, boolean>,
   currentTitlePosition: {
     currentStatus: 'left',
     position: undefined,
@@ -134,32 +139,28 @@ let chartConfigControl = reactive({
     position: undefined,
     allStatus: chartConfigConstParams.zoomPosition,
   } as ComponentPosition,
-
-});
+})
 const chartConfigFunction = {
   changeThem: (themName: string) => {
-    if(chartConfig==null){
-      chartConfig = getChartConfig();
+    if (chartConfig == null) {
+      chartConfig = getChartConfig()
     }
     // let crtOption = chartConfig.getOption();
-    chartConfig.dispose();
+    chartConfig.dispose()
     // 赋新值
     chartConfig = echarts.init(chartContainer, themName) // 参数是dom节点
     // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
-    chartConfig.setOption(chartOption);
+    chartConfig.setOption(chartOption)
 
-    setChartConfig(chartConfig); // 传递给父级
+    setChartConfig(chartConfig) // 传递给父级
     chartConfigControl.currentThem = themName // 当前主题
   },
-  openAndCloseComponent: (
-      currentComponentPosition: ComponentPosition,
-      show: boolean,
-  ) => {
+  openAndCloseComponent: (currentComponentPosition: ComponentPosition, show: boolean) => {
     let top = 0
     let left = 0
     let right = 0
-    let bottom = 0;
-    let currentStatus = currentComponentPosition.currentStatus;
+    let bottom = 0
+    let currentStatus = currentComponentPosition.currentStatus
     if (show) {
       top += currentComponentPosition.allStatus[currentStatus].top
       left += currentComponentPosition.allStatus[currentStatus].left
@@ -171,7 +172,7 @@ const chartConfigFunction = {
       right -= currentComponentPosition.allStatus[currentStatus].right
       bottom -= currentComponentPosition.allStatus[currentStatus].bottom
     }
-    return {top, left, right, bottom}
+    return { top, left, right, bottom }
   },
   changeGridPosition: (top: number, left: number, right: number, bottom: number) => {
     chartConfigControl.currentGridPosition.top += top
@@ -179,12 +180,12 @@ const chartConfigFunction = {
     chartConfigControl.currentGridPosition.right += right
     chartConfigControl.currentGridPosition.bottom += bottom
   },
-  changeComponentPosition: (
-      crtPosition: ComponentPosition,
-      changeStatus: string,
-  ) => {
-    let top = 0,left = 0,right = 0,bottom = 0;
-    let currentStatus = crtPosition.currentStatus;
+  changeComponentPosition: (crtPosition: ComponentPosition, changeStatus: string) => {
+    let top = 0,
+      left = 0,
+      right = 0,
+      bottom = 0
+    let currentStatus = crtPosition.currentStatus
     if (crtPosition.position != undefined) {
       top = -crtPosition.position.top
       left = -crtPosition.position.left
@@ -202,37 +203,38 @@ const chartConfigFunction = {
     right += crtPosition.allStatus[changeStatus].right
     bottom += crtPosition.allStatus[changeStatus].bottom
 
-    crtPosition.currentStatus = changeStatus;
-    return {top, left, right, bottom}
+    crtPosition.currentStatus = changeStatus
+    return { top, left, right, bottom }
   },
   // 变更所有系列的类型，如柱状图全部变为折线图
   changeAllSeriesType: (value: string) => {
-    let option = [];
+    let option = []
     for (let i = 0; i < chartOption.series.length; i++) {
-      if(value == 'bar'){
+      if (value == 'bar') {
         option.push({
           id: chartOption.series[i].id,
           barMaxWidth: '50',
           barMinWidth: '1',
-          type: value});
+          type: value,
+        })
 
         chartOption.series[i].type = value
         chartOption.series[i].barMaxWidth = '50'
         chartOption.series[i].barMinWidth = '1'
-      }else {
+      } else {
         option.push({
           id: chartOption.series[i].id,
-          type: value});
+          type: value,
+        })
 
         chartOption.series[i].type = value
       }
     }
-    chartConfig.setOption({series: option})
+    chartConfig.setOption({ series: option })
   },
   changAllSeriesLabelControl: (item: { id: string }) => {
-
-    let seriesLabelShow = chartConfigControl.seriesLabelShow;
-    let checked = seriesLabelShow[item.id];
+    let seriesLabelShow = chartConfigControl.seriesLabelShow
+    let checked = seriesLabelShow[item.id]
     let emphasisLabelShow = false
     let labelShow = false
 
@@ -245,18 +247,18 @@ const chartConfigFunction = {
     for (let i = 0; i < chartOption.series.length; i++) {
       option.push({
         id: chartOption.series[i].id,
-        label: {show: labelShow},
-        emphasis: {label: {show: emphasisLabelShow}},
+        label: { show: labelShow },
+        emphasis: { label: { show: emphasisLabelShow } },
       })
 
       chartOption.series[i].emphasis.label.show = emphasisLabelShow
       chartOption.series[i].label.show = labelShow
       seriesLabelShow[chartOption.series[i].id] = checked
     }
-    chartConfig.setOption({series: option})
+    chartConfig.setOption({ series: option })
   },
   seriesLabelControl: (item: any) => {
-    let seriesLabelShow = chartConfigControl.seriesLabelShow;
+    let seriesLabelShow = chartConfigControl.seriesLabelShow
     if (seriesLabelShow[item.id] != null && seriesLabelShow[item.id]) {
       item.emphasis.label.show = true
       item.label.show = true
@@ -266,8 +268,8 @@ const chartConfigFunction = {
     }
     let option = {
       id: item.id,
-      label: {show: item.label.show},
-      emphasis: {label: {show: item.emphasis.label.show}},
+      label: { show: item.label.show },
+      emphasis: { label: { show: item.emphasis.label.show } },
     }
     chartConfig.setOption({
       series: option,
@@ -280,12 +282,12 @@ const chartConfigFunction = {
     for (let i = 0; i < chartOption.series.length; i++) {
       option.push({
         id: chartOption.series[i].id,
-        label: {position: position},
+        label: { position: position },
       })
 
       chartOption.series[i].label.position = position
     }
-    chartConfig.setOption({series: option})
+    chartConfig.setOption({ series: option })
   },
 
   changeAllRotate: (item: any) => {
@@ -294,12 +296,12 @@ const chartConfigFunction = {
     for (let i = 0; i < chartOption.series.length; i++) {
       option.push({
         id: chartOption.series[i].id,
-        label: {rotate: rotate},
+        label: { rotate: rotate },
       })
 
       chartOption.series[i].label.rotate = rotate
     }
-    chartConfig.setOption({series: option})
+    chartConfig.setOption({ series: option })
   },
 
   changeAllSeriesEmphasis: (item: any) => {
@@ -308,44 +310,123 @@ const chartConfigFunction = {
     for (let i = 0; i < chartOption.series.length; i++) {
       option.push({
         id: chartOption.series[i].id,
-        emphasis: {focus: focus},
+        emphasis: { focus: focus },
       })
       chartOption.series[i].emphasis.focus = focus
     }
-    chartConfig.setOption({series: option})
+    chartConfig.setOption({ series: option })
+  },
+  changAllSeriesSmooth: (item: any) => {
+    let smooth = item.smooth
+    let option = []
+    for (let i = 0; i < chartOption.series.length; i++) {
+      option.push({
+        id: chartOption.series[i].id,
+        smooth: smooth,
+      })
+      chartOption.series[i].smooth = smooth
+    }
+    chartConfig.setOption({ series: option })
+  },
+  changAllSeriesArea: (showArea: boolean) => {
+    let option = []
+    if (showArea) {
+      for (let i = 0; i < chartOption.series.length; i++) {
+        option.push({
+          id: chartOption.series[i].id,
+          areaStyle: {},
+        })
+        chartOption.series[i].areaStyle = {}
+      }
+    } else {
+      for (let i = 0; i < chartOption.series.length; i++) {
+        option.push({
+          id: chartOption.series[i].id,
+          areaStyle: null,
+        })
+        // 删掉这个属性
+        delete chartOption.series[i].areaStyle
+      }
+    }
+    chartConfig.setOption({ series: option })
   },
   initStackItems: () => {
     for (let i = 0; i < chartOption.series.length; i++) {
-      let seriesItem = chartOption.series[i];
+      let seriesItem = chartOption.series[i]
       chartConfigControl.stackItems[i] = [
         {
           id: seriesItem.id,
           name: seriesItem.name,
-          color: chartConfigControl.currentColors[i]
-        }
+          color: chartConfigControl.currentColors[i],
+        },
       ]
     }
 
-    chartConfigStyle.stackContainerStyle.height = chartConfigControl.stackItems.length * 22.4 + 'px';
+    chartConfigStyle.stackContainerStyle.height = chartConfigControl.stackItems.length * 22.4 + 'px'
   },
   titleSwitchChange: () => {
     // 设置选项
-    let option = { title: { show: chartOption.title.show },legend:{top:'3%'}};
+    let option = { title: { show: chartOption.title.show }, legend: { top: '3%' } }
 
-    if( (!chartOption.title.show) && chartOption.legend.show && chartConfigControl.legendPosition.startsWith('top')){
+    if (
+      !chartOption.title.show &&
+      chartOption.legend.show &&
+      chartConfigControl.legendPosition.startsWith('top')
+    ) {
       option.legend.top = '0.5%'
     }
-    chartConfig.setOption(option);
+    chartConfig.setOption(option)
 
     // grid 布局
     let { top, left, right, bottom } = chartConfigFunction.openAndCloseComponent(
-        chartConfigControl.currentTitlePosition,
-        chartOption.title.show
+      chartConfigControl.currentTitlePosition,
+      chartOption.title.show,
     )
 
-    chartConfigFunction.changeGridPosition(top, left, right, bottom );
-  }
-};
+    chartConfigFunction.changeGridPosition(top, left, right, bottom)
+  },
+  changeXAxisTopAndBottom: () => {
+    if (chartConfigControl.xAxisNameShow) {
+      let changeStatus = chartOption.xAxis.nameLocation
+
+      if (chartOption.xAxis.nameLocation == 'center') {
+        if (chartOption.xAxis.position == 'top') {
+          changeStatus = 'topCenter'
+        } else {
+          changeStatus = 'bottomCenter'
+        }
+      }
+
+      // 1. 计算不同坐标轴位置在图标上的所需空间
+      let { top, left, right, bottom } = chartConfigFunction.changeComponentPosition(
+        chartConfigControl.currentXAxisNamePosition,
+        changeStatus,
+      )
+      // 2. 调整grid空间
+      chartConfigFunction.changeGridPosition(top, left, right, bottom)
+
+      let option = {
+        xAxis: { position: chartOption.xAxis.position },
+        dataZoom: [
+          {
+            id: 'x0Slider',
+            top: 101 - chartConfigControl.currentGridPosition.bottom + '%',
+          },
+          {
+            id: 'y0Slider',
+            left: 101 - chartConfigControl.currentGridPosition.right + '%',
+          },
+        ],
+      }
+      chartConfig.setOption(option)
+    } else {
+      let option = {
+        xAxis: { position: chartOption.xAxis.position },
+      }
+      chartConfig.setOption(option)
+    }
+  },
+}
 
 const chartConfigStyle = reactive({
   stackContainersStyle: {
@@ -363,9 +444,8 @@ const chartConfigStyle = reactive({
   stackItemStyle: {
     height: '1.6em',
     width: '1em',
-  }
-});
-
+  },
+})
 
 // grid的变化
 watch(chartConfigControl.currentGridPosition, (grid) => {
@@ -380,90 +460,104 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
 })
 
 // 主题切换
-watch(() => chartConfigControl.currentThem, (them) => {
-  chartConfigControl.currentColors = themArray.find((item) => item.themeName == them)!.theme.color
+watch(
+  () => chartConfigControl.currentThem,
+  (them) => {
+    chartConfigControl.currentColors = themArray.find((item) => item.themeName == them)!.theme.color
 
-  for (let i = 0; i < chartConfigControl.stackItems.length; i++) {
-    let stackItem = chartConfigControl.stackItems[i]
-    if (stackItem.length > 0) {
-      for (let j = 0; j < stackItem.length; j++) {
-        // todo
-        stackItem[j].color = chartConfigControl.currentColors[parseInt(stackItem[j].id) - 1]
+    for (let i = 0; i < chartConfigControl.stackItems.length; i++) {
+      let stackItem = chartConfigControl.stackItems[i]
+      if (stackItem.length > 0) {
+        for (let j = 0; j < stackItem.length; j++) {
+          // todo
+          stackItem[j].color = chartConfigControl.currentColors[parseInt(stackItem[j].id) - 1]
+        }
       }
     }
-  }
-})
+  },
+)
 
 // series 变化
 
-watch(()=>chartOption.series,(value)=>{
-  // series 发生变化则重新初始化堆叠内容
-  chartConfigFunction.initStackItems();
-})
+watch(
+  () => chartOption.series,
+  (value) => {
+    // series 发生变化则重新初始化堆叠内容
+    chartConfigFunction.initStackItems()
+  },
+)
 
 // 堆叠变化
-watch(chartConfigControl.stackItems, (items: Array<Array<{ id: string, name: string, color: string }>>) => {
-  let option: { series: Array<any> } = {series: []};
-  for (let i = 0; i < items.length; i++) {
-    let item = items[i]
-    if (item.length != 0) {
-      let stack = 'group' + i
-      for (let j = 0; j < item.length; j++) {
-        option.series.push({id: item[j].id, name: item[j].name, stack: stack})
+watch(
+  chartConfigControl.stackItems,
+  (items: Array<Array<{ id: string; name: string; color: string }>>) => {
+    let option: { series: Array<any> } = { series: [] }
+    for (let i = 0; i < items.length; i++) {
+      let item = items[i]
+      if (item.length != 0) {
+        let stack = 'group' + i
+        for (let j = 0; j < item.length; j++) {
+          option.series.push({ id: item[j].id, name: item[j].name, stack: stack })
+        }
       }
     }
-  }
 
-  chartConfig.setOption(option);
+    chartConfig.setOption(option)
 
-  if (chartConfigControl.vertical) {
-    chartConfigStyle.stackContainerStyle.width = chartConfigControl.stackItems.length * 22.4 + 'px'
-    chartConfigStyle.stackContainerStyle.height = '18px'
-  } else {
-    chartConfigStyle.stackContainerStyle.width = '18px'
-    chartConfigStyle.stackContainerStyle.height = chartConfigControl.stackItems.length * 22.4 + 'px'
-  }
-})
+    if (chartConfigControl.vertical) {
+      chartConfigStyle.stackContainerStyle.width =
+        chartConfigControl.stackItems.length * 22.4 + 'px'
+      chartConfigStyle.stackContainerStyle.height = '18px'
+    } else {
+      chartConfigStyle.stackContainerStyle.width = '18px'
+      chartConfigStyle.stackContainerStyle.height =
+        chartConfigControl.stackItems.length * 22.4 + 'px'
+    }
+  },
+)
 // 条形图和柱状图的切换
-watch(() => chartConfigControl.vertical, () => {
-  if (chartConfigControl.vertical) {
-    chartConfigStyle.stackContainerStyle = {
-      width: chartConfigControl.stackItems.length * 22.4 + 'px',
-      height: '18px',
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'flex-start',
-    }
-    chartConfigStyle.stackItemStyle.width = '1.6em'
-    chartConfigStyle.stackItemStyle.height = '1em'
-    chartConfigStyle.stackContainersStyle.flexDirection = 'column'
-  } else {
-    chartConfigStyle.stackContainerStyle = {
-      width: '18px',
-      height: chartConfigControl.stackItems.length * 22.4 + 'px',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'flex-end',
-    }
-    chartConfigStyle.stackItemStyle.width = '1em'
-    chartConfigStyle.stackItemStyle.height = '1.6em'
+watch(
+  () => chartConfigControl.vertical,
+  () => {
+    if (chartConfigControl.vertical) {
+      chartConfigStyle.stackContainerStyle = {
+        width: chartConfigControl.stackItems.length * 22.4 + 'px',
+        height: '18px',
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+      }
+      chartConfigStyle.stackItemStyle.width = '1.6em'
+      chartConfigStyle.stackItemStyle.height = '1em'
+      chartConfigStyle.stackContainersStyle.flexDirection = 'column'
+    } else {
+      chartConfigStyle.stackContainerStyle = {
+        width: '18px',
+        height: chartConfigControl.stackItems.length * 22.4 + 'px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-end',
+      }
+      chartConfigStyle.stackItemStyle.width = '1em'
+      chartConfigStyle.stackItemStyle.height = '1.6em'
 
-    chartConfigStyle.stackContainersStyle.flexDirection = 'row'
-  }
-})
+      chartConfigStyle.stackContainersStyle.flexDirection = 'row'
+    }
+  },
+)
 
-onMounted(()=>{
+onMounted(() => {
   // 初始化堆叠配置
-  chartConfigFunction.initStackItems();
+  chartConfigFunction.initStackItems()
   // 在页面渲染完成之后设置数据，这样才能拿到父级中的该变量  getChartConfig();
-  nextTick(()=>{
+  nextTick(() => {
     // 初始化堆叠配置
-    chartConfig = getChartConfig();
+    chartConfig = getChartConfig()
   })
 })
 
-onUnmounted(()=>{
-  clearCurrentConfig();
+onUnmounted(() => {
+  clearCurrentConfig()
 })
 </script>
 
@@ -680,12 +774,12 @@ onUnmounted(()=>{
               // 2. 调整grid，让x-y坐标系 让出位置
               chartConfigFunction.changeGridPosition(top, left, right, bottom)
               // 3. 设置图例、以及设置缩放组件的布局。
-              let option:{
-               legend:{
-                 show?:boolean,
-                 top?: string
-               },
-               dataZoom:Array<{id:string,top?:string,left?:string}>
+              let option: {
+                legend: {
+                  show?: boolean
+                  top?: string
+                }
+                dataZoom: Array<{ id: string; top?: string; left?: string }>
               } = {
                 legend: {
                   show: chartOption.legend.show,
@@ -1001,44 +1095,7 @@ onUnmounted(()=>{
               size="small"
               button-style="solid"
               v-model:value="chartOption.xAxis.position"
-              @change="
-                () => {
-                  if (chartConfigControl.xAxisNameShow) {
-                    let changeStatus = chartOption.xAxis.nameLocation
-
-                    if (chartOption.xAxis.nameLocation == 'center') {
-                      if (chartOption.xAxis.position == 'top') {
-                        changeStatus = 'topCenter'
-                      } else {
-                        changeStatus = 'bottomCenter'
-                      }
-                    }
-
-                    // 1. 计算不同坐标轴位置在图标上的所需空间
-                    let { top, left, right, bottom } = chartConfigFunction.changeComponentPosition(
-                      chartConfigControl.currentXAxisNamePosition,
-                      changeStatus,
-                    )
-                    // 2. 调整grid空间
-                    chartConfigFunction.changeGridPosition(top, left, right, bottom)
-
-                    let option = {
-                      xAxis: { position: chartOption.xAxis.position },
-                      dataZoom: [
-                        {
-                          id: 'x0Slider',
-                          top: 101 - chartConfigControl.currentGridPosition.bottom + '%',
-                        },
-                        {
-                          id: 'y0Slider',
-                          left: 101 - chartConfigControl.currentGridPosition.right + '%',
-                        },
-                      ],
-                    }
-                    chartConfig.setOption(option)
-                  }
-                }
-              "
+              @change="chartConfigFunction.changeXAxisTopAndBottom"
             >
               <a-radio-button value="top"><span style="font-size: 12px">顶部</span></a-radio-button>
               <a-radio-button value="bottom"
@@ -1799,10 +1856,9 @@ onUnmounted(()=>{
           v-model:checked="chartConfigControl.allSeriesEqual"
           @change="
             () => {
-                chartConfigControl.allSeriesConfigShow.length = 0;
-                chartConfigControl.allSeriesConfigShow[0] = chartOption.series[0].id||'0'
+              chartConfigControl.allSeriesConfigShow.length = 0
+              chartConfigControl.allSeriesConfigShow[0] = chartOption.series[0].id || '0'
               if (chartConfigControl.allSeriesEqual) {
-
               } else {
                 chartConfigControl.allSeriesConfigShow = []
               }
@@ -1874,18 +1930,19 @@ onUnmounted(()=>{
                   if (chartConfigControl.allSeriesEqual) {
                     chartConfigFunction.changeAllSeriesType(value)
                   } else {
-                    let option:{
+                    let option: {
                       series: {
-                        id: string,
-                        type: string,
-                        barMaxWidth?:string
-                        barMinWidth?:string }
-                        } = { series: { id: item.id, type: value } }
-                    if(value =='bar'){
+                        id: string
+                        type: string
+                        barMaxWidth?: string
+                        barMinWidth?: string
+                      }
+                    } = { series: { id: item.id, type: value } }
+                    if (value == 'bar') {
                       option.series.barMaxWidth = '50'
                       option.series.barMinWidth = '1'
                     }
-                    chartConfig.setOption(option);
+                    chartConfig.setOption(option)
                   }
                 }
               "
@@ -1897,6 +1954,55 @@ onUnmounted(()=>{
                 <span class="label-normal">折线图</span>
               </a-select-option>
             </a-select>
+
+            <a-checkbox
+              v-model:checked="item.smooth"
+              v-show="item.type == 'line'"
+              @change="
+                (v: any) => {
+                  if (chartConfigControl.allSeriesEqual) {
+                    chartConfigFunction.changAllSeriesSmooth(item)
+                  } else {
+                    if (v.target.checked) {
+                      chartConfig.setOption({ series: { id: item.id, smooth: true } })
+                    } else {
+                      chartConfig.setOption({ series: { id: item.id, smooth: false } })
+                    }
+                  }
+                }
+              "
+            >
+              <span style="font-size: 12px">平滑</span>
+            </a-checkbox>
+          </div>
+        </div>
+
+        <!-- 面积图-->
+        <div class="chart-item" v-show="item.type == 'line'">
+          <span class="label-left" style="width: 48px">面积图</span>
+
+          <div class="component-right">
+            <a-checkbox
+              v-model:checked="chartConfigControl.areaShow[item.id]"
+              @change="
+                (v: any) => {
+                  if (chartConfigControl.allSeriesEqual) {
+                    chartConfigFunction.changAllSeriesArea(chartConfigControl.areaShow[item.id])
+                  } else {
+                    let option = {
+                      id: item.id,
+                      areaStyle: v.target.checked ? {} : null,
+                    }
+
+                    item.areaStyle = null
+
+                    chartConfig.setOption({ series: option })
+                  }
+                }
+              "
+            >
+              <span class="label-normal">显示</span>
+            </a-checkbox>
           </div>
         </div>
 
@@ -2310,6 +2416,7 @@ onUnmounted(()=>{
   border-radius: 3px;
   cursor: move;
 }
+
 .chart-group {
   padding: 8px 16px;
   border-bottom: 1px solid #e8e8e8;

@@ -43,8 +43,8 @@ const chartConfigConstParams = {
     topLeft: {top: 2.5, left: 0, right: 0, bottom: 0},
     topCenter: {top: 2.5, left: 0, right: 0, bottom: 0},
     topRight: {top: 2.5, left: 0, right: 0, bottom: 0},
-    leftCenter: {top: 0, left: 5, right: 0, bottom: 0},
-    rightCenter: {top: 0, left: 0, right: 5, bottom: 0},
+    leftCenter: {top: 0, left: 7, right: 0, bottom: 0},
+    rightCenter: {top: 0, left: 0, right: 7, bottom: 0},
     bottomLeft: {top: 0, left: 0, right: 0, bottom: 3.5},
     bottomRight: {top: 0, left: 0, right: 0, bottom: 3.5},
     bottomCenter: {top: 0, left: 0, right: 0, bottom: 3.5},
@@ -1036,6 +1036,11 @@ onUnmounted(()=>{
                       ],
                     }
                     chartConfig.setOption(option)
+                    } else {
+                      let option = {
+                      xAxis: { position: chartOption.xAxis.position },
+                      }
+                      chartConfig.setOption(option);
                   }
                 }
               "

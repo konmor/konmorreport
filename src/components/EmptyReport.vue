@@ -180,9 +180,9 @@ const change = function change(event: Event) {
 // 维度
 let dimensions:Array<string> = []
 
-let tempChartOption: ECBasicOption = reactive<ECBasicOption>({});
+let tempChartOption = ref<ECBasicOption>({});
 
-let allFields = reactive<SQLResultField[]>([])
+let allFields = ref<SQLResultField[]>([])
 let allData = reactive<Array<Map<string, object>>>([])
 
 const clearCurrentConfig = ()=> {
@@ -190,14 +190,13 @@ const clearCurrentConfig = ()=> {
   dimensionsFields.length = 0;
 
   lastChartType.value = '';
+  lastEchartsContainerID='';
+  lastSQLId = '';
 
   tempChart.dispose();
   tempChart.clear();
   // 清空tempChartOption的属性
-  for (let key in tempChartOption) {
-    delete tempChartOption[key];
-  }
-
+  tempChartOption.value = {};
 }
 
 const tempChartModal = reactive<{ open: boolean; ok: (reject: any) => void; cancel: () => void }>({
@@ -245,7 +244,7 @@ function metricsPut(to:any,from:any,htmlElement:any,dragEvent:any):boolean{
   // 没找到则，允许添加
   let notExistDimensions = dimensionsFields.find(value=>{return value.fieldId == htmlElement.id}) == undefined
   let notExistMetrics = metricsFields.find(value=>{ return value.fieldId == htmlElement.id}) == undefined;
-  let isNumber = allFields.find(value=>{ return value.fieldId == htmlElement.id})?.fieldType2 == 'Number'
+  let isNumber = allFields.value.find(value=>{ return value.fieldId == htmlElement.id})?.fieldType2 == 'Number'
   return notExistDimensions && notExistMetrics&&isNumber;
 }
 
@@ -289,7 +288,8 @@ const sqlSelectorModal = reactive<{
       tempChartModal.open = true
 
       // 设置默认配置
-      Object.assign(tempChartOption,chartTemplate('标题1',lastChartType.value));
+      tempChartOption.value = chartTemplate('标题1',lastChartType.value);
+      // Object.assign(tempChartOption,chartTemplate('标题1',lastChartType.value));
 
       // 查询数据拿到字段和数据
       let sqlQuery: SQLQuery = {
@@ -302,9 +302,10 @@ const sqlSelectorModal = reactive<{
       sqlQueryData(sqlQuery).then((response) => {
         // 访问正常
         if (response.code == 0) {
-          for (let i = 0; i < response.data.columns.length; i++) {
-            allFields[i] = response.data.columns[i]
-          }
+          allFields.value = response.data.columns;
+          // for (let i = 0; i < response.data.columns.length; i++) {
+          //   allFields[i] = response.data.columns[i]
+          // }
           allData = response.data.data
         }
       })
@@ -318,7 +319,7 @@ const sqlSelectorModal = reactive<{
         let newEchartsInstance = echarts.init(container)
         tempChart = newEchartsInstance // 交给外部临时变量
         // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
-        newEchartsInstance.setOption(tempChartOption);
+        newEchartsInstance.setOption(tempChartOption.value);
 
         let observer = new ResizeObserver(() => {
           if (newEchartsInstance) newEchartsInstance.resize()
@@ -408,6 +409,7 @@ watch(sqlArray, (sqlItems) => {
   sqlSelectorModal.data =
     sqlItems != null && sqlItems.length > 0
       ? sqlItems.map((item) => {
+        // @ts-ignore
           return { value: item?.key, label: item?.label }
         })
       : [{ label: '测试选项-1', value: 'key1' }]
@@ -424,6 +426,7 @@ watch(
 function getMapData(data:Map<string,object>,keys:string[]):Array<object>{
   let arr = [];
   for (let i = 0; i < keys.length; i++) {
+    // @ts-ignore
     let newVar = data[keys[i]];
     if(newVar){
       arr[i] = newVar;
@@ -497,8 +500,8 @@ function renderBarChart(){
   option.dataset.source = source;
 
   // 设置给变量
-  tempChartOption.dataset = option.dataset;
-  tempChartOption.series = option.series
+  tempChartOption.value.dataset = option.dataset;
+  tempChartOption.value.series = option.series
 
   // 设置图标配置
   tempChart.setOption(option, {
@@ -611,8 +614,8 @@ function renderPieChart(){
   option.dataset.source = source;
 
   // 设置给变量
-  tempChartOption.dataset = option.dataset;
-  tempChartOption.series = option.series
+  tempChartOption.value.dataset = option.dataset;
+  tempChartOption.value.series = option.series
 
   // 设置图标配置
   tempChart.setOption(option, {
@@ -644,8 +647,8 @@ function renderLineChart(){
         type: 'line',
         name: dimensions[index],
         // 有可能会有柱状图
-        barMaxWidth: '50',
-        barMinWidth: '1',
+        // barMaxWidth: '50',
+        // barMinWidth: '1',
         stack: 'group' + index,
         /**
          * 'samesign' 只在要堆叠的值与当前累积的堆叠值具有相同的正负符号时才堆叠。
@@ -693,8 +696,8 @@ function renderLineChart(){
   option.dataset.source = source;
 
   // 设置给变量
-  tempChartOption.dataset = option.dataset;
-  tempChartOption.series = option.series
+  tempChartOption.value.dataset = option.dataset;
+  tempChartOption.value.series = option.series
 
   // 设置图标配置
   tempChart.setOption(option, {
@@ -708,7 +711,7 @@ function renderChart() {
     renderBarChart();
   } else if(lastChartType.value == 'pieChart'){
     renderPieChart();
-  }else if(lastChartType.value == 'pieChart'){
+  }else if(lastChartType.value == 'lineChart'){
     renderLineChart();
   }
 }
