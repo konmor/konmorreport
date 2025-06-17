@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, reactive, watch } from 'vue'
-import { themArray } from '@/echartsThem/registerThem.ts'
+import {nextTick, onMounted, onUnmounted, reactive, watch} from 'vue'
+import {themArray} from '@/echartsThem/registerThem.ts'
 import * as echarts from 'echarts'
 import Center from '@/assets/icon/Center.vue'
 import Left from '@/assets/icon/Left.vue'
@@ -27,7 +27,7 @@ interface ComponentPosition {
   allStatus: GridPosition
 }
 
-let { getChartConfig, setChartConfig, chartOption, chartContainer, clearCurrentConfig } =
+let {getChartConfig, setChartConfig, chartOption, chartContainer, clearCurrentConfig} =
     defineProps([
       'getChartConfig',
       'setChartConfig',
@@ -39,37 +39,37 @@ let chartConfig: any
 
 const chartConfigConstParams = {
   titleGridPosition: {
-    left: { top: 2.5, left: 0, right: 0, bottom: 0 },
-    right: { top: 2.5, left: 0, right: 0, bottom: 0 },
-    center: { top: 2.5, left: 0, right: 0, bottom: 0 },
+    left: {top: 2.5, left: 0, right: 0, bottom: 0},
+    right: {top: 2.5, left: 0, right: 0, bottom: 0},
+    center: {top: 2.5, left: 0, right: 0, bottom: 0},
   } as GridPosition,
   legendGridPosition: {
-    topLeft: { top: 2.5, left: 0, right: 0, bottom: 0 },
-    topCenter: { top: 2.5, left: 0, right: 0, bottom: 0 },
-    topRight: { top: 2.5, left: 0, right: 0, bottom: 0 },
-    leftCenter: { top: 0, left: 5, right: 0, bottom: 0 },
-    rightCenter: { top: 0, left: 0, right: 5, bottom: 0 },
-    bottomLeft: { top: 0, left: 0, right: 0, bottom: 3.5 },
-    bottomRight: { top: 0, left: 0, right: 0, bottom: 3.5 },
-    bottomCenter: { top: 0, left: 0, right: 0, bottom: 3.5 },
+    topLeft: {top: 2.5, left: 0, right: 0, bottom: 0},
+    topCenter: {top: 2.5, left: 0, right: 0, bottom: 0},
+    topRight: {top: 2.5, left: 0, right: 0, bottom: 0},
+    leftCenter: {top: 0, left: 7, right: 0, bottom: 0},
+    rightCenter: {top: 0, left: 0, right: 7, bottom: 0},
+    bottomLeft: {top: 0, left: 0, right: 0, bottom: 3.5},
+    bottomRight: {top: 0, left: 0, right: 0, bottom: 3.5},
+    bottomCenter: {top: 0, left: 0, right: 0, bottom: 3.5},
   } as GridPosition,
   xAxisNamePosition: {
-    start: { top: 0, left: 3, right: 0, bottom: 0 },
-    end: { top: 0, left: 0, right: 3, bottom: 0 },
-    topCenter: { top: 2.5, left: 0, right: 0, bottom: 0 },
-    bottomCenter: { top: 0, left: 0, right: 0, bottom: 2.5 },
+    start: {top: 0, left: 3, right: 0, bottom: 0},
+    end: {top: 0, left: 0, right: 3, bottom: 0},
+    topCenter: {top: 2.5, left: 0, right: 0, bottom: 0},
+    bottomCenter: {top: 0, left: 0, right: 0, bottom: 2.5},
   } as GridPosition,
   yAxisNamePosition: {
-    leftTop: { top: 2.5, left: 0, right: 0, bottom: 0 },
-    leftCenter: { top: 0, left: 0, right: 0, bottom: 0 },
-    leftBottom: { top: 0, left: 0, right: 0, bottom: 2.5 },
-    rightTop: { top: 2.5, left: 0, right: 0, bottom: 0 },
-    rightCenter: { top: 0, left: 0, right: 0, bottom: 0 },
-    rightBottom: { top: 0, left: 0, right: 0, bottom: 2.5 },
+    leftTop: {top: 2.5, left: 0, right: 0, bottom: 0},
+    leftCenter: {top: 0, left: 0, right: 0, bottom: 0},
+    leftBottom: {top: 0, left: 0, right: 0, bottom: 2.5},
+    rightTop: {top: 2.5, left: 0, right: 0, bottom: 0},
+    rightCenter: {top: 0, left: 0, right: 0, bottom: 0},
+    rightBottom: {top: 0, left: 0, right: 0, bottom: 2.5},
   } as GridPosition,
   zoomPosition: {
-    right: { top: 0, left: 0, right: 3, bottom: 0 },
-    bottom: { top: 0, left: 0, right: 0, bottom: 7 },
+    right: {top: 0, left: 0, right: 3, bottom: 0},
+    bottom: {top: 0, left: 0, right: 0, bottom: 7},
   } as GridPosition,
 }
 
@@ -90,7 +90,9 @@ let chartConfigControl = reactive({
 
   allSeriesEqual: false, // 数据系列的配置，各系列全一一致
   allSeriesConfigShow: [] as Array<string>, // 数据系列：默认展开的内容
-  emphasisShow:true,
+  emphasisShow:{} as Record<string, boolean>,
+  emphasisLabelShow:{} as Record<string, boolean>,
+  bubbleStyle: {} as Record<string, boolean>,
 
   zoomShow: [], // string[] 缩放组件控制器显示隐藏控制
   xZoomShow: false, // x轴缩放组件显示隐藏控制
@@ -100,7 +102,7 @@ let chartConfigControl = reactive({
   xZoomRange: [0, 100],
   yZoomRange: [0, 100],
 
-  currentGridPosition: { top: 3, left: 0, right: 0, bottom: 0 },
+  currentGridPosition: {top: 7, left: 0.5, right: 0.5, bottom: 0.5},
   currentTitlePosition: {
     currentStatus: 'left',
     position: undefined,
@@ -169,7 +171,7 @@ const chartConfigFunction = {
       right -= currentComponentPosition.allStatus[currentStatus].right
       bottom -= currentComponentPosition.allStatus[currentStatus].bottom
     }
-    return { top, left, right, bottom }
+    return {top, left, right, bottom}
   },
   changeGridPosition: (top: number, left: number, right: number, bottom: number) => {
     chartConfigControl.currentGridPosition.top += top
@@ -201,11 +203,11 @@ const chartConfigFunction = {
     bottom += crtPosition.allStatus[changeStatus].bottom
 
     crtPosition.currentStatus = changeStatus
-    return { top, left, right, bottom }
+    return {top, left, right, bottom}
   },
   titleSwitchChange: () => {
     // 设置选项
-    let option = { title: { show: chartOption.title.show }, legend: { top: '3%' } }
+    let option = {title: {show: chartOption.title.show}, legend: {top: '3%'}}
 
     if (
         !chartOption.title.show &&
@@ -217,7 +219,7 @@ const chartConfigFunction = {
     chartConfig.setOption(option)
 
     // grid 布局
-    let { top, left, right, bottom } = chartConfigFunction.openAndCloseComponent(
+    let {top, left, right, bottom} = chartConfigFunction.openAndCloseComponent(
         chartConfigControl.currentTitlePosition,
         chartOption.title.show,
     )
@@ -230,6 +232,18 @@ const chartConfigFunction = {
     /*chartConfig.setOption({
       series: { id: item.id, label: { formatter: formatter } },
     })*/
+  },
+  changeAllSeriesEmphasis: (item: any) => {
+    let focus = item.emphasis.focus
+    let option = []
+    for (let i = 0; i < chartOption.series.length; i++) {
+      option.push({
+        id: chartOption.series[i].id,
+        emphasis: { focus: focus },
+      })
+      chartOption.series[i].emphasis.focus = focus
+    }
+    chartConfig.setOption({ series: option })
   },
   changeXAxisTopAndBottom: () => {
     if (chartConfigControl.xAxisNameShow) {
@@ -244,7 +258,7 @@ const chartConfigFunction = {
       }
 
       // 1. 计算不同坐标轴位置在图标上的所需空间
-      let { top, left, right, bottom } = chartConfigFunction.changeComponentPosition(
+      let {top, left, right, bottom} = chartConfigFunction.changeComponentPosition(
           chartConfigControl.currentXAxisNamePosition,
           changeStatus,
       )
@@ -252,7 +266,7 @@ const chartConfigFunction = {
       chartConfigFunction.changeGridPosition(top, left, right, bottom)
 
       let option = {
-        xAxis: { position: chartOption.xAxis.position },
+        xAxis: {position: chartOption.xAxis.position},
         dataZoom: [
           {
             id: 'x0Slider',
@@ -267,16 +281,50 @@ const chartConfigFunction = {
       chartConfig.setOption(option)
     } else {
       let option = {
-        xAxis: { position: chartOption.xAxis.position },
+        xAxis: {position: chartOption.xAxis.position},
       }
       chartConfig.setOption(option)
     }
+  },
+  // 主题色切换
+  getThemedBubbleColor :(baseColor:string) => {
+    return new echarts.graphic.RadialGradient(0.4, 0.3, 1, [
+      {
+        offset: 0,
+        color: baseColor
+      },
+      {
+        offset: 1,
+        color: chartConfigFunction.shadeColor(baseColor, -20,-60,-40) // 稍微变暗
+      }
+    ]);
+  },
+
+  // 辅助函数：调整颜色亮度
+  shadeColor :(color:string, percentR:number,percentG:number,percentB:number) => {
+    // #123456
+    let R = parseInt(color.substring(1,3),16);
+    let G = parseInt(color.substring(3,5),16);
+    let B = parseInt(color.substring(5,7),16);
+
+    R = parseInt((R * (100 + percentR) / 100 ).toString());
+    G = parseInt((G * (100 + percentG) / 100).toString());
+    B = parseInt((B * (100 + percentB) / 100).toString());
+
+    R = (R<255)?R:255;
+    G = (G<255)?G:255;
+    B = (B<255)?B:255;
+
+    const RR = ((R.toString(16).length==1)?"0"+R.toString(16):R.toString(16));
+    const GG = ((G.toString(16).length==1)?"0"+G.toString(16):G.toString(16));
+    const BB = ((B.toString(16).length==1)?"0"+B.toString(16):B.toString(16));
+
+    return "#"+RR+GG+BB;
   },
 }
 
 const chartConfigStyle = reactive({})
 
-//
 // grid的变化
 watch(chartConfigControl.currentGridPosition, (grid) => {
   chartConfig.setOption({
@@ -288,6 +336,14 @@ watch(chartConfigControl.currentGridPosition, (grid) => {
     },
   })
 })
+
+// 主题切换
+watch(
+    () => chartConfigControl.currentThem,
+    (them) => {
+      chartConfigControl.currentColors = themArray.find((item) => item.themeName == them)!.theme.color
+    },
+)
 
 onMounted(() => {
   // 初始化
@@ -396,13 +452,13 @@ onUnmounted(() => {
           "
         >
           <a-radio-button value="left">
-            <Left />
+            <Left/>
           </a-radio-button>
           <a-radio-button value="center">
-            <Center />
+            <Center/>
           </a-radio-button>
           <a-radio-button value="right">
-            <Right />
+            <Right/>
           </a-radio-button>
         </a-radio-group>
       </div>
@@ -554,31 +610,31 @@ onUnmounted(() => {
           "
         >
           <a-radio-button class="btn top left" value="topLeft">
-            <TopLeft />
+            <TopLeft/>
           </a-radio-button>
           <a-radio-button class="btn top center" value="topCenter">
-            <TopCenter />
+            <TopCenter/>
           </a-radio-button>
           <a-radio-button class="btn top right" value="topRight">
-            <TopRight />
+            <TopRight/>
           </a-radio-button>
           <a-radio-button class="btn middle left" value="leftCenter">
-            <LeftCenter />
+            <LeftCenter/>
           </a-radio-button>
           <a-radio-button class="btn middle center" disabled>
-            <Position />
+            <Position/>
           </a-radio-button>
           <a-radio-button class="btn middle right" value="rightCenter">
-            <RightCenter />
+            <RightCenter/>
           </a-radio-button>
           <a-radio-button class="btn bottom left" value="bottomLeft">
-            <BottomLeft />
+            <BottomLeft/>
           </a-radio-button>
           <a-radio-button class="btn bottom center" value="bottomCenter">
-            <BottomCenter />
+            <BottomCenter/>
           </a-radio-button>
           <a-radio-button class="btn bottom right" value="bottomRight">
-            <BottomRight />
+            <BottomRight/>
           </a-radio-button>
         </a-radio-group>
       </div>
@@ -1559,7 +1615,7 @@ onUnmounted(() => {
             <span>
               {{ item.name }}
             </span>
-            <DotChartOutlined :style="{ color: chartConfigControl.currentColors[index] }" />
+            <DotChartOutlined :style="{ color: chartConfigControl.currentColors[index] }"/>
           </div>
         </template>
 
@@ -1586,30 +1642,32 @@ onUnmounted(() => {
           <div class="component-right">
             <a-select
                 size="small"
-                v-model:value="chartOption.yAxis.splitLine.lineStyle.type"
-                @change="
-                  chartConfig.setOption({
-                    yAxis: {
-                      splitLine: {
-                        lineStyle: { type: chartOption.yAxis.splitLine.lineStyle.type },
-                      },
-                    },
-                  })
-            "
-                :disabled="!chartOption.yAxis.splitLine.show"
-            >
-              <a-select-option value="circle"
-              ><span style="font-size: 12px">圆形</span></a-select-option
-              >
-              <a-select-option value="rect"
-              ><span style="font-size: 12px">矩形</span></a-select-option
-              >
+                v-model:value="item.symbol"
+                @change="chartConfig.setOption({ series: [{ id: item.id, symbol: item.symbol}] })">
+              <a-select-option value="circle"><span style="font-size: 12px">圆形</span></a-select-option>
+              <a-select-option value="rect"><span style="font-size: 12px">矩形</span></a-select-option>
               <a-select-option value="roundRect"><span style="font-size: 12px">圆角矩形</span></a-select-option>
               <a-select-option value="triangle"><span style="font-size: 12px">三角形</span></a-select-option>
               <a-select-option value="diamond"><span style="font-size: 12px">菱形</span></a-select-option>
-              <a-select-option value="pin"><span style="font-size: 12px">气球</span></a-select-option>
+              <a-select-option value="pin"><span style="font-size: 12px">图钉</span></a-select-option>
               <a-select-option value="arrow"><span style="font-size: 12px">箭头</span></a-select-option>
             </a-select>
+          </div>
+        </div>
+
+        <div class="chart-item">
+          <span class="label-left" style="width: 48px">散点大小</span>
+          <div class="component-right">
+            <a-slider
+                v-model:value="item.symbolSize"
+                :min="1"
+                :max="200"
+                :dots="true"
+                :step="1"
+                :style="{ width: '100%' }"
+                @change="chartConfig.setOption({ series: [{ id: item.id, symbolSize: item.symbolSize}] })">
+              >
+            </a-slider>
           </div>
         </div>
 
@@ -1627,9 +1685,7 @@ onUnmounted(() => {
                         id: item.id,
                         label: {
                           show: true,
-                          position: item.position,
-                          formatter: item.formatter,
-                          rotate: item.rotate,
+                          position: item.label.position,
                         },
                       },
                     })
@@ -1659,22 +1715,56 @@ onUnmounted(() => {
               "
                 :disabled="!item.label.show"
             >
-              <a-select-option value="outside"
-              ><span style="font-size: 12px">饼图外</span></a-select-option
+              <a-select-option value="top"
+              ><span style="font-size: 12px">顶部</span></a-select-option
               >
-              <a-select-option value="inner"
-              ><span style="font-size: 12px">扇形图内</span></a-select-option
+              <a-select-option value="right"
+              ><span style="font-size: 12px">右侧</span></a-select-option
               >
-              <a-select-option value="center"
-              ><span style="font-size: 12px">饼图正中</span></a-select-option
+              <a-select-option value="inside"
+              ><span style="font-size: 12px">中间</span></a-select-option
               >
             </a-select>
           </div>
         </div>
 
-        <!-- 标签格式化-->
+        <!-- 标签格式化 todo-->
 
 
+        <!--  风格 -->
+        <div class="chart-item">
+          <span class="label-left" style="width: 48px">气泡风格</span>
+          <div class="component-right">
+            <a-checkbox
+                v-model:checked="chartConfigControl.bubbleStyle[item.id]"
+                @change="(v:any)=>{
+              if(v.target.checked){
+                 chartConfig.setOption({
+                  series: { id: item.id,
+                    itemStyle: {
+                      shadowBlur: 10,
+                      shadowColor: 'rgba(0, 0, 0, 0.5)',
+                      shadowOffsetY: 5,
+                      shadowOffsetX: 0,
+                      color: chartConfigFunction.getThemedBubbleColor(chartConfigControl.currentColors[index])
+                    } },
+                })
+              } else{
+                 chartConfig.setOption({
+                  series: { id: item.id,
+                    itemStyle: {
+                      shadowBlur: 0,
+                      shadowColor: chartConfigControl.currentColors[index],
+                      shadowOffsetY: 0,
+                      shadowOffsetX: 0,
+                      color: chartConfigControl.currentColors[index]
+                    } },
+                })
+              }
+            }">
+            </a-checkbox>
+          </div>
+        </div>
 
 
         <!-- 高亮-->
@@ -1682,12 +1772,13 @@ onUnmounted(() => {
           <span class="label-left" style="width: 48px">高亮</span>
           <div class="component-right">
             <a-checkbox
-                v-model:checked="chartConfigControl.emphasisShow"
+                v-model:checked="chartConfigControl.emphasisShow[item.id]"
                 @change="
                 () => {
-                  item.emphasis.disabled =!chartConfigControl.emphasisShow;
+                  item.emphasis.disabled =!chartConfigControl.emphasisShow[item.id];
+
                   chartConfig.setOption({
-                    series: { id: item.id, emphasis: { disabled: !chartConfigControl.emphasisShow } },
+                    series: { id: item.id, emphasis: { disabled: !chartConfigControl.emphasisShow[item.id] } },
                   })
                 }
               "
@@ -1695,6 +1786,65 @@ onUnmounted(() => {
             </a-checkbox>
           </div>
         </div>
+
+        <!--系列的高亮状态-->
+        <div class="chart-item">
+          <span class="label-left" style="width: 48px">高亮状态</span>
+
+          <div class="component-right">
+            <a-radio-group
+                v-model:value="item.emphasis.focus"
+                size="small"
+                @change="
+                () => {
+                  if (chartConfigControl.allSeriesEqual) {
+                    chartConfigFunction.changeAllSeriesEmphasis(item)
+                  } else {
+                    chartConfig.setOption({
+                      series: { id: item.id, emphasis: { focus: item.emphasis.focus } },
+                    })
+                  }
+                }
+              "
+                :disabled="!chartConfigControl.emphasisShow[item.id]"
+            >
+              <a-radio-button value="none"><span class="label-normal">无</span></a-radio-button>
+              <a-radio-button value="series"><span class="label-normal">系列</span></a-radio-button>
+              <a-radio-button value="self"><span class="label-normal">自身</span></a-radio-button>
+            </a-radio-group>
+          </div>
+        </div>
+
+        <div class="chart-item">
+          <span class="label-left" style="width: 48px">仅高亮下显示标签</span>
+
+          <div class="component-right">
+            <a-checkbox
+                v-model:checked="chartConfigControl.emphasisLabelShow[item.id]"
+                @change="
+                (v:any) => {
+                  if(v.target.checked){
+                    item.emphasis.label.show = true;
+                    item.label.show = false;
+
+                    chartConfig.setOption({
+                    series:{id:item.id,label:{show:false},emphasis:{label:{show:true}}}
+                    })
+                  }else {
+                    item.emphasis.label.show = false;
+                    item.label.show = true;
+                    chartConfig.setOption({
+                    series:{id:item.id,label:{show:true},emphasis:{label:{show:false}}}
+                    })
+                  }
+                }
+              "
+                :disabled="!chartConfigControl.emphasisShow[item.id]"
+            >
+            </a-checkbox>
+          </div>
+        </div>
+
       </a-collapse-panel>
     </a-collapse>
   </div>

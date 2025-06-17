@@ -499,7 +499,6 @@ export const LINE_TEMPLATE: ECBasicOption = {
     ],
 }
 
-
 export const SCATTER_TEMPLATE: ECBasicOption = {
     title: {
         text: 'hello world',
@@ -511,8 +510,8 @@ export const SCATTER_TEMPLATE: ECBasicOption = {
         show: true,
         type: 'scroll',
         // horizontal , vertical
-        orient: 'vertical',
-        top: '',
+        orient: 'horizontal',
+        top: '3%',
         left: 'left',
         right: '',
         bottom: ''
@@ -531,6 +530,8 @@ export const SCATTER_TEMPLATE: ECBasicOption = {
         nameLocation: 'center', // start end center/middle
         nameGap: 36,
         position: 'bottom', // bottom top 坐标轴的位置
+        // 数值轴有效，类目轴为 true false
+        boundaryGap: ['5%', '5%'],
         // 标签是否展示, 宽度、距离
         axisLabel: {
             show: true,
@@ -549,7 +550,7 @@ export const SCATTER_TEMPLATE: ECBasicOption = {
         },
 
         // 刻度线
-        boundaryGap: true,
+        // boundaryGap: true,
         axisTick: {
             // 对齐刻度线 在 boundaryGap:true,  条件下
             // true 对齐，false 不对齐
@@ -592,7 +593,7 @@ export const SCATTER_TEMPLATE: ECBasicOption = {
 
         // 刻度线
         // type = value 时 boundaryGap 分别表示数据最小值和最大值的延伸范围，可以直接设置数值或者相对的百分比，在设置 min 和 max 后无效
-        boundaryGap: ['0%', '0%'],
+        boundaryGap: ['5%', '5%'],
 
         // 分割线
         splitLine: {
@@ -653,21 +654,53 @@ export const SCATTER_TEMPLATE: ECBasicOption = {
             emphasis: {
                 disabled: false,
                 // self \ none \  series
-                focus: 'self',
+                focus: 'series',
                 // 强调时显示label
                 label: {show: true}
             },
             encode: {x: 'name', y: 'value', itemName: 'name'}
         },
         {
+
             id: '2',
             name: 'size',
             type: 'scatter',
+            // 'circle', 'rect', 'roundRect', 'triangle', 'diamond', 'pin', 'arrow', 'none'
             symbol: 'circle',
             symbolSize: 20,
+            label: {
+                show: false,
+                position: 'top', // right \ top \ inside
+                formatter: '{b}'
+            },
+            // itemStyle: {
+            //   opacity:0.8,
+            //   shadowColor: 'rgba(0, 0, 0, 0.3)',
+            //   shadowOffsetX: 0,
+            //   shadowOffsetY: 0,
+            //   shadowBlur: 10
+            // },
             itemStyle: {
-                shadowColor: 'rgba(0, 0, 0, 0.5)',
-                shadowBlur: 2
+                shadowBlur: 10,
+                shadowColor: 'rgba(120, 36, 50, 0.5)',
+                shadowOffsetY: 5,
+                color: new echarts.graphic.RadialGradient(0.4, 0.3, 1, [
+                    {
+                        offset: 0,
+                        color: 'rgb(251, 118, 123)'
+                    },
+                    {
+                        offset: 1,
+                        color: 'rgb(204, 46, 72)'
+                    }
+                ])
+            },
+            emphasis: {
+                disabled: false,
+                // self \ none \  series
+                focus: 'series',
+                // 强调时显示label
+                label: {show: true}
             },
             encode: {x: 'name', y: 'size', itemName: 'name'}
         }
@@ -684,7 +717,7 @@ export const SCATTER_TEMPLATE: ECBasicOption = {
         {
             id: 'x0Slider',
             type: 'slider',
-            show: true,
+            show: false,
             xAxisIndex: [0],
             bottom: '2%'
         },
