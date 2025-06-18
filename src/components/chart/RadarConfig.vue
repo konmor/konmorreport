@@ -83,7 +83,7 @@ let chartConfigControl = reactive({
     position: undefined,
     allStatus: chartConfigConstParams.legendGridPosition,
   } as ComponentPosition,
-  currentGridPosition: { top: 3, left: 0, right: 0, bottom: 0 },
+  // currentGridPosition: { top: 3, left: 0, right: 0, bottom: 0 },
 })
 const chartConfigFunction = {
   changeThem: (themName: string) => {
@@ -119,41 +119,41 @@ const chartConfigFunction = {
     }
     return { top, left, right, bottom }
   },
-  changeGridPosition: (top: number, left: number, right: number, bottom: number) => {
-    chartConfigControl.currentGridPosition.top += top
-    chartConfigControl.currentGridPosition.left += left
-    chartConfigControl.currentGridPosition.right += right
-    chartConfigControl.currentGridPosition.bottom += bottom
-  },
-  changeComponentPosition: (crtPosition: ComponentPosition, changeStatus: string) => {
-    let top = 0,
-        left = 0,
-        right = 0,
-        bottom = 0
-    let currentStatus = crtPosition.currentStatus
-    if (crtPosition.position != undefined) {
-      top = -crtPosition.position.top
-      left = -crtPosition.position.left
-      right = -crtPosition.position.right
-      bottom = -crtPosition.position.bottom
-    } else {
-      top = -crtPosition.allStatus[currentStatus].top
-      left = -crtPosition.allStatus[currentStatus].left
-      right = -crtPosition.allStatus[currentStatus].right
-      bottom = -crtPosition.allStatus[currentStatus].bottom
+
+  radarSize :()=>{
+    let inTop = 50;
+    // 50 52 54
+    if(chartOption.title.show && chartOption.legend.show && chartConfigControl.legendPosition.startsWith('top')){
+      inTop = 54
+    }else if((chartOption.title.show && !chartOption.legend.show) ||
+      (!chartOption.title.show && chartOption.legend.show && chartConfigControl.legendPosition.startsWith('top'))){
+      inTop = 52;
     }
 
-    top += crtPosition.allStatus[changeStatus].top
-    left += crtPosition.allStatus[changeStatus].left
-    right += crtPosition.allStatus[changeStatus].right
-    bottom += crtPosition.allStatus[changeStatus].bottom
+    let inLeft = 50;
 
-    crtPosition.currentStatus = changeStatus
-    return { top, left, right, bottom }
+    if(chartOption.legend.show && chartConfigControl.legendPosition.startsWith('leftCenter')){
+      inLeft = 54
+    }　else if(chartOption.legend.show && chartConfigControl.legendPosition.startsWith('rightCenter')){
+      inLeft = 46;
+    }
+
+    let size = 80;
+
+    if(chartOption.legend.show &&　chartOption.title.show){
+      size = 70;
+    } else if (chartOption.legend.show ||　chartOption.title.show){
+      size = 75;
+    }
+    return {inTop,inLeft,size};
   },
   titleSwitchChange: () => {
     // 设置选项
-    let option = { title: { show: chartOption.title.show }, legend: { top: '3%' } }
+    let option = { title: { show: chartOption.title.show }, legend: { top: '3%' },
+      radar:{
+        center:['50%','50%'],
+        radius:'80%'
+      } }
 
     if (
         !chartOption.title.show &&
@@ -162,6 +162,13 @@ const chartConfigFunction = {
     ) {
       option.legend.top = '0.5%'
     }
+
+    let {inLeft,inTop,size} = chartConfigFunction.radarSize();
+
+    option.radar.center = [inLeft+'%',inTop+'%'];
+
+    option.radar.radius = size+'%';
+
     chartConfig.setOption(option)
 
     // grid 布局
@@ -169,8 +176,6 @@ const chartConfigFunction = {
         chartConfigControl.currentTitlePosition,
         chartOption.title.show,
     )
-
-    chartConfigFunction.changeGridPosition(top, left, right, bottom)
   },
   changAllSeriesLabelShow:(item:any)=>{
 
@@ -188,18 +193,18 @@ const chartConfigFunction = {
 const chartConfigStyle = reactive({})
 
 //
-// grid的变化
-watch(chartConfigControl.currentGridPosition, (grid) => {
-  chartConfig.setOption({
-    series: {
-      id: '1',
-      top: grid.top + '%',
-      left: grid.left + '%',
-      right: grid.right + '%',
-      bottom: grid.bottom + '%',
-    },
-  })
-})
+// todo 调整雷达图的中心点位置
+// watch(chartConfigControl.currentGridPosition, (grid) => {
+//   chartConfig.setOption({
+//     series: {
+//       id: '1',
+//       top: grid.top + '%',
+//       left: grid.left + '%',
+//       right: grid.right + '%',
+//       bottom: grid.bottom + '%',
+//     },
+//   })
+// })
 
 watch(()=>chartOption.radar.shape,(shape)=>{
   chartConfigControl.isCircle = shape =='circle';
@@ -301,13 +306,13 @@ onUnmounted(() => {
               chartConfig.setOption(option)
 
               //2. 计算该组件需要的grid调整的空间
-              let { top, left, right, bottom } = chartConfigFunction.changeComponentPosition(
-                chartConfigControl.currentTitlePosition,
-                chartOption.title.left,
-              )
+              // let { top, left, right, bottom } = chartConfigFunction.changeComponentPosition(
+              //   chartConfigControl.currentTitlePosition,
+              //   chartOption.title.left,
+              // )
 
               // 3. 调整grid的位置
-              chartConfigFunction.changeGridPosition(top, left, right, bottom)
+              // chartConfigFunction.changeGridPosition(top, left, right, bottom)
             }
           "
         >
@@ -351,23 +356,25 @@ onUnmounted(() => {
             v-model:checked="chartOption.legend.show"
             @change="
             () => {
-              // 1. 计算该组件（图例）需要grid让出的空间
-              let { top, left, right, bottom } = chartConfigFunction.openAndCloseComponent(
-                chartConfigControl.currentLegendPosition,
-                chartOption.legend.show,
-              )
-              // 2. 调整grid，让x-y坐标系 让出位置
-              chartConfigFunction.changeGridPosition(top, left, right, bottom)
+         
               // 3. 设置图例、以及设置缩放组件的布局。
               let option: {
                 legend: {
                   show?: boolean
                   top?: string
+                },
+                radar:{
+                  center: Array<string>,
+                  radius: string
                 }
               } = {
                 legend: {
                   show: chartOption.legend.show,
                 },
+                radar:{
+                  center:['50%','50%'],
+                  radius:'80%'
+                }
               }
               //当只有图例时，图例的顶部空间仅保留 0.5%
               if (
@@ -377,6 +384,13 @@ onUnmounted(() => {
               ) {
                 option.legend.top = '0.5%'
               }
+
+              let {inLeft,inTop,size} = chartConfigFunction.radarSize();
+
+              option.radar.center = [inLeft+'%',inTop+'%'];
+
+              option.radar.radius = size+'%';
+
               chartConfig.setOption(option)
             }
           "
@@ -445,12 +459,12 @@ onUnmounted(() => {
                 thisPosition.top = '0.5%'
               }
               // 1. 计算该组件所需grid让出的空间
-              let { top, left, right, bottom } = chartConfigFunction.changeComponentPosition(
-                chartConfigControl.currentLegendPosition,
-                chartConfigControl.legendPosition,
-              )
+              // let { top, left, right, bottom } = chartConfigFunction.changeComponentPosition(
+              //   chartConfigControl.currentLegendPosition,
+              //   chartConfigControl.legendPosition,
+              // )
               // 2. 调整grid
-              chartConfigFunction.changeGridPosition(top, left, right, bottom)
+              // chartConfigFunction.changeGridPosition(top, left, right, bottom)
               // 3. 设置图例配置到图表,还包含了缩放组件的布局位置
               let option = {
                 legend: {
@@ -463,7 +477,18 @@ onUnmounted(() => {
                   left: thisPosition.left,
                   bottom: thisPosition.bottom,
                 },
+                radar:{
+                  center:['50%','50%'],
+                  radius:'80%'
+                }
               }
+              let {inLeft,inTop,size} = chartConfigFunction.radarSize();
+
+              //@ts-ignore
+              option.radar.center = [inLeft+'%',inTop+'%'];
+
+              //@ts-ignore
+              option.radar.radius = size+'%';
 
               chartConfig.setOption(option)
             }
@@ -739,7 +764,6 @@ onUnmounted(() => {
                  }
                 }
               "
-                :disabled="!chartOption.yAxis.splitLine.show"
             >
               <a-select-option value="solid"
               ><span style="font-size: 12px">实线</span></a-select-option
@@ -765,7 +789,7 @@ onUnmounted(() => {
                   if (chartConfigControl.allSeriesEqual) {
                     chartConfigFunction.changAllSeriesAreaStyleShow(v.target.checked)
                   } else {
-                    item.areaStyle = v.target.checked?{opacity: '0.6'}:null;
+                    item.areaStyle = v.target.checked?{opacity: 0.6}:null;
 
                     chartConfig.setOption({ series:{data: chartOption.series.data} })
                   }
@@ -789,7 +813,7 @@ onUnmounted(() => {
                   }
                 }
               "
-                :disabled="!item.areaStyle"
+                v-if="chartConfigControl.areaStyleShow[item.id]"
             >
             </a-slider>
           </div>
