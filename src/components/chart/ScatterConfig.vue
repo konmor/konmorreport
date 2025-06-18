@@ -317,6 +317,8 @@ const chartConfigFunction = {
     for (let i = 0; i < chartOption.series.length; i++) {
       let id = chartOption.series[i].id || i.toString();
 
+      chartConfigControl.bubbleStyle[id] = showBubbleStyle;
+
       if(showBubbleStyle){
         let itemStyle = {
           shadowBlur: 10,
