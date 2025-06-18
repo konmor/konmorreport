@@ -654,14 +654,14 @@ export const SCATTER_TEMPLATE: ECBasicOption = {
 
 export const RADAR_TEMPLATE: ECBasicOption = {
   title: {
-    show: true,
+    show: false,
     text: '标题1',
   },
   legend: {
-    show: true,
+    show: false,
     type: 'scroll',
     top: '3%',
-    left: 'right',
+    left: 'center',
     right: '',
     bottom: '',
   },
@@ -689,85 +689,15 @@ export const RADAR_TEMPLATE: ECBasicOption = {
     // 分割区域 配合 splitNumber
     splitArea: { show: true },
     indicator: [
-      {
-        name: 'Sales',
-        max: 6500,
 
-        axisLine: {
-          // 坐标轴线
-          show: true,
-          // arrow none
-          symbol: 'none',
-        },
-
-        // 刻度标记
-        axisTick: {
-          show: true,
-        },
-        // 刻度标签 刻度值
-        axisLabel: { show: false },
-      },
-      // name \ min \ max \ color 颜色
-      { name: 'Administration', max: 16000 },
-      { name: 'Information Technology', max: 30000 },
-      { name: 'Customer Support', max: 38000 },
-      { name: 'Development', max: 52000 },
-      { name: 'Marketing', max: 25000 },
     ],
   },
   series: {
-    name: 'Budget vs spending',
+    name: '',
     type: 'radar',
     // 数据
     data: [
-      {
-        // 该id 属性不是echarts的自有属性，仅用于调整配置时修改数据
-        id: '1',
-        value: [4200, 3000, 20000, 35000, 50000, 18000],
-        name: 'Allocated Budget',
 
-        // circle 、 rect
-        symbol: 'circle',
-        symbolSize: 8,
-        // 数值标签
-        label: {
-          show: false,
-          position: 'top',
-        },
-        lineStyle: {
-          // solid dotted dashed
-          type: 'solid',
-        },
-        areaStyle: null,
-        emphasis: {
-          disabled: false,
-          focus: 'self',
-        },
-      },
-      {
-        // 该id 属性不是echarts的自有属性，仅用于调整配置时修改数据
-        id: '2',
-        value: [5000, 14000, 28000, 26000, 42000, 21000],
-        name: 'Actual Spending',
-
-        // circle 、 rect
-        symbol: 'circle',
-        symbolSize: 8,
-        // 数值标签
-        label: {
-          show: false,
-          position: 'top',
-        },
-        lineStyle: {
-          // solid dotted dashed
-          type: 'solid',
-        },
-        areaStyle: null,
-        emphasis: {
-          disabled: false,
-          focus: 'self',
-        },
-      },
     ],
   },
 }

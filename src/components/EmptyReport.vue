@@ -142,6 +142,8 @@ let fieldContainerActiveKey = ref('fieldContainer')
 let dimensionsFields = reactive<SQLResultField[]>([])
 let metricsFields = reactive<SQLResultField[]>([])
 
+let tempObserver: ResizeObserver
+
 const getTempChart = () => {
   return tempChart
 }
@@ -149,9 +151,21 @@ const setTempChart = (value: EChartsType) => {
   if (tempChart && !tempChart.isDisposed()) {
     tempChart.dispose()
   }
-  tempChart = value
+
+  if (tempObserver != null) {
+    tempObserver.disconnect()
+  }
+
+  // 重新绑定页面大小变化 resizeObserve
+  tempChart = value;
+
+  tempObserver = new ResizeObserver(() => {
+    if (tempChart) tempChart.resize()
+  });
+  tempObserver.observe(tempChartContainer.value as Element)
+
 }
-let tempObserver: ResizeObserver
+
 
 // 使用change事件，监听添加事件。似乎echarts有bug，仅change事件【added】能够拿到echarts clone后的对象
 const change = function change(event: Event) {
@@ -813,7 +827,138 @@ function renderScatter(){
 
 }
 
+function getRadarData(dimensions:string[]):
+  {indicator:Array<string>,data:Array<{name:string,data:Array<any>}>}{
+
+  let result:{indicator:Array<string>,data:Array<{name:string,data:Array<any>}>} ={
+    indicator:[],data:[]
+  } ;
+  // Array<Map<string, object>>
+
+  let d = new Array(dimensions.length -1) as Array<Array<object>>;
+  for (let i = 0; i < d.length; i++) {
+    d[i] = new Array(allData.length);
+  }
+
+  for (let i = 0; i < allData.length; i++) {
+    let item = allData[i];
+
+    // @ts-ignore
+    result.indicator.push(item[dimensions[0]]);
+
+    for (let j = 1; j < dimensions.length; j++) {
+
+      // @ts-ignore
+      d[j-1][i] = item[dimensions[j]];
+    }
+  }
+
+  for (let i = 0; i < d.length; i++) {
+    result.data.push({
+     name: dimensions[i+1],data:d[i]
+    })
+  }
+
+  return result;
+}
+
 function renderRadar(){
+
+  dimensions.length = 0;
+  // 图表渲染
+  let option = {
+    radar:{
+      indicator: [] as Array<any>
+    },
+    series:{
+      name:'' as string,
+      type:'radar',
+      data:[] as Array<any>,
+    },
+  };
+
+  // 必须要有维度字段;
+  if (dimensionsFields.length > 0) {
+    dimensions[0] = dimensionsFields[0].fieldAlias;
+
+    for (let i = 0; i < metricsFields.length; i++) {
+      let index = i + 1;
+      dimensions[index] = metricsFields[i].fieldAlias;
+    }
+  }
+
+  // 必须要有至少两个字段，其中一个必须为维度字段
+  if (dimensions.length < 2) {
+    tempChart.setOption(
+      option,
+      {
+        replaceMerge: ['series']
+      });
+    return;
+  }
+
+  let source:{indicator:Array<string>,data:Array<{name:string,data:Array<any>}>}=
+     getRadarData(dimensions);
+
+  for (let i = 0; i < source.indicator.length; i++) {
+    if(i==0){
+      option.radar.indicator[i] = {
+        name: source.indicator[i],
+        axisLine: {
+          // 坐标轴线
+          show: true,
+          // arrow none
+          symbol: 'none',
+        },
+        // 刻度标记
+        axisTick: {
+          show: false,
+        },
+        // 刻度标签 刻度值
+        axisLabel: { show: false },
+      }
+    }else {
+      option.radar.indicator[i] ={name:source.indicator[i]};
+    }
+  }
+
+  option.series.name = dimensions[0];
+
+  for (let i = 0; i < source.data.length; i++) {
+    option.series.data[i] = {
+
+      // 该id 属性不是echarts的自有属性，仅用于调整配置时修改数据
+      id: i.toString(),
+      value: source.data[i].data,
+      name: source.data[i].name,
+
+      symbol: 'circle',
+      symbolSize: 8,
+      // 数值标签
+      label: {
+        show: false,
+        position: 'top',
+      },
+      lineStyle: {
+        // solid dotted dashed
+        type: 'solid',
+      },
+      areaStyle: null,
+      emphasis: {
+        disabled: false,
+        focus: 'self',
+      },
+    }
+  }
+
+  // @ts-ignore 设置给变量
+  tempChartOption.value.radar.indicator = option.radar.indicator;
+  tempChartOption.value.series = option.series
+
+  // 设置图标配置
+  tempChart.setOption(option,{
+    replaceMerge: ['series']
+  });
 
 }
 

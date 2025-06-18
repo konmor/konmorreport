@@ -178,12 +178,48 @@ const chartConfigFunction = {
     )
   },
   changAllSeriesLabelShow:(item:any)=>{
+    let show = item.label.show;
+    for (let i = 0; i < chartOption.series.data.length; i++) {
+      chartOption.series.data[i].label.show = show;
+    }
+    chartConfig.setOption({ series:{data: chartOption.series.data} })
+  },
+  changAllSeriesLineType:(item:any)=>{
+    let type = item.lineStyle.type;
+    for (let i = 0; i < chartOption.series.data.length; i++) {
+      chartOption.series.data[i].lineStyle.type = type;
+    }
+
+    chartConfig.setOption({ series:{data: chartOption.series.data} })
+  },
+  changAllSeriesAreaStyleShow:(areaStyleShow:boolean)=>{
+
+    let areaStyle = areaStyleShow?{opacity: 0.6}:null;
+
+    for (let i = 0; i < chartOption.series.data.length; i++) {
+      chartOption.series.data[i].areaStyle = areaStyle;
+    }
+
+    chartConfig.setOption({ series:{data: chartOption.series.data} })
+
 
   },
-  changAllSeriesLineType:(item:any)=>{},
-  changAllSeriesAreaStyleShow:(b:boolean)=>{},
-  changAllSeriesAreaStyleOpacity:(item:any)=>{},
-  changAllSeriesEmphasisShow:(b:boolean)=>{},
+  changAllSeriesAreaStyleOpacity:(item:any)=>{
+    let opacity =   item.areaStyle.opacity;
+
+    for (let i = 0; i < chartOption.series.data.length; i++) {
+      chartOption.series.data[i].areaStyle.opacity = opacity;
+    }
+    chartConfig.setOption({ series:{data: chartOption.series.data} })
+
+  },
+  changAllSeriesEmphasisShow:(emphasisShow:boolean)=>{
+    let disabled =  !emphasisShow;
+    for (let i = 0; i < chartOption.series.data.length; i++) {
+      chartOption.series.data[i].emphasis.disabled = disabled;
+    }
+    chartConfig.setOption({ series:{data: chartOption.series.data} })
+  },
   getColor:(index:number)=>{
     let i = index % chartConfigControl.currentColors.length;
     return chartConfigControl.currentColors[i];
@@ -192,27 +228,13 @@ const chartConfigFunction = {
 
 const chartConfigStyle = reactive({})
 
-//
-// todo 调整雷达图的中心点位置
-// watch(chartConfigControl.currentGridPosition, (grid) => {
-//   chartConfig.setOption({
-//     series: {
-//       id: '1',
-//       top: grid.top + '%',
-//       left: grid.left + '%',
-//       right: grid.right + '%',
-//       bottom: grid.bottom + '%',
-//     },
-//   })
-// })
+
 
 watch(()=>chartOption.radar.shape,(shape)=>{
   chartConfigControl.isCircle = shape =='circle';
 })
 
 onMounted(() => {
-  // 初始化
-  // chartConfigFunction.initStackItems();
 
   // 在页面渲染完成之后设置数据，这样才能拿到父级中的该变量  getChartConfig();
   nextTick(() => {
@@ -641,6 +663,7 @@ onUnmounted(() => {
       <span class="label-left" style="width: 60px">坐标轴刻度</span>
       <div class="component-right">
         <a-checkbox
+            v-if="chartOption.radar.indicator.length>0"
             v-model:checked="chartOption.radar.indicator[0].axisTick.show"
             @change="
                 (v:any) => {
@@ -662,6 +685,7 @@ onUnmounted(() => {
       <span class="label-left" style="width: 60px">刻度值</span>
       <div class="component-right">
         <a-checkbox
+            v-if="chartOption.radar.indicator.length>0"
             v-model:checked="chartOption.radar.indicator[0].axisLabel.show"
             @change="
                 (v:any) => {
@@ -686,7 +710,24 @@ onUnmounted(() => {
   <div class="chart-group">
     <div class="chart-item">
       <span class="label-left" style="width: 48px">数据系列</span>
+      <div class="component-right">
+        <a-checkbox
+          v-model:checked="chartConfigControl.allSeriesEqual"
+          @change="
+            () => {
+              if (chartConfigControl.allSeriesEqual) {
+                chartConfigControl.allSeriesConfigShow.length = 0
+                chartConfigControl.allSeriesConfigShow[0] = chartOption.series.data[0].id || '0'
+              } else {
+                chartConfigControl.allSeriesConfigShow = []
+              }
+            }
+          "
+        ><span style="font-size: 12px">各系列一致</span>
+        </a-checkbox>
+      </div>
     </div>
+
 
     <a-collapse
         v-model:activeKey="chartConfigControl.allSeriesConfigShow"
@@ -699,6 +740,7 @@ onUnmounted(() => {
       }"
     >
       <a-collapse-panel
+        v-if="chartOption.series.data.length>0"
           :style="{ border: 'none', marginTop: '8px', padding: '0', fontSize: '12px' }"
           v-for="(item, index) in chartOption.series.data"
           :key="item.id || index"
