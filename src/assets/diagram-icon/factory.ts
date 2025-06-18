@@ -43,7 +43,7 @@ export function initDiagrams(icons?: Array<DiagramIconComponent>) {
             },
             {// @ts-ignore
                 component: RadarChartOutlined,
-                meta: {instance: {id: getUuid()}, type: 'radarChart', name: 'radarChart', title: '雷达图'}
+                meta: {instance: {id: getUuid()}, type: 'radar', name: 'radar', title: '雷达图'}
             },
             {// @ts-ignore
                 component: DashboardOutlined,

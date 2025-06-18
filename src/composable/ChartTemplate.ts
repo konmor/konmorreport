@@ -650,12 +650,138 @@ export const SCATTER_TEMPLATE: ECBasicOption = {
     ]
 };
 
+export const RADAR_TEMPLATE: ECBasicOption = {
+    title: {
+        show: true,
+        text: '标题1'
+    },
+    legend: {
+        show: true,
+        type: 'scroll',
+        top: '',
+        left: 'right',
+        right: '',
+        bottom: ''
+    },
+    tooltip: {
+        show: true
+    },
+    radar: {
+        center: ['50%', '50%'],
+        // number、 array<number,string>、string
+        radius: '80%',
+        // 名称标签是否显示
+        axisName: {
+            show: true,
+            color: '#333'
+        },
+        nameGap: 15,
+        // 指示器轴的分割段数
+        splitNumber: 5,
+        // polygon circle
+        shape: 'polygon',
+        // 设置成 true 后坐标刻度不会强制包含零刻度。在双数值轴的散点图中比较有用。
+        scale: true,
+        // 分割线
+        splitLine: { show: true },
+        // 分割区域 配合 splitNumber
+        splitArea: { show: true },
+        indicator: [
+            {
+                name: 'Sales',
+                max: 6500,
+
+                axisLine: {
+                    // 坐标轴线
+                    show: true,
+                    // arrow none
+                    symbol: 'none'
+                },
+
+                // 刻度标记
+                axisTick: {
+                    show: true
+                },
+                // 刻度标签 刻度值
+                axisLabel: { show: false }
+            },
+            // name \ min \ max \ color 颜色
+            { name: 'Administration', max: 16000 },
+            { name: 'Information Technology', max: 30000 },
+            { name: 'Customer Support', max: 38000 },
+            { name: 'Development', max: 52000 },
+            { name: 'Marketing', max: 25000 }
+        ]
+    },
+    series: [
+        {
+            name: 'Budget vs spending',
+            type: 'radar',
+            // 数据
+            data: [
+                {
+                    value: [4200, 3000, 20000, 35000, 50000, 18000],
+                    name: 'Allocated Budget',
+
+                    // circle 、 rect
+                    symbol: 'circle',
+                    symbolSize: 8,
+                    // 数值标签
+                    label: {
+                        show: false,
+                        position: 'top'
+                    },
+                    lineStyle: {
+                        // solid dotted dashed
+                        type: 'solid'
+                    },
+                    /*areaStyle: {
+                      // 透明度
+                      opacity: '0.6'
+                    },*/
+                    areaStyle: null,
+                    emphasis: {
+                        disabled: false,
+                        focus: 'self'
+                    }
+                },
+                {
+                    value: [5000, 14000, 28000, 26000, 42000, 21000],
+                    name: 'Actual Spending',
+
+                    // circle 、 rect
+                    symbol: 'circle',
+                    symbolSize: 8,
+                    // 数值标签
+                    label: {
+                        show: false,
+                        position: 'top'
+                    },
+                    lineStyle: {
+                        // solid dotted dashed
+                        type: 'solid'
+                    },
+                    /*areaStyle: {
+                      // 透明度
+                      opacity: '0.6'
+                    },*/
+                    areaStyle: null,
+                    emphasis: {
+                        disabled: false,
+                        focus: 'self'
+                    }
+                }
+            ]
+        }
+    ]
+};
 
 export const templateFunctionMap: Record<string, (title: string) => ECBasicOption> = {
     barChart: barTemplate,
     pieChart: pieTemplate,
     lineChart: lineTemplate,
     scatter: scatterTemplate,
+    radar:radarTemplate,
 }
 
 export function chartTemplate(title: string, type: string): ECBasicOption {
@@ -701,6 +827,16 @@ function lineTemplate(title: string): ECBasicOption {
 function scatterTemplate(title: string): ECBasicOption {
     let option: ECBasicOption = {};
     Object.assign(option, SCATTER_TEMPLATE);
+    if (title) {
+        // @ts-ignore
+        option.title.text = title
+    }
+    return option
+}
+
+function radarTemplate(title:string): ECBasicOption {
+    let option: ECBasicOption = {};
+    Object.assign(option, RADAR_TEMPLATE);
     if (title) {
         // @ts-ignore
         option.title.text = title
