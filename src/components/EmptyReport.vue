@@ -23,6 +23,7 @@ import { FieldStringOutlined, FieldNumberOutlined, FieldTimeOutlined,CloseOutlin
 import PieConfig from "@/components/chart/PieConfig.vue";
 import LineConfig from '@/components/chart/LineConfig.vue'
 import ScatterConfig from "@/components/chart/ScatterConfig.vue";
+import RadarConfig from "@/components/chart/RadarConfig.vue";
 
 const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number }[]>([
   {
@@ -812,6 +813,9 @@ function renderScatter(){
 
 }
 
+function renderRadar(){
+
+}
 
 function renderChart() {
   if(lastChartType.value == 'barChart'){
@@ -822,6 +826,8 @@ function renderChart() {
     renderLineChart();
   } else if(lastChartType.value == 'scatter'){
     renderScatter();
+  } else if(lastChartType.value == 'radar'){
+    renderRadar()
   }
 }
 
@@ -1153,6 +1159,15 @@ watch(metricsFields,
                         :chartContainer="tempChartContainer">
 
             </ScatterConfig>
+
+            <RadarConfig v-else-if="lastChartType == 'radar'"
+                           :getChartConfig="getTempChart"
+                           :setChartConfig="setTempChart"
+                           :clearCurrentConfig="clearCurrentConfig"
+                           :chartOption="tempChartOption"
+                           :chartContainer="tempChartContainer">
+
+            </RadarConfig>
           </a-layout-sider>
         </a-layout>
       </a-modal>

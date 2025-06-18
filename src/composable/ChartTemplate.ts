@@ -683,9 +683,9 @@ export const RADAR_TEMPLATE: ECBasicOption = {
         // 设置成 true 后坐标刻度不会强制包含零刻度。在双数值轴的散点图中比较有用。
         scale: true,
         // 分割线
-        splitLine: { show: true },
+        splitLine: {show: true},
         // 分割区域 配合 splitNumber
-        splitArea: { show: true },
+        splitArea: {show: true},
         indicator: [
             {
                 name: 'Sales',
@@ -703,17 +703,17 @@ export const RADAR_TEMPLATE: ECBasicOption = {
                     show: true
                 },
                 // 刻度标签 刻度值
-                axisLabel: { show: false }
+                axisLabel: {show: false}
             },
             // name \ min \ max \ color 颜色
-            { name: 'Administration', max: 16000 },
-            { name: 'Information Technology', max: 30000 },
-            { name: 'Customer Support', max: 38000 },
-            { name: 'Development', max: 52000 },
-            { name: 'Marketing', max: 25000 }
+            {name: 'Administration', max: 16000},
+            {name: 'Information Technology', max: 30000},
+            {name: 'Customer Support', max: 38000},
+            {name: 'Development', max: 52000},
+            {name: 'Marketing', max: 25000}
         ]
     },
-    series: [
+    series:
         {
             name: 'Budget vs spending',
             type: 'radar',
@@ -773,7 +773,7 @@ export const RADAR_TEMPLATE: ECBasicOption = {
                 }
             ]
         }
-    ]
+
 };
 
 export const templateFunctionMap: Record<string, (title: string) => ECBasicOption> = {
@@ -781,7 +781,7 @@ export const templateFunctionMap: Record<string, (title: string) => ECBasicOptio
     pieChart: pieTemplate,
     lineChart: lineTemplate,
     scatter: scatterTemplate,
-    radar:radarTemplate,
+    radar: radarTemplate,
 }
 
 export function chartTemplate(title: string, type: string): ECBasicOption {
@@ -834,7 +834,7 @@ function scatterTemplate(title: string): ECBasicOption {
     return option
 }
 
-function radarTemplate(title:string): ECBasicOption {
+function radarTemplate(title: string): ECBasicOption {
     let option: ECBasicOption = {};
     Object.assign(option, RADAR_TEMPLATE);
     if (title) {
