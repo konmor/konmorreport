@@ -198,6 +198,10 @@ const chartConfigFunction = {
       series: { id: item.id, label: { formatter: formatter } },
     })
   },
+  getColor:(index:number)=>{
+    let i = index % chartConfigControl.currentColors.length;
+    return chartConfigControl.currentColors[i];
+  }
 }
 
 const chartConfigStyle = reactive({})

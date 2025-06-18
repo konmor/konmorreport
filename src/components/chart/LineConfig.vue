@@ -102,6 +102,10 @@ let chartConfigControl = reactive({
   yZoom: [],
   xZoomRange: [0, 100],
   yZoomRange: [0, 100],
+
+  valueAxis:false,
+  timeAxis:false,
+
   currentGridPosition: { top: 7, left: 0.5, right: 0.5, bottom: 0.5 },
   areaShow: {} as Record<string, boolean>,
   currentTitlePosition: {
@@ -352,12 +356,13 @@ const chartConfigFunction = {
   },
   initStackItems: () => {
     for (let i = 0; i < chartOption.series.length; i++) {
-      let seriesItem = chartOption.series[i]
+      let seriesItem = chartOption.series[i];
+      let index = i % chartOption.series.length;
       chartConfigControl.stackItems[i] = [
         {
           id: seriesItem.id,
           name: seriesItem.name,
-          color: chartConfigControl.currentColors[i],
+          color: chartConfigControl.currentColors[index],
         },
       ]
     }
@@ -426,6 +431,10 @@ const chartConfigFunction = {
       chartConfig.setOption(option)
     }
   },
+  getColor:(index:number)=>{
+    let i = index % chartConfigControl.currentColors.length;
+    return chartConfigControl.currentColors[i];
+  }
 }
 
 const chartConfigStyle = reactive({
@@ -469,8 +478,9 @@ watch(
       let stackItem = chartConfigControl.stackItems[i]
       if (stackItem.length > 0) {
         for (let j = 0; j < stackItem.length; j++) {
+          let index = (parseInt(stackItem[j].id) - 1 ) % chartConfigControl.currentColors.length;
           // todo
-          stackItem[j].color = chartConfigControl.currentColors[parseInt(stackItem[j].id) - 1]
+          stackItem[j].color = chartConfigControl.currentColors[index]
         }
       }
     }
@@ -545,6 +555,13 @@ watch(
     }
   },
 )
+
+watch(()=>chartOption.xAxis.type,(type)=> {
+  chartConfigControl.valueAxis = type == 'value';
+
+  chartConfigControl.timeAxis = type == 'time';
+});
+
 
 onMounted(() => {
   // 初始化堆叠配置
@@ -1890,10 +1907,10 @@ onUnmounted(() => {
               {{ item.name }}
             </span>
             <span v-if="item.type == 'bar'">
-              <BarChartOutlined :style="{ color: chartConfigControl.currentColors[index] }" />
+              <BarChartOutlined :style="{ color: chartConfigFunction.getColor(index)}" />
             </span>
             <span v-else-if="item.type == 'line'">
-              <LineChartOutlined :style="{ color: chartConfigControl.currentColors[index] }" />
+              <LineChartOutlined :style="{ color: chartConfigFunction.getColor(index) }" />
             </span>
           </div>
         </template>

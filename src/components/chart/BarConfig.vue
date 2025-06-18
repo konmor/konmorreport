@@ -17,6 +17,7 @@ import TopRight from "@/assets/icon/legend/TopRight.vue";
 import {nextTick, onMounted, onUnmounted, reactive, ref, toRaw, watch} from "vue";
 import * as echarts from "echarts";
 import draggable from 'vuedraggable'
+import {getColor} from "echarts/types/src/chart/candlestick/candlestickVisual";
 
 interface GridPosition {
   [key: string]: { top: number; left: number; right: number; bottom: number }
@@ -322,7 +323,7 @@ const chartConfigFunction = {
         {
           id: seriesItem.id,
           name: seriesItem.name,
-          color: chartConfigControl.currentColors[i]
+          color: chartConfigFunction.getColor(i)
         }
       ]
     }
@@ -345,6 +346,10 @@ const chartConfigFunction = {
     )
 
     chartConfigFunction.changeGridPosition(top, left, right, bottom );
+  },
+  getColor:(index:number)=>{
+    let i = index % chartConfigControl.currentColors.length;
+    return chartConfigControl.currentColors[i];
   }
 };
 
@@ -388,8 +393,9 @@ watch(() => chartConfigControl.currentThem, (them) => {
     let stackItem = chartConfigControl.stackItems[i]
     if (stackItem.length > 0) {
       for (let j = 0; j < stackItem.length; j++) {
+        let index = (parseInt(stackItem[j].id) - 1) % chartConfigControl.currentColors.length;
         // todo
-        stackItem[j].color = chartConfigControl.currentColors[parseInt(stackItem[j].id) - 1]
+        stackItem[j].color = chartConfigControl.currentColors[index]
       }
     }
   }
@@ -1839,10 +1845,10 @@ onUnmounted(()=>{
               {{ item.name }}
             </span>
             <span v-if="item.type == 'bar'">
-              <BarChartOutlined :style="{ color: chartConfigControl.currentColors[index] }" />
+              <BarChartOutlined :style="{ color: chartConfigFunction.getColor(index) }" />
             </span>
             <span v-else-if="item.type == 'line'">
-              <LineChartOutlined :style="{ color: chartConfigControl.currentColors[index] }" />
+              <LineChartOutlined :style="{ color: chartConfigFunction.getColor(index) }" />
             </span>
           </div>
         </template>

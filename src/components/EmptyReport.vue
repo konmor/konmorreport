@@ -145,7 +145,7 @@ const getTempChart = () => {
   return tempChart
 }
 const setTempChart = (value: EChartsType) => {
-  if (tempChart) {
+  if (tempChart && !tempChart.isDisposed()) {
     tempChart.dispose()
   }
   tempChart = value
@@ -734,7 +734,7 @@ function renderScatter(){
         label: {
           show: false,
           position: 'top',
-          formatter: '{b}'
+
         },
         itemStyle: {
           opacity:0.8,
@@ -782,9 +782,27 @@ function renderScatter(){
   if(dimensionsFields[0].fieldType2 == 'Number'){
     option.xAxis.type = 'value';
     option.xAxis.boundaryGap = ['5%', '5%'];
-  }else {
+
+    // @ts-ignore
+    tempChartOption.value.xAxis.type = 'value';
+    // @ts-ignore
+    tempChartOption.value.xAxis.boundaryGap = ['5%', '5%'];
+  } else if(dimensionsFields[0].fieldType2 == 'Time'){
+    option.xAxis.type = 'time';
+    option.xAxis.boundaryGap = true;
+
+    // @ts-ignore
+    tempChartOption.value.xAxis.type = 'time';
+    // @ts-ignore
+    tempChartOption.value.xAxis.boundaryGap = ['5%', '5%'];
+  } else {
     option.xAxis.type = 'category';
     option.xAxis.boundaryGap = true;
+
+    // @ts-ignore
+    tempChartOption.value.xAxis.type = 'category';
+    // @ts-ignore
+    tempChartOption.value.xAxis.boundaryGap = true;
   }
   // 设置图标配置
   tempChart.setOption(option, {

@@ -89,6 +89,7 @@ let chartConfigControl = reactive({
   yAxisIntervalChecked: false,
 
   valueAxis:false,
+  timeAxis:false,
 
   allSeriesEqual: false, // 数据系列的配置，各系列全一一致
   allSeriesConfigShow: [] as Array<string>, // 数据系列：默认展开的内容
@@ -325,7 +326,7 @@ const chartConfigFunction = {
           shadowColor: 'rgba(0, 0, 0, 0.5)',
           shadowOffsetY: 5,
           shadowOffsetX: 0,
-          color: chartConfigFunction.getThemedBubbleColor(chartConfigControl.currentColors[i])
+          color: chartConfigFunction.getThemedBubbleColor(chartConfigFunction.getColor(i))
         };
 
         option.series[i] = {
@@ -336,10 +337,10 @@ const chartConfigFunction = {
       } else {
         let itemStyle = {
           shadowBlur: 0,
-          shadowColor: chartConfigControl.currentColors[i],
+          shadowColor: chartConfigFunction.getColor(i),
           shadowOffsetY: 0,
           shadowOffsetX: 0,
-          color: chartConfigControl.currentColors[i]
+          color: chartConfigFunction.getColor(i)
         };
         option.series[i] = {
           id:id,
@@ -452,6 +453,10 @@ const chartConfigFunction = {
 
     return "#"+RR+GG+BB;
   },
+  getColor:(index:number)=>{
+    let i = index % chartConfigControl.currentColors.length;
+    return chartConfigControl.currentColors[i];
+  }
 }
 
 const chartConfigStyle = reactive({})
@@ -481,6 +486,7 @@ watch(
       for (let i = 0; i < chartOption.series.length; i++) {
         let id = chartOption.series[i].id || i.toString();
 
+        let crtColor = chartConfigFunction.getColor(i);
         if(chartConfigControl.bubbleStyle[id]){
           option.series[i] = {
             id:id,
@@ -489,17 +495,17 @@ watch(
             shadowColor: 'rgba(0, 0, 0, 0.5)',
             shadowOffsetY: 5,
             shadowOffsetX: 0,
-            color: chartConfigFunction.getThemedBubbleColor(chartConfigControl.currentColors[i])
+            color: chartConfigFunction.getThemedBubbleColor(crtColor)
             }}
         } else {
           option.series[i] = {
             id:id,
             itemStyle:{
               shadowBlur: 0,
-              shadowColor: chartConfigControl.currentColors[i],
+              shadowColor: crtColor,
               shadowOffsetY: 0,
               shadowOffsetX: 0,
-              color: chartConfigControl.currentColors[i]
+              color: crtColor
             }}
         }
       }
@@ -509,6 +515,8 @@ watch(
 
 watch(()=>chartOption.xAxis.type,(type)=> {
   chartConfigControl.valueAxis = type == 'value';
+
+  chartConfigControl.timeAxis = type == 'time';
 });
 
 onMounted(() => {
@@ -860,9 +868,43 @@ onUnmounted(() => {
             @change="
             (v:any) => {
               if(v.target.checked){
+                chartConfigControl.timeAxis = false;
+
                 chartConfig.setOption({
                   xAxis: {
                     type:'value',
+                    boundaryGap: ['5%', '5%'],
+                  },
+                })
+              } else {
+               chartConfig.setOption({
+                  xAxis: {
+                    type:'category',
+                    boundaryGap: true,
+                  },
+                })
+              }
+
+            }
+          "
+        >
+        </a-checkbox>
+      </div>
+    </div>
+
+    <div class="chart-item">
+      <span class="label-left" style="width: 36px">时间轴</span>
+      <div class="component-right">
+        <a-checkbox
+            v-model:checked="chartConfigControl.timeAxis"
+            @change="
+            (v:any) => {
+              if(v.target.checked){
+                chartConfigControl.valueAxis = false;
+
+                chartConfig.setOption({
+                  xAxis: {
+                    type:'time',
                     boundaryGap: ['5%', '5%'],
                   },
                 })
@@ -1835,7 +1877,7 @@ onUnmounted(() => {
             <span>
               {{ item.name }}
             </span>
-            <DotChartOutlined :style="{ color: chartConfigControl.currentColors[index] }"/>
+            <DotChartOutlined :style="{ color: chartConfigFunction.getColor(index) }"/>
           </div>
         </template>
 
@@ -1991,19 +2033,19 @@ onUnmounted(() => {
                           shadowColor: 'rgba(0, 0, 0, 0.5)',
                           shadowOffsetY: 5,
                           shadowOffsetX: 0,
-                          color: chartConfigFunction.getThemedBubbleColor(chartConfigControl.currentColors[index])
-                        } },
+                          color: chartConfigFunction.getThemedBubbleColor(chartConfigFunction.getColor(index))
+                        } }
                       })
                     } else{
                        chartConfig.setOption({
                         series: { id: item.id,
                           itemStyle: {
                             shadowBlur: 0,
-                            shadowColor: chartConfigControl.currentColors[index],
+                            shadowColor: chartConfigFunction.getColor(index),
                             shadowOffsetY: 0,
                             shadowOffsetX: 0,
-                            color: chartConfigControl.currentColors[index]
-                          } },
+                            color: chartConfigFunction.getColor(index)
+                          } }
                       })
                     }
                   }
@@ -2067,14 +2109,14 @@ onUnmounted(() => {
         </div>
 
         <div class="chart-item">
-          <span class="label-left" style="width: 48px">仅高亮下显示标签</span>
+          <span class="label-left" style="width: 48px">仅高亮下</span>
 
           <div class="component-right">
             <a-checkbox
                 v-model:checked="chartConfigControl.emphasisLabelShow[item.id]"
                 @change="
                 (v:any) => {
-                   if (chartConfigControl.allSeriesEqual) {
+                  if (chartConfigControl.allSeriesEqual) {
                     chartConfigFunction.changeAllSeriesEmphasisLabelShow(v.target.checked)
                   } else {
                       item.emphasis.label.show = v.target.checked;
@@ -2088,6 +2130,7 @@ onUnmounted(() => {
               "
                 :disabled="!chartConfigControl.emphasisShow[item.id]"
             >
+              <span class="label-normal">显示标签</span>
             </a-checkbox>
           </div>
         </div>
