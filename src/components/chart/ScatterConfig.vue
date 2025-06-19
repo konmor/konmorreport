@@ -1877,7 +1877,7 @@ onUnmounted(() => {
             <span>
               {{ item.name }}
             </span>
-            <DotChartOutlined :style="{ color: chartConfigFunction.getColor(index) }"/>
+            <DotChartOutlined :style="{ color: chartConfigFunction.getColor(index),fontSize:'16px' }"/>
           </div>
         </template>
 

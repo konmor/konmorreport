@@ -47,7 +47,7 @@ export function initDiagrams(icons?: Array<DiagramIconComponent>) {
             },
             {// @ts-ignore
                 component: DashboardOutlined,
-                meta: {instance: {id: getUuid()}, type: 'guage', name: 'guage', title: '仪表'}
+                meta: {instance: {id: getUuid()}, type: 'gauge', name: 'gauge', title: '仪表'}
             },
             {// @ts-ignore
                 component: shallowRef(Tag),

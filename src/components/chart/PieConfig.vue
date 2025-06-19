@@ -564,7 +564,7 @@ onUnmounted(() => {
             <span>
               {{ item.name }}
             </span>
-            <PieChartOutlined />
+            <PieChartOutlined style="font-size: 16px"/>
           </div>
         </template>
 

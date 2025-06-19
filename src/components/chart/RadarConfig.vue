@@ -14,7 +14,7 @@ import BottomCenter from '@/assets/icon/legend/BottomCenter.vue'
 import LeftCenter from '@/assets/icon/legend/LeftCenter.vue'
 import BottomLeft from '@/assets/icon/legend/BottomLeft.vue'
 import BottomRight from '@/assets/icon/legend/BottomRight.vue'
-import {PieChartOutlined} from '@ant-design/icons-vue'
+import {RadarChartOutlined} from '@ant-design/icons-vue'
 
 interface GridPosition {
   [key: string]: { top: number; left: number; right: number; bottom: number }
@@ -750,7 +750,7 @@ onUnmounted(() => {
             <span>
               {{ item.name }}
             </span>
-            <PieChartOutlined />
+            <RadarChartOutlined :style="{color:chartConfigFunction.getColor(index),fontSize:'16px'}"/>
           </div>
         </template>
 

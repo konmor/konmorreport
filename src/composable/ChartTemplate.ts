@@ -702,12 +702,191 @@ export const RADAR_TEMPLATE: ECBasicOption = {
   },
 }
 
+export const GAUGE_TEMPLATE: ECBasicOption = {
+  title: {
+    text: '标题1',
+    show: true,
+    left: 'left',
+    top: '0.5%'
+  },
+  tooltip: {
+    show: true,
+    // formatter: '{a0} <br/>{b0} : {c0}',
+    trigger: 'item'
+  },
+  series:
+    {
+      id: '1',
+      // name: 'name',
+      type: 'gauge',
+      center: ['50%', '50%'],
+      radius: '80%',
+      // tooltip: { show: true },
+      data: [
+        {
+          name: '标题1',
+          value: +(Math.random() * 200).toFixed(2),
+          title: {
+            show:false,
+            fontSize: 16,
+            overflow: 'truncate',
+            ellipsis: '...',
+            width: 64,
+            offsetCenter: ['-30%', '80%']
+          },
+          detail: {
+            show:false,
+            fontSize: 16,
+            overflow: 'truncate',
+            ellipsis: '...',
+            width: 64,
+            offsetCenter: ['-30%', '90%']
+          }
+        },
+        {
+          name: '标题2',
+          value: +(Math.random() * 200).toFixed(2),
+          title: {
+            show:false,
+            fontSize: 16,
+            overflow: 'truncate',
+            ellipsis: '...',
+            width: 64,
+            offsetCenter: ['-10%', '80%']
+          },
+          detail: {
+            show:false,
+            fontSize: 16,
+            overflow: 'truncate',
+            ellipsis: '...',
+            width: 64,
+            offsetCenter: ['-10%', '90%']
+          }
+        },
+        {
+          name: '标题3',
+          value: +(Math.random() * 200).toFixed(2),
+          title: {
+            show:false,
+            fontSize: 16,
+            overflow: 'truncate',
+            ellipsis: '...',
+            width: 64,
+            offsetCenter: ['10%', '80%']
+          },
+          detail: {
+            show:false,
+            fontSize: 16,
+            overflow: 'truncate',
+            ellipsis: '...',
+            width: 64,
+            offsetCenter: ['10%', '90%']
+          }
+        },
+        {
+          name: '标题4',
+          value: +(Math.random() * 200).toFixed(2),
+          title: {
+            show:false,
+            fontSize: 16,
+            overflow: 'truncate',
+            ellipsis: '...',
+            width: 64,
+            offsetCenter: ['30%', '80%']
+          },
+          detail: {
+            show:false,
+            fontSize: 16,
+            overflow: 'truncate',
+            ellipsis: '...',
+            width: 64,
+            offsetCenter: ['30%', '90%']
+          }
+        }
+      ],
+      min: 0,
+      max: 200,
+      axisLine: {
+        show: true,
+        // 两端显示成圆形
+        roundCap: false,
+        lineStyle: {
+          width: 30,
+          // ['#e74c3c', '#f39c12', '#fadb14', '#52c41a']
+          // ['#ff4d4f', '#ffa940', '#fadb14', '#52c41a']
+          // [0.2, 0.4, 0.7, 0.9]
+          color: [
+            [1, '#5470c6'],
+          ],
+          opacity: 1
+        }
+      },
+      splitLine: {
+        // 和splitNumber 一起
+        show: false,
+        length: 30,
+        distance: -30,
+        lineStyle: {
+          color: '#fff',
+          width: 4
+        }
+      },
+      // 刻度
+      axisTick: {
+        show: false,
+        length: 8,
+        distance: -30,
+        lineStyle: {
+          color: '#fff',
+          width: 2
+        }
+      },
+      axisLabel: {
+        // 刻度值 是否显示
+        show: false,
+        distance: 40,
+        color: 'inherit'
+      },
+      pointer: {
+        show: true,
+        showAbove: true,
+        // 'circle', 'rect', 'roundRect', 'triangle', 'diamond', 'pin', 'arrow', 'none'
+        // icon: 'circle',
+        width: 10,
+        // 指针长度
+        length: '60%',
+        itemStyle: {
+          color: 'auto'
+        }
+      },
+      anchor: {
+        // 中心固定点
+        show: true,
+        // 显示在指针上面
+        showAbove: true,
+        size: 6,
+        icon: 'circle',
+        itemStyle: {}
+      },
+      // 仪表盘详情，用于显示数据
+      detail: {
+        show: true,
+        color: 'inherit'
+      }
+    }
+
+};
+
+
+
+
 export const templateFunctionMap: Record<string, (title: string) => ECBasicOption> = {
   barChart: barTemplate,
   pieChart: pieTemplate,
   lineChart: lineTemplate,
   scatter: scatterTemplate,
   radar: radarTemplate,
+  gauge:gaugeTemplate,
 }
 
 export function chartTemplate(title: string, type: string): ECBasicOption {
@@ -767,4 +946,15 @@ function radarTemplate(title: string): ECBasicOption {
     option.title.text = title
   }
   return option
+}
+
+function gaugeTemplate(title: string): ECBasicOption {
+  let option: ECBasicOption = {}
+  Object.assign(option, GAUGE_TEMPLATE)
+  if (title) {
+    // @ts-ignore
+    option.title.text = title
+  }
+  return option
+
 }

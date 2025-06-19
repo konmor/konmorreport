@@ -1845,10 +1845,10 @@ onUnmounted(()=>{
               {{ item.name }}
             </span>
             <span v-if="item.type == 'bar'">
-              <BarChartOutlined :style="{ color: chartConfigFunction.getColor(index) }" />
+              <BarChartOutlined :style="{ color: chartConfigFunction.getColor(index) ,fontSize:'16px'}" />
             </span>
             <span v-else-if="item.type == 'line'">
-              <LineChartOutlined :style="{ color: chartConfigFunction.getColor(index) }" />
+              <LineChartOutlined :style="{ color: chartConfigFunction.getColor(index) ,fontSize:'16px'}" />
             </span>
           </div>
         </template>

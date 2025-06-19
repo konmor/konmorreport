@@ -24,6 +24,7 @@ import PieConfig from "@/components/chart/PieConfig.vue";
 import LineConfig from '@/components/chart/LineConfig.vue'
 import ScatterConfig from "@/components/chart/ScatterConfig.vue";
 import RadarConfig from "@/components/chart/RadarConfig.vue";
+import GaugeConfig from "@/components/chart/GaugeConfig.vue";
 
 const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number }[]>([
   {
@@ -962,6 +963,10 @@ function renderRadar(){
 
 }
 
+function renderGauge(){
+
+}
+
 function renderChart() {
   if(lastChartType.value == 'barChart'){
     renderBarChart();
@@ -973,6 +978,8 @@ function renderChart() {
     renderScatter();
   } else if(lastChartType.value == 'radar'){
     renderRadar()
+  } else if(lastChartType.value == 'gauge'){
+    renderGauge()
   }
 }
 
@@ -1313,6 +1320,16 @@ watch(metricsFields,
                            :chartContainer="tempChartContainer">
 
             </RadarConfig>
+
+            <GaugeConfig v-else-if="lastChartType == 'gauge'"
+                         :getChartConfig="getTempChart"
+                         :setChartConfig="setTempChart"
+                         :clearCurrentConfig="clearCurrentConfig"
+                         :chartOption="tempChartOption"
+                         :chartContainer="tempChartContainer">
+
+            </GaugeConfig>
+
           </a-layout-sider>
         </a-layout>
       </a-modal>
