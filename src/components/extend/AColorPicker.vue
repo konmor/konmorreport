@@ -7,7 +7,6 @@ let {color} = defineProps(["color"]);
 // 声明事件
 const emit = defineEmits(['update:color'])
 
-// let currentColor = ref<string>('');
 let modalLeft = ref(0);
 let modalTop = ref(0);
 let openColorSelector = ref(false);
@@ -34,21 +33,24 @@ const getColor = (currentColor: string) => {
     <div :style="{background: color, borderRadius: '2px',height: '100%'}"
          @click="openColorPicker($event)">
 
-      <a-modal v-model:open="openColorSelector"
-               :style="{ left: modalLeft + 'px', top: modalTop + 'px' }"
-               width="100%"
-               :closable="false"
-               wrap-class-name="color-selector-modal"
-               :footer="null">
-        <ColorPicker :color="color" :setColor="getColor" ></ColorPicker>
-      </a-modal>
+<!--      <a-modal v-model:open="openColorSelector"-->
+<!--               :style="{ left: modalLeft + 'px', top: modalTop + 'px' }"-->
+<!--               width="100%"-->
+<!--               :closable="false"-->
+<!--               wrap-class-name="color-selector-modal"-->
+<!--               :footer="null">-->
+
+        <ColorPicker :color="color" :setColor="getColor"
+        v-if="openColorSelector"
+        ></ColorPicker>
+<!--      </a-modal>-->
     </div>
   </div>
 </template>
 
 <style scoped>
 
-:global(.color-selector-modal .ant-modal) {
+/*:global(.color-selector-modal .ant-modal) {
   max-width: 300px;
   padding-bottom: 0;
   margin: 0;
@@ -65,6 +67,6 @@ const getColor = (currentColor: string) => {
   flex: 1;
   overflow: hidden;
 
-}
+}*/
 
 </style>
