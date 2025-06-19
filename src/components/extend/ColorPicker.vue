@@ -1,13 +1,6 @@
 <script setup lang="ts">
-import {ref, reactive, computed, nextTick, onMounted, watch} from 'vue'
-import {
-  rgb2hex,
-  createLinearGradient,
-  hex2rgb,
-  rgb2hsv,
-  isHex,
-  isRgb,
-} from './ColorPicker.ts';
+import { ref, reactive, computed, nextTick, onMounted, watch } from 'vue'
+import { rgb2hex, createLinearGradient, hex2rgb, rgb2hsv, isHex, isRgb } from './ColorPicker.ts'
 
 const props = defineProps(['color', 'setColor'])
 
@@ -78,7 +71,8 @@ const selectSaturation = (e: MouseEvent) => {
   const height = canvas.height
   const width = canvas.width
   let x = e.offsetX,
-      y = e.offsetY
+    y = e.offsetY
+  console.log(x, y)
   if (x < 0) x = 0
   if (x > width) x = width
   if (y < 0) y = 0
@@ -87,10 +81,11 @@ const selectSaturation = (e: MouseEvent) => {
     top: y - 5 + 'px',
     left: x - 5 + 'px',
   }
+  console.log(position.pointPosition)
   var ctx = canvas.getContext('2d')
   var imageData = ctx.getImageData(Math.max(x - 5, 0), Math.max(0, y - 5), 1, 1)
   setRGBHSV(imageData.data)
-  attr.modelHex = rgb2hex({r: attr.r, g: attr.g, b: attr.b}, true)
+  attr.modelHex = rgb2hex({ r: attr.r, g: attr.g, b: attr.b }, true)
 }
 
 // 渲染调色器颜色
@@ -113,7 +108,7 @@ const renderHueColor = () => {
 // 颜色条选中
 const selectHue = (e: any) => {
   const canvas: any = canvasHueRef.value
-  const {top: hueTop, height} = canvas.getBoundingClientRect()
+  const { top: hueTop, height } = canvas.getBoundingClientRect()
   const ctx = e.target.getContext('2d')
   const mousemove = (e: any) => {
     let y = e.clientY - hueTop
@@ -134,7 +129,7 @@ const selectHue = (e: any) => {
       const pointY = parseFloat(position.pointPosition.top)
       const pointRgb = ctx.getImageData(Math.max(0, pointX), Math.max(0, pointY), 1, 1)
       setRGBHSV(pointRgb.data)
-      attr.modelHex = rgb2hex({r: attr.r, g: attr.g, b: attr.b}, true)
+      attr.modelHex = rgb2hex({ r: attr.r, g: attr.g, b: attr.b }, true)
     })
   }
   mousemove(e)
@@ -150,7 +145,7 @@ const selectHue = (e: any) => {
 function selectColor(color: string) {
   setRGBHSV(color)
   attr.modelRgb = rgbString.value.substring(4, rgbString.value.length - 1)
-  attr.modelHex = rgb2hex({r: attr.r, g: attr.g, b: attr.b}, true)
+  attr.modelHex = rgb2hex({ r: attr.r, g: attr.g, b: attr.b }, true)
   renderSaturationColor(rgbString.value)
   position.pointPosition = {
     left: Math.max(attr.s * 150 - 5, 0) + 'px',
@@ -178,7 +173,7 @@ function inputHex() {
 function inputRgb() {
   if (isRgb(attr.modelRgb)) {
     const [r, g, b] = attr.modelRgb.split(',')
-    const hex = rgb2hex({r, g, b}, true)
+    const hex = rgb2hex({ r, g, b }, true)
     attr.modelHex = hex
     selectColor(attr.modelHex)
   } else {
@@ -188,13 +183,13 @@ function inputRgb() {
 
 // color可能是 #fff 也可能是 123,21,11  这两种格式
 function setRGBHSV(color: any, initHex = false) {
-  let rgb: any = {r: '0', g: '0', b: '0'}
+  let rgb: any = { r: '0', g: '0', b: '0' }
   if (typeof color !== 'string') {
-    rgb = {r: color[0], g: color[1], b: color[2]}
+    rgb = { r: color[0], g: color[1], b: color[2] }
   } else {
     if (!color.includes('#')) {
       const [r, g, b] = color.split(',')
-      rgb = {r: r, g: g, b: b}
+      rgb = { r: r, g: g, b: b }
     } else {
       rgb = hex2rgb(color)
     }
@@ -220,20 +215,18 @@ function changeColor() {
 }
 
 watch(
-    () => props.color,
-    (newVal, _) => {
-      selectColor(newVal)
-    },
+  () => attr.modelHex,
+  (value) => {
+    // 触发事件
+    props.setColor(value)
+  },
 )
 
-watch(() => attr.modelHex, (value) => {
-  // 触发事件
-  props.setColor(value);
-})
-
 onMounted(() => {
-  selectColor(props.color)
   renderHueColor()
+  nextTick(() => {
+    selectColor(props.color)
+  })
 })
 </script>
 
@@ -243,11 +236,11 @@ onMounted(() => {
       <!-- 默认颜色列表选择区 -->
       <ul class="colors color-box">
         <li
-            v-for="item in colorsDefault"
-            :key="item"
-            class="item"
-            :style="{ background: item }"
-            @click="selectColor(item)"
+          v-for="item in colorsDefault"
+          :key="item"
+          class="item"
+          :style="{ background: item }"
+          @click="selectColor(item)"
         ></li>
       </ul>
       <div class="color-set">
@@ -271,11 +264,11 @@ onMounted(() => {
       <div class="input">
         <div class="color-type">
           <span class="name"> HEX </span>
-          <input v-model="attr.modelHex" class="value" @blur="inputHex"/>
+          <input v-model="attr.modelHex" class="value" @blur="inputHex" />
         </div>
         <div class="color-type">
           <span class="name"> RGB </span>
-          <input v-model="attr.modelRgb" class="value" @blur="inputRgb"/>
+          <input v-model="attr.modelRgb" class="value" @blur="inputRgb" />
         </div>
       </div>
     </div>
@@ -288,9 +281,9 @@ onMounted(() => {
 
 <style scoped>
 .hu-color-picker {
-  background: #ffffff;
+  background: transparent;
   border-radius: 4px;
-  box-shadow: 0 0 16px 0 rgba(0, 0, 0, 0.16);
+
   z-index: 1;
 }
 
@@ -311,10 +304,8 @@ onMounted(() => {
   display: flex;
 }
 
-
 .color-panel {
   display: flex;
-  padding: 8px 8px 0 8px;
 }
 
 .color-panel .color-box {
@@ -327,7 +318,6 @@ onMounted(() => {
 
 .color-view {
   display: flex;
-  padding: 0 8px;
 }
 
 .input {
@@ -456,5 +446,4 @@ onMounted(() => {
 .btn button:active {
   background-color: #1890ff;
 }
-
 </style>
