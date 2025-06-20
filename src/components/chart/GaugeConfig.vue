@@ -5,10 +5,15 @@ import * as echarts from 'echarts'
 import Left from '@/assets/icon/Left.vue'
 import Center from '@/assets/icon/Center.vue'
 import Right from '@/assets/icon/Right.vue'
-import {DashboardOutlined} from '@ant-design/icons-vue'
+import {CloseOutlined, DashboardOutlined, PieChartOutlined} from '@ant-design/icons-vue'
 import {gaugeColor} from '@/composable/GuageColor.ts'
 import ColorPicker from '@/components/extend/ColorPicker.vue'
 import AColorPicker from '@/components/extend/AColorPicker.vue'
+import Gauge from "@/assets/gauge/Gauge.vue";
+import GaugeHalf from "@/assets/gauge/GaugeHalf.vue";
+import ProgressCircle from "@/assets/gauge/ProgressCircle.vue";
+import ProgressBottom from "@/assets/gauge/ProgressBottom.vue";
+import {chartTemplate} from "@/composable/ChartTemplate.ts";
 
 let {getChartConfig, setChartConfig, chartOption, chartContainer, clearCurrentConfig} =
     defineProps([
@@ -24,16 +29,15 @@ let chartConfig: any
 let chartConfigControl = reactive({
   gaugeActiveKey: '', // 展开主题折叠面板
   gaugeRangeKey: '',
-  gaugeDetailShow:'',
-  gaugeSize:80,
-  widthSize:30,
+  gaugeDetailShow: '',
+  gaugeSize: 80,
+  widthSize: 30,
   showAxisTick: true,
   showAxisLabel: true,
-  pointerIcon:'default',
-  pointerLength:60,
-  currentThem: 'customized', // 当前主题
+  pointerIcon: 'default',
+  pointerLength: 60,
   currentGauge: 'default',
-  currentColors: themArray.find((item) => item.themeName == 'customized')!.theme.color, // 当前主题的颜色
+  gaugeType: 'gauge',
   pickColor: [[100, '#5470c6']] as Array<Array<any>>,
   openColorSelector: false,
   // 是否默认主题
@@ -74,57 +78,77 @@ const chartConfigFunction = {
       chartConfigControl.pickColor.splice(index, 0, [start, '#f0f0f0'])
     }
   },
-  changeLocation:()=>{
+  changeGaugeType: () => {
+    // 四种情况，
+
+    // 允许添加多个指标
+    let temp =  chartConfig.getOption();
+
+    let basicOption = chartTemplate(temp.title.text,chartConfigControl.gaugeType);
+
+    if(chartConfigControl.gaugeType.startsWith('progress')) {
+      // @ts-ignore
+      basicOption.series.data = temp.series[0].data[0];
+    }else {
+      // @ts-ignore
+      basicOption.series.data = temp.series[0].data;
+    }
+    // @ts-ignore
+    basicOption.series.max = temp.series[0].max;
+
+    // 将配置复制给 本地变量
+    Object.assign(chartOption, basicOption);
+
+    // 完全替换原来的内容
+    chartConfig.setOption(basicOption,true);
+  },
+  changeLocation: () => {
     // 根据数据的显示隐藏计算位置
     let dataShow = [];
     for (let i = 0; i < chartOption.series.data.length; i++) {
       dataShow[i] = chartOption.series.data[i].title.show || chartOption.series.data[i].detail.show
     }
 
-    let count = dataShow.filter(item=>item).length;
+    let count = dataShow.filter(item => item).length;
 
-    if(count > 10){
+    if (count > 10) {
       count = 10;
     }
 
     let a = 0;
-    if( count % 2 == 0 ) {
+    if (count % 2 == 0) {
       a = 10;
     }
 
-    let b = parseInt(count/2);
+    let b = parseInt((count / 2).toString());
 
-    let start = (- b * 20 ) + a ;
+    let start = (-b * 20) + a;
 
     for (let i = 0; i < chartOption.series.data.length; i++) {
-      if(dataShow[i]){
-        chartOption.series.data[i].title.offsetCenter = [ start+'%','80%'];
-        chartOption.series.data[i].detail.offsetCenter = [ start+'%','90%'];
+      if (dataShow[i]) {
+        chartOption.series.data[i].title.offsetCenter = [start + '%', '80%'];
+        chartOption.series.data[i].detail.offsetCenter = [start + '%', '90%'];
         start += 20;
       }
 
-      if(start > 90){
+      if (start > 90) {
         break;
       }
     }
 
   },
-  changeAllValueLocation:(show:boolean)=>{
+  changeAllValueLocation: (show: boolean) => {
     for (let i = 0; i < chartOption.series.data.length; i++) {
-       chartOption.series.data[i].detail.show =show;
+      chartOption.series.data[i].detail.show = show;
     }
     chartConfigFunction.changeLocation();
 
   },
-  changeAllNameLocation:(show:boolean)=>{
+  changeAllNameLocation: (show: boolean) => {
     for (let i = 0; i < chartOption.series.data.length; i++) {
-      chartOption.series.data[i].title.show =show;
+      chartOption.series.data[i].title.show = show;
     }
     chartConfigFunction.changeLocation();
-  },
-  getColor: (index: number) => {
-    let i = index % chartConfigControl.currentColors.length
-    return chartConfigControl.currentColors[i]
   },
 }
 
@@ -154,6 +178,44 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <div class="chart-group">
+    <div class="chart-item">
+      <span class="label-left">类型</span>
+      <div class="component-right">
+        <a-radio-group v-model:value="chartConfigControl.gaugeType"
+                       button-style="outline"
+                       size="small"
+                       class="gaugeBtnGroup"
+                       @change="()=>{
+          chartConfigFunction.changeGaugeType();
+        }">
+          <a-radio-button value='gauge'
+                          class="gaugeBtn">
+            <Gauge class="gauge"/>
+          </a-radio-button>
+
+
+          <a-radio-button value='gaugeHalf'
+                          class="gaugeBtn ">
+            <GaugeHalf class="gaugeHalf"/>
+          </a-radio-button>
+
+          <a-radio-button value='progressCircle'
+                          class="gaugeBtn ">
+            <ProgressCircle class="progressCircle"/>
+          </a-radio-button>
+
+          <a-radio-button value='progressBottom'
+                          class="gaugeBtn ">
+            <ProgressBottom class="progressBottom"/>
+          </a-radio-button>
+        </a-radio-group>
+
+      </div>
+
+    </div>
+  </div>
+
   <!--主题-->
   <div class="chart-group">
     <a-collapse
@@ -237,7 +299,7 @@ onUnmounted(() => {
             v-model:checked="chartOption.title.show"
             @change="
             (v: any) => {
-              chartConfig.setOption({ title: { show: v.target.checked } })
+              chartConfig.setOption({ title: { show: chartOption.title.show } })
             }
           "
         ></a-switch>
@@ -653,7 +715,7 @@ onUnmounted(() => {
               {{ item.name }}
             </span>
             <span>
-              <DashboardOutlined/>
+              <DashboardOutlined style="font-size: 16px"/>
             </span>
           </div>
         </template>
@@ -856,4 +918,45 @@ onUnmounted(() => {
 .legend-position .legend-position-container .legend-position-control .btn.bottom.right {
   border-bottom-right-radius: 4px;
 }
+
+.chart-group .chart-item .gaugeBtnGroup {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/*border: none;*/
+.chart-group .chart-item .gaugeBtn {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.ant-radio-button-wrapper:not(:first-child)::before {
+  content: none;
+}
+
+.chart-group .chart-item .gaugeBtn .gauge {
+  font-size: 26px;
+}
+
+.chart-group .chart-item .gaugeBtn .gaugeHalf {
+  font-size: 26px;
+}
+
+.chart-group .chart-item .gaugeBtn .progressCircle {
+
+  font-size: 26px;
+}
+
+.chart-group .chart-item .gaugeBtn .progressBottom {
+  font-size: 22px;
+}
+
+.chart-group .chart-item .gaugeBtn:hover {
+  transform: scale(1.3);
+}
+
 </style>

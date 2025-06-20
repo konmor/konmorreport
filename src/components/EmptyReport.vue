@@ -976,6 +976,7 @@ function renderGauge() {
     series: {
       id: '1',
       type: 'gauge',
+      max: 200,
       data: [] as Array<any>,
     },
   };
@@ -1010,7 +1011,9 @@ function renderGauge() {
   }
   // @ts-ignore
   max = 1.25 * max;
-
+  option.series.max = parseFloat(max.toString());
+  // @ts-ignore
+  tempChartOption.value.series.max = parseFloat(max.toString());
 
   for (let i = 0; i < source.length; i++) {
     // id:i.toString(), 并非echarts需要的id，为了唯一区分，我加上的字段
