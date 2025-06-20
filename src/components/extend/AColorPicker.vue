@@ -37,7 +37,4 @@ const getColor = (currentColor: string) => {
 
 <style scoped>
 
-:global(.color-picker .ant-popover-content .ant-popover-inner){
-  padding: 0;
-}
 </style>

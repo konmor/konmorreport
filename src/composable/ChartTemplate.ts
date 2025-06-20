@@ -723,86 +723,6 @@ export const GAUGE_TEMPLATE: ECBasicOption = {
       radius: '80%',
       // tooltip: { show: true },
       data: [
-        {
-          name: '标题1',
-          value: +(Math.random() * 200).toFixed(2),
-          title: {
-            show:false,
-            fontSize: 16,
-            overflow: 'truncate',
-            ellipsis: '...',
-            width: 64,
-            offsetCenter: ['-30%', '80%']
-          },
-          detail: {
-            show:false,
-            fontSize: 16,
-            overflow: 'truncate',
-            ellipsis: '...',
-            width: 64,
-            offsetCenter: ['-30%', '90%']
-          }
-        },
-        {
-          name: '标题2',
-          value: +(Math.random() * 200).toFixed(2),
-          title: {
-            show:false,
-            fontSize: 16,
-            overflow: 'truncate',
-            ellipsis: '...',
-            width: 64,
-            offsetCenter: ['-10%', '80%']
-          },
-          detail: {
-            show:false,
-            fontSize: 16,
-            overflow: 'truncate',
-            ellipsis: '...',
-            width: 64,
-            offsetCenter: ['-10%', '90%']
-          }
-        },
-        {
-          name: '标题3',
-          value: +(Math.random() * 200).toFixed(2),
-          title: {
-            show:false,
-            fontSize: 16,
-            overflow: 'truncate',
-            ellipsis: '...',
-            width: 64,
-            offsetCenter: ['10%', '80%']
-          },
-          detail: {
-            show:false,
-            fontSize: 16,
-            overflow: 'truncate',
-            ellipsis: '...',
-            width: 64,
-            offsetCenter: ['10%', '90%']
-          }
-        },
-        {
-          name: '标题4',
-          value: +(Math.random() * 200).toFixed(2),
-          title: {
-            show:false,
-            fontSize: 16,
-            overflow: 'truncate',
-            ellipsis: '...',
-            width: 64,
-            offsetCenter: ['30%', '80%']
-          },
-          detail: {
-            show:false,
-            fontSize: 16,
-            overflow: 'truncate',
-            ellipsis: '...',
-            width: 64,
-            offsetCenter: ['30%', '90%']
-          }
-        }
       ],
       min: 0,
       max: 200,
@@ -823,7 +743,7 @@ export const GAUGE_TEMPLATE: ECBasicOption = {
       },
       splitLine: {
         // 和splitNumber 一起
-        show: false,
+        show: true,
         length: 30,
         distance: -30,
         lineStyle: {
@@ -833,7 +753,7 @@ export const GAUGE_TEMPLATE: ECBasicOption = {
       },
       // 刻度
       axisTick: {
-        show: false,
+        show: true,
         length: 8,
         distance: -30,
         lineStyle: {
@@ -843,7 +763,7 @@ export const GAUGE_TEMPLATE: ECBasicOption = {
       },
       axisLabel: {
         // 刻度值 是否显示
-        show: false,
+        show: true,
         distance: 40,
         color: 'inherit'
       },
