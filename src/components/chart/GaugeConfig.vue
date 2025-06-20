@@ -227,6 +227,8 @@ onMounted(() => {
 onUnmounted(() => {
   clearCurrentConfig()
 })
+
+// todo 指标和 维度限制选择 ； 2.切换仪表板类型时 需要切换指标和维度的限制，以及清空指标只剩一条
 </script>
 
 <template>
