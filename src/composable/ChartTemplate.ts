@@ -721,6 +721,15 @@ export const GAUGE_TEMPLATE: ECBasicOption = {
             data: [],
             min: 0,
             max: 200,
+            progress: {
+              show: false,
+              width: 50,
+              roundCap: true,
+              itemStyle: {
+                // color: '',
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+              }
+            },
             axisLine: {
                 show: true,
                 // 两端显示成圆形
@@ -813,12 +822,21 @@ export const GAUGE_HALF_TEMPLATE: ECBasicOption = {
             id: '1',
             type: 'gauge',
             center: ['50%', '65%'],
-            radius: '80%',
+            radius: '90%',
             startAngle: 180,
             endAngle: 0,
             data: [],
             min: 0,
             max: 200,
+            progress: {
+              show: false,
+              width: 50,
+              roundCap: true,
+              itemStyle: {
+                // color: '',
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+              }
+            },
             axisLine: {
                 show: true,
                 // 两端显示成圆形
@@ -896,10 +914,10 @@ export const PROGRESS_CIRCLE_TEMPLATE: ECBasicOption = {
     },
     tooltip: {
         show: true,
-        formatter: '{a0} <br/>{b0} : {c0}',
+        // formatter: '{a0} <br/>{b0} : {c0}',
         trigger: 'item'
     },
-    series: [
+    series:
         {
             id: '1',
             type: 'gauge',
@@ -913,17 +931,17 @@ export const PROGRESS_CIRCLE_TEMPLATE: ECBasicOption = {
                 width: 50,
                 roundCap: true,
                 itemStyle: {
-                    color: '',
+                    // color: '',
                     shadowColor: 'rgba(0, 0, 0, 0.5)'
                 }
             },
             data: [
                 {
-                    value: +(Math.random() * 200).toFixed(2),
+                    value: 80,
                     title: {
                         show: false,
                         fontSize: 16,
-                        offsetCenter: ['0%', '0%']
+                        offsetCenter: ['0%', '10%']
                     },
                     detail: {
                         show: true,
@@ -969,7 +987,7 @@ export const PROGRESS_CIRCLE_TEMPLATE: ECBasicOption = {
                 show: false
             }
         }
-    ]
+
 };
 
 export const PROGRESS_BOTTOM_TEMPLATE: ECBasicOption = {
@@ -981,10 +999,10 @@ export const PROGRESS_BOTTOM_TEMPLATE: ECBasicOption = {
     },
     tooltip: {
         show: true,
-        formatter: '{a0} <br/>{b0} : {c0}',
+        // formatter: '{a0} <br/>{b0} : {c0}',
         trigger: 'item'
     },
-    series: [
+    series:
         {
             id: '1',
             type: 'gauge',
@@ -997,13 +1015,13 @@ export const PROGRESS_BOTTOM_TEMPLATE: ECBasicOption = {
                 width: 50,
                 roundCap: true,
                 itemStyle: {
-                    color: '',
+                    // color: '',
                     shadowColor: 'rgba(0, 0, 0, 0.5)'
                 }
             },
             data: [
                 {
-                    value: +(Math.random() * 200).toFixed(2),
+                    value: 80,
                     title: {
                         show: false,
                         fontSize: 16,
@@ -1053,7 +1071,6 @@ export const PROGRESS_BOTTOM_TEMPLATE: ECBasicOption = {
                 show: false
             }
         }
-    ]
 };
 
 

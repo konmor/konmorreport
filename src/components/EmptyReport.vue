@@ -318,6 +318,8 @@ const sqlSelectorModal = reactive<{
       // 打开图表配置模态框
       tempChartModal.open = true
 
+      // 清空下数据
+      // tempChartOption.value = {};
       // 设置默认配置
       tempChartOption.value = chartTemplate('标题1', lastChartType.value);
       // Object.assign(tempChartOption,chartTemplate('标题1',lastChartType.value));
