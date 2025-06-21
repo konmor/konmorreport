@@ -347,20 +347,21 @@ function changeThreeEmSize() {
 onMounted(() => {
   // 渲染图表
   for (let i = 0; i < items.slice().length; i++) {
-    let container = document.getElementById(items[i].id)
+    // todo
+    /*let container = document.getElementById(items[i].id)
     // 2.初始化echarts 挂载的位置
     let myEcharts = echarts.init(container) // 参数是dom节点
     // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
     let ecBasicOption = chartTemplate('test1', items[i].value)
 
-    myEcharts.setOption(ecBasicOption)
+     myEcharts.setOption(ecBasicOption)
 
     allChartsInstance.push(myEcharts)
     let observer = new ResizeObserver(() => {
       if (myEcharts) myEcharts.resize()
     })
     observer.observe(container as Element)
-    allResizeObserver.push(observer)
+    allResizeObserver.push(observer)*/
   }
 
   // 计算一次 1fr的大小
@@ -1250,7 +1251,22 @@ watch(metricsFields, renderChart)
               }
             "
           >
-            <div :id="element.id" style="height: 100%; width: 100%"></div>
+            <div :id="element.id" style="height: 100%; width: 100%">
+              <div class="chart-label" >
+              <div style="display: flex;justify-content: center;width: 100%;align-items: center"
+              class="title"><span>title</span></div>
+              <div style="display: flex;justify-content: space-around;width: 100%;max-height: 80% ; flex-direction: row ;flex-wrap: wrap"
+              class="content">
+                <div class="title"><span>title</span></div>
+                <div class="label">a <span>这里是数值</span></div>
+                <div class="label">b <span>这里是数值2</span></div>
+                <div class="label">c <span>这里是数值3</span></div>
+                <div class="label">d <span>这里是数值4</span></div>
+                <div class="label">f <span>这里是数值5</span></div>
+                <div class="label">f <span>这里是数值5</span></div>
+              </div>
+              </div>
+            </div>
             <div class="drag-class">
               <fullscreen-outlined :rotate="45"></fullscreen-outlined>
             </div>
@@ -1755,5 +1771,28 @@ watch(metricsFields, renderChart)
   position: absolute;
   top: 0;
   right: 2px;
+}
+
+.chart-label{
+  padding: 8px;
+}
+
+.chart-label>.title {
+  height: 32px;
+  line-height: 32px;
+  border: #108ee9 1px solid;
+}
+
+.chart-label .content .label {
+  margin-top: 6px;
+  border: 1px solid #6fd845;
+  padding: 8px 4px 8px 4px;
+}
+
+.chart-label .content .title {
+  margin-top: 6px;
+  margin-right: 12px;
+  border: 1px solid #6fd845;
+  padding: 8px 4px 8px 4px;
 }
 </style>
