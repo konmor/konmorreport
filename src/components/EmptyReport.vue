@@ -8,30 +8,30 @@ import Diagram from '@/components/Diagram.vue'
 import draggable from 'vuedraggable'
 import CloseCircleOutlined from '@ant-design/icons-vue/CloseCircleOutlined'
 import 'perfect-scrollbar/css/perfect-scrollbar.css'
-import {nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref, watch} from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import Filter from '@/components/Filter.vue'
-import {getUuid} from 'ant-design-vue/es/vc-notification/HookNotification'
+import { getUuid } from 'ant-design-vue/es/vc-notification/HookNotification'
 import * as echarts from 'echarts'
-import {chartTemplate} from '@/composable/ChartTemplate.ts'
+import { chartTemplate } from '@/composable/ChartTemplate.ts'
 import useNavigator from '@/composable/useNavigator.ts'
-import type {EChartsType} from 'echarts'
-import type {ECBasicOption} from 'echarts/types/dist/shared'
+import type { EChartsType } from 'echarts'
+import type { ECBasicOption } from 'echarts/types/dist/shared'
 import BarConfig from '@/components/chart/BarConfig.vue'
-import {sqlQueryData} from '@/api/sql.ts'
-import type {SQLQuery, SQLResultField} from '@/types/api.ts';
+import { sqlQueryData } from '@/api/sql.ts'
+import type { SQLQuery, SQLResultField } from '@/types/api.ts'
 import {
   FieldStringOutlined,
   FieldNumberOutlined,
   FieldTimeOutlined,
   CloseOutlined,
-  FullscreenOutlined
+  FullscreenOutlined,
 } from '@ant-design/icons-vue'
-import PieConfig from "@/components/chart/PieConfig.vue";
+import PieConfig from '@/components/chart/PieConfig.vue'
 import LineConfig from '@/components/chart/LineConfig.vue'
-import ScatterConfig from "@/components/chart/ScatterConfig.vue";
-import RadarConfig from "@/components/chart/RadarConfig.vue";
-import GaugeConfig from "@/components/chart/GaugeConfig.vue";
-import Resize from "@/assets/icon/Resize.vue";
+import ScatterConfig from '@/components/chart/ScatterConfig.vue'
+import RadarConfig from '@/components/chart/RadarConfig.vue'
+import GaugeConfig from '@/components/chart/GaugeConfig.vue'
+import Resize from '@/assets/icon/Resize.vue'
 
 const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number }[]>([
   {
@@ -39,72 +39,6 @@ const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?
     id: getUuid(),
     xSpan: 9,
     ySpan: 5,
-  },
-  {
-    value: 'pieChart',
-    id: getUuid(),
-    xSpan: 3,
-    ySpan: 4,
-  },
-  {
-    value: 'pieChart',
-    id: getUuid(),
-    xSpan: 5,
-    ySpan: 6,
-  },
-  {
-    value: 'scatter',
-    id: getUuid(),
-    xSpan: 5,
-    ySpan: 6,
-  },
-  {
-    value: 'pieChart',
-    id: getUuid(),
-    xSpan: 5,
-    ySpan: 6,
-  },
-  {
-    value: 'pieChart',
-    id: getUuid(),
-    xSpan: 4,
-    ySpan: 4,
-  },
-  {
-    value: 'pieChart',
-    id: getUuid(),
-    xSpan: 1,
-    ySpan: 1,
-  },
-  {
-    value: 'pieChart',
-    id: getUuid(),
-    xSpan: 3,
-    ySpan: 3,
-  },
-  {
-    value: 'pieChart',
-    id: getUuid(),
-    xSpan: 3,
-    ySpan: 4,
-  },
-  {
-    value: 'pieChart',
-    id: getUuid(),
-    xSpan: 3,
-    ySpan: 4,
-  },
-  {
-    value: 'pieChart',
-    id: getUuid(),
-    xSpan: 1,
-    ySpan: 1,
-  },
-  {
-    value: 'pieChart',
-    id: getUuid(),
-    xSpan: 1,
-    ySpan: 1,
   },
 ])
 
@@ -115,7 +49,7 @@ const moveTest = (event: Event) => {
   console.log('chart move', event)
 }
 
-const {sqlArray, refreshDatasourceList, findSourceIdBySQLID} = useNavigator()
+const { sqlArray, refreshDatasourceList, findSourceIdBySQLID } = useNavigator()
 refreshDatasourceList()
 
 const addTest = (event: Event) => {
@@ -165,146 +99,145 @@ const setTempChart = (value: EChartsType) => {
   }
 
   // 重新绑定页面大小变化 resizeObserve
-  tempChart = value;
+  tempChart = value
 
   tempObserver = new ResizeObserver((entries: any) => {
     if (tempChart) tempChart.resize()
-  });
+  })
   tempObserver.observe(tempChartContainer.value as Element)
-
 }
-
 
 // 使用change事件，监听添加事件。似乎echarts有bug，仅change事件【added】能够拿到echarts clone后的对象
 const change = function change(event: Event) {
   // 监听添加事件
   if ('added' in event) {
     // @ts-ignore 刚刚拖拽进来的图表类型，也许不是图表
-    lastChartType.value = event['added'].element.type;
+    lastChartType.value = event['added'].element.type
     // @ts-ignore window.console.log(event['added'])
     lastEchartsContainerID = event['added'].element.id
     let newContainer = document.getElementById(lastEchartsContainerID)
     // 2.初始化echarts 挂载的位置
     let newEchartsInstance = echarts.init(newContainer) // 参数是dom节点
     // 3. 设置默认数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
-    newEchartsInstance.setOption(chartTemplate('test2', lastChartType.value));
+    newEchartsInstance.setOption(chartTemplate('test2', lastChartType.value))
 
     // 放入allChartsInstance容器中
     allChartsInstance.push(newEchartsInstance)
 
     let observer = new ResizeObserver((entries: any) => {
-
       if (newEchartsInstance) newEchartsInstance.resize()
     })
     observer.observe(newContainer as Element)
-    allResizeObserver.push(observer);
+    allResizeObserver.push(observer)
   }
 }
 
 // 维度
 let dimensions: Array<string> = []
 
-let tempChartOption = ref<ECBasicOption>({});
+let tempChartOption = ref<ECBasicOption>({})
 
 let allFields = ref<SQLResultField[]>([])
 let allData = reactive<Array<Map<string, object>>>([])
 
 const clearCurrentConfig = () => {
-  metricsFields.length = 0;
-  dimensionsFields.length = 0;
+  metricsFields.length = 0
+  dimensionsFields.length = 0
 
-  lastChartType.value = '';
-  lastEchartsContainerID = '';
-  lastSQLId = '';
+  lastChartType.value = ''
+  lastEchartsContainerID = ''
+  lastSQLId = ''
 
-  tempChart.dispose();
-  tempChart.clear();
+  tempChart.dispose()
+  tempChart.clear()
   // 清空tempChartOption的属性
-  tempChartOption.value = {};
+  tempChartOption.value = {}
 }
 
 const tempChartModal = reactive<{ open: boolean; ok: (reject: any) => void; cancel: () => void }>({
   open: false,
   ok: (reject: any) => {
-    tempChartModal.open = false;
+    tempChartModal.open = false
     // 配置好之后从 temChart 中获取数据，并渲染给最后一个 chartArray 中的chart
-    allChartsInstance[allChartsInstance.length - 1].setOption(tempChart.getOption(), true);
-    clearCurrentConfig();
+    allChartsInstance[allChartsInstance.length - 1].setOption(tempChart.getOption(), true)
+    clearCurrentConfig()
   },
   cancel: () => {
     tempChartModal.open = false
-    clearCurrentConfig();
-    removeLastEchartsInstance();
+    clearCurrentConfig()
+    removeLastEchartsInstance()
   },
 })
 
-
 function removeLastEchartsInstance() {
   //删除刚刚创建的数据,删除echarts实例，删除draagabel的元素
-  let lastEchartsInstance = allChartsInstance.pop();
+  let lastEchartsInstance = allChartsInstance.pop()
   if (lastEchartsInstance != undefined) {
-    lastEchartsInstance.dispose();
-    lastEchartsInstance.clear();
+    lastEchartsInstance.dispose()
+    lastEchartsInstance.clear()
   }
 
   for (let i = items.length - 1; i >= 0; i--) {
     if (items[i].id == lastEchartsContainerID) {
-      items.splice(i, 1);
-      break;
+      items.splice(i, 1)
+      break
     }
   }
 }
 
 function dimensionsPut(to: any, from: any, htmlElement: any, dragEvent: any): boolean {
   // 没找到则，允许添加
-  let notExistDimensions = dimensionsFields.find(value => {
-    return value.fieldId == htmlElement.id
-  }) == undefined
-  let notExistMetrics = metricsFields.find(value => {
-    return value.fieldId == htmlElement.id
-  }) == undefined;
-  return notExistDimensions && notExistMetrics;
+  let notExistDimensions =
+    dimensionsFields.find((value) => {
+      return value.fieldId == htmlElement.id
+    }) == undefined
+  let notExistMetrics =
+    metricsFields.find((value) => {
+      return value.fieldId == htmlElement.id
+    }) == undefined
+  return notExistDimensions && notExistMetrics
 }
 
 function metricsPut(to: any, from: any, htmlElement: any, dragEvent: any): boolean {
-
   // 没找到则，允许添加
-  let notExistDimensions = dimensionsFields.find(value => {
-    return value.fieldId == htmlElement.id
-  }) == undefined
-  let notExistMetrics = metricsFields.find(value => {
-    return value.fieldId == htmlElement.id
-  }) == undefined;
-  let isNumber = allFields.value.find(value => {
-    return value.fieldId == htmlElement.id
-  })?.fieldType2 == 'Number'
-  return notExistDimensions && notExistMetrics && isNumber;
+  let notExistDimensions =
+    dimensionsFields.find((value) => {
+      return value.fieldId == htmlElement.id
+    }) == undefined
+  let notExistMetrics =
+    metricsFields.find((value) => {
+      return value.fieldId == htmlElement.id
+    }) == undefined
+  let isNumber =
+    allFields.value.find((value) => {
+      return value.fieldId == htmlElement.id
+    })?.fieldType2 == 'Number'
+  return notExistDimensions && notExistMetrics && isNumber
 }
 
 const removeDimensionsById = (id: string) => {
   if (id != null && id != '') {
-    let index = dimensionsFields.findIndex(value => {
+    let index = dimensionsFields.findIndex((value) => {
       return value.fieldId == id
-    });
+    })
     if (index > -1) {
       // 删除
-      dimensionsFields.splice(index, 1);
+      dimensionsFields.splice(index, 1)
     }
   }
 }
 
 const removeMetricsById = (id: string) => {
   if (id != null && id != '') {
-    let index = metricsFields.findIndex(value => {
+    let index = metricsFields.findIndex((value) => {
       return value.fieldId == id
-    });
+    })
     if (index > -1) {
       // 删除
-      metricsFields.splice(index, 1);
+      metricsFields.splice(index, 1)
     }
   }
 }
-
 
 const sqlSelectorModal = reactive<{
   open: boolean
@@ -327,7 +260,7 @@ const sqlSelectorModal = reactive<{
       // 清空下数据
       // tempChartOption.value = {};
       // 设置默认配置
-      tempChartOption.value = chartTemplate('标题1', lastChartType.value);
+      tempChartOption.value = chartTemplate('标题1', lastChartType.value)
       // Object.assign(tempChartOption,chartTemplate('标题1',lastChartType.value));
 
       // 查询数据拿到字段和数据
@@ -335,13 +268,13 @@ const sqlSelectorModal = reactive<{
         sourceId: findSourceIdBySQLID(lastSQLId)!,
         sqlId: lastSQLId,
         queryBySQLContent: false,
-        pageInfo: {page: 1, size: 5000, total: 0},
+        pageInfo: { page: 1, size: 5000, total: 0 },
       }
 
       sqlQueryData(sqlQuery).then((response) => {
         // 访问正常
         if (response.code == 0) {
-          allFields.value = response.data.columns;
+          allFields.value = response.data.columns
           // for (let i = 0; i < response.data.columns.length; i++) {
           //   allFields[i] = response.data.columns[i]
           // }
@@ -358,7 +291,7 @@ const sqlSelectorModal = reactive<{
         let newEchartsInstance = echarts.init(container)
         tempChart = newEchartsInstance // 交给外部临时变量
         // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
-        newEchartsInstance.setOption(tempChartOption.value);
+        newEchartsInstance.setOption(tempChartOption.value)
 
         let observer = new ResizeObserver(() => {
           if (newEchartsInstance) newEchartsInstance.resize()
@@ -369,17 +302,46 @@ const sqlSelectorModal = reactive<{
     }
   },
   cancel: () => {
-    sqlSelectorModal.open = false;
-    lastChartType.value = '';
+    sqlSelectorModal.open = false
+    lastChartType.value = ''
     removeLastEchartsInstance()
   },
   selected: '',
-  data: [{label: '测试选项-1', value: 'key1'}],
+  data: [{ label: '测试选项-1', value: 'key1' }],
   showError: false,
 })
 
-const moveChart = (icon: any, event: any, id: string) => {
-  console.log('icon,event,id', icon, event, id);
+let allChartContainerResizeObserver: ResizeObserver
+let oneFrSize = ref(0)
+let threeEmSize = ref(0)
+
+let startClientX = ref(0)
+let startClientY = ref(0)
+let isDragging = ref(false)
+
+let currentRowSpan = ref(0)
+let currentColSpan = ref(0)
+
+function changeOneFrSize() {
+  let allChartContainer = document.getElementsByClassName('allChartContainer')[0]
+
+  //实时获取宽度
+  let width = window.getComputedStyle(allChartContainer).width
+
+  if (width.endsWith('px')) {
+    width = width.replace('px', '')
+  }
+  oneFrSize.value = parseFloat((parseFloat(width) / 24).toFixed(2))
+}
+
+function changeThreeEmSize() {
+  // let fontSize = .style.fontSize
+  let fontSize = window.getComputedStyle(document.getElementsByTagName('body')[0]).fontSize
+  if (fontSize.endsWith('px')) {
+    fontSize = fontSize.replace('px', '')
+  }
+
+  threeEmSize.value = parseFloat((parseFloat(fontSize) * 3).toFixed(2))
 }
 
 onMounted(() => {
@@ -389,57 +351,70 @@ onMounted(() => {
     // 2.初始化echarts 挂载的位置
     let myEcharts = echarts.init(container) // 参数是dom节点
     // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
-    let ecBasicOption = chartTemplate('test1', items[i].value);
+    let ecBasicOption = chartTemplate('test1', items[i].value)
 
-    myEcharts.setOption(ecBasicOption);
+    myEcharts.setOption(ecBasicOption)
 
     allChartsInstance.push(myEcharts)
     let observer = new ResizeObserver(() => {
-      if (myEcharts) myEcharts.resize();
+      if (myEcharts) myEcharts.resize()
     })
     observer.observe(container as Element)
     allResizeObserver.push(observer)
   }
 
-  let allChartResizeIcon = document.getElementsByClassName('chart-resize');
-  console.log('allChartResizeIcon', allChartResizeIcon);
+  // 计算一次 1fr的大小
+  changeOneFrSize()
+  changeThreeEmSize()
+  // 添加容器大小变化的监听器
+  let allChartContainer = document.getElementsByClassName('allChartContainer')[0]
+
+  allChartContainerResizeObserver = new ResizeObserver(() => {
+    console.log('容器大小发生变化')
+    changeOneFrSize()
+  })
+  allChartContainerResizeObserver.observe(allChartContainer as Element)
+
+  /*let allChartResizeIcon = document.getElementsByClassName('chart-resize')
   for (let i = 0; i < allChartResizeIcon.length; i++) {
-    let resizeIcon = allChartResizeIcon[i];
+    let resizeIcon = allChartResizeIcon[i]
 
     // @ts-ignore
-    let id = resizeIcon.dataset.resizeId;
+    let id = resizeIcon.dataset.resizeId
 
-    let isDragging = false;
+    let isDragging = false
 
     function mouseDown(e: any) {
       if (isDragging) {
-        return;
+        return
       }
-      isDragging = true;
-      window.addEventListener('mousemove', mouseMove);
-      window.addEventListener('mouseup', mouseUp);
+      isDragging = true
+      startPageX.value = e.pageX
+      startPageY.value = e.pageY
+      window.addEventListener('mousemove', mouseMove)
+      window.addEventListener('mouseup', mouseUp)
     }
 
     function mouseUp() {
       if (!isDragging) {
-        return;
+        return
       }
-
-      isDragging = false;
-      window.removeEventListener('mousemove', mouseMove);
-      window.removeEventListener('mouseup', mouseUp);
+      startPageX.value =0;
+      startPageY.value =0;
+      isDragging = false
+      window.removeEventListener('mousemove', mouseMove)
+      window.removeEventListener('mouseup', mouseUp)
     }
 
     function mouseMove(e: any) {
-        if(!isDragging) {
-          return;
-        }
-        moveChart(resizeIcon,e,id);
+      if (!isDragging) {
+        return
+      }
+      moveChart(resizeIcon, e, id)
     }
 
-    resizeIcon.addEventListener('mousedown', mouseDown);
-
-  }
+    resizeIcon.addEventListener('mousedown', mouseDown)
+  }*/
 })
 
 onUnmounted(() => {
@@ -449,6 +424,10 @@ onUnmounted(() => {
 
   if (tempObserver != null) {
     tempObserver.disconnect()
+  }
+
+  if (allChartContainerResizeObserver != null) {
+    allChartContainerResizeObserver.disconnect()
   }
 })
 
@@ -467,37 +446,36 @@ onBeforeUnmount(() => {
 watch(sqlArray, (sqlItems) => {
   // sql选择框的下拉数据
   sqlSelectorModal.data =
-      sqlItems != null && sqlItems.length > 0
-          ? sqlItems.map((item) => {
-            // @ts-ignore
-            return {value: item?.key, label: item?.label}
-          })
-          : [{label: '测试选项-1', value: 'key1'}]
+    sqlItems != null && sqlItems.length > 0
+      ? sqlItems.map((item) => {
+          // @ts-ignore
+          return { value: item?.key, label: item?.label }
+        })
+      : [{ label: '测试选项-1', value: 'key1' }]
 })
 
 watch(
-    () => sqlSelectorModal.selected,
-    (value) => {
-      lastSQLId = value
-    },
+  () => sqlSelectorModal.selected,
+  (value) => {
+    lastSQLId = value
+  },
 )
 
-
 function getMapData(data: Map<string, object>, keys: string[]): Array<object> {
-  let arr = [];
+  let arr = []
   for (let i = 0; i < keys.length; i++) {
     // @ts-ignore
-    let newVar = data[keys[i]];
+    let newVar = data[keys[i]]
     if (newVar) {
-      arr[i] = newVar;
+      arr[i] = newVar
     }
   }
 
-  return arr;
+  return arr
 }
 
 function renderBarChart() {
-  dimensions.length = 0;
+  dimensions.length = 0
   // 图表渲染
   let option = {
     dataset: {
@@ -505,15 +483,15 @@ function renderBarChart() {
       source: [] as Array<Array<object>>,
     },
     series: [{}] as Array<object>,
-  };
+  }
 
   // 必须要有维度字段;
   if (dimensionsFields.length > 0) {
-    dimensions[0] = dimensionsFields[0].fieldAlias;
+    dimensions[0] = dimensionsFields[0].fieldAlias
 
     for (let i = 0; i < metricsFields.length; i++) {
-      let index = i + 1;
-      dimensions[index] = metricsFields[i].fieldAlias;
+      let index = i + 1
+      dimensions[index] = metricsFields[i].fieldAlias
 
       option.series[i] = {
         id: index.toString(),
@@ -542,35 +520,36 @@ function renderBarChart() {
   // 必须要有至少两个字段，其中一个必须为维度字段
   if (dimensions.length < 2) {
     tempChart.setOption(
-        {
-          dataset: {
-            dimensions: [],
-            source: [],
-          },
-          series: [{}]
+      {
+        dataset: {
+          dimensions: [],
+          source: [],
         },
-        {
-          replaceMerge: ['series']
-        });
-    return;
+        series: [{}],
+      },
+      {
+        replaceMerge: ['series'],
+      },
+    )
+    return
   }
-  let source: Array<Array<object>> = allData.map((item) => getMapData(item, dimensions));
+  let source: Array<Array<object>> = allData.map((item) => getMapData(item, dimensions))
 
-  option.dataset.dimensions = dimensions;
-  option.dataset.source = source;
+  option.dataset.dimensions = dimensions
+  option.dataset.source = source
 
   // 设置给变量
-  tempChartOption.value.dataset = option.dataset;
+  tempChartOption.value.dataset = option.dataset
   tempChartOption.value.series = option.series
 
   // 设置图标配置
   tempChart.setOption(option, {
-    replaceMerge: ['series']
-  });
+    replaceMerge: ['series'],
+  })
 }
 
 function renderPieChart() {
-  dimensions.length = 0;
+  dimensions.length = 0
   // 图表渲染
   let option = {
     dataset: {
@@ -578,15 +557,15 @@ function renderPieChart() {
       source: [] as Array<Array<object>>,
     },
     series: [{}] as Array<object>,
-  };
+  }
 
   // 必须要有维度字段;
   if (dimensionsFields.length > 0) {
-    dimensions[0] = dimensionsFields[0].fieldAlias;
+    dimensions[0] = dimensionsFields[0].fieldAlias
 
     for (let i = 0; i < metricsFields.length; i++) {
-      let index = i + 1;
-      dimensions[index] = metricsFields[i].fieldAlias;
+      let index = i + 1
+      dimensions[index] = metricsFields[i].fieldAlias
 
       option.series[i] = {
         id: index.toString(),
@@ -601,7 +580,7 @@ function renderPieChart() {
         padAngle: 0.5,
         encode: {
           itemName: dimensions[0],
-          value: metricsFields[i].fieldAlias
+          value: metricsFields[i].fieldAlias,
         },
         selectedMode: true,
         //　分离距离
@@ -617,16 +596,16 @@ function renderPieChart() {
           position: 'outside',
           formatter: undefined,
           // true | radial  径向排布 \tangential 切向排布 -90 ~ 90
-          rotate: 'tangential'
+          rotate: 'tangential',
         },
         // 视觉引导线，当 label 在position outside 情况下有用
         labelLine: {
-          show: true
+          show: true,
         },
         labelLayout: {
           // 是否隐藏重叠的标签。
           hideOverlap: true,
-          draggable: true
+          draggable: true,
         },
         itemStyle: {
           // 阴影效果
@@ -634,7 +613,7 @@ function renderPieChart() {
           shadowOffsetX: 0.5,
           shadowOffsetY: 0.5,
           // 圆角半径
-          borderRadius: 5
+          borderRadius: 5,
         },
         emphasis: {
           disabled: false,
@@ -644,8 +623,8 @@ function renderPieChart() {
           itemStyle: {
             shadowBlur: 10,
             shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)'
-          }
+            shadowColor: 'rgba(0, 0, 0, 0.5)',
+          },
         },
         // 内圆半径，外圆半径
         radius: [0, '80%'],
@@ -656,35 +635,36 @@ function renderPieChart() {
   // 必须要有至少两个字段，其中一个必须为维度字段
   if (dimensions.length < 2) {
     tempChart.setOption(
-        {
-          dataset: {
-            dimensions: [],
-            source: [],
-          },
-          series: [{}]
+      {
+        dataset: {
+          dimensions: [],
+          source: [],
         },
-        {
-          replaceMerge: ['series']
-        });
-    return;
+        series: [{}],
+      },
+      {
+        replaceMerge: ['series'],
+      },
+    )
+    return
   }
-  let source: Array<Array<object>> = allData.map((item) => getMapData(item, dimensions));
+  let source: Array<Array<object>> = allData.map((item) => getMapData(item, dimensions))
 
-  option.dataset.dimensions = dimensions;
-  option.dataset.source = source;
+  option.dataset.dimensions = dimensions
+  option.dataset.source = source
 
   // 设置给变量
-  tempChartOption.value.dataset = option.dataset;
+  tempChartOption.value.dataset = option.dataset
   tempChartOption.value.series = option.series
 
   // 设置图标配置
   tempChart.setOption(option, {
-    replaceMerge: ['series', 'dataset']
-  });
+    replaceMerge: ['series', 'dataset'],
+  })
 }
 
 function renderLineChart() {
-  dimensions.length = 0;
+  dimensions.length = 0
   // 图表渲染
   let option = {
     dataset: {
@@ -692,15 +672,15 @@ function renderLineChart() {
       source: [] as Array<Array<object>>,
     },
     series: [{}] as Array<object>,
-  };
+  }
 
   // 必须要有维度字段;
   if (dimensionsFields.length > 0) {
-    dimensions[0] = dimensionsFields[0].fieldAlias;
+    dimensions[0] = dimensionsFields[0].fieldAlias
 
     for (let i = 0; i < metricsFields.length; i++) {
-      let index = i + 1;
-      dimensions[index] = metricsFields[i].fieldAlias;
+      let index = i + 1
+      dimensions[index] = metricsFields[i].fieldAlias
 
       option.series[i] = {
         id: index.toString(),
@@ -738,35 +718,36 @@ function renderLineChart() {
   // 必须要有至少两个字段，其中一个必须为维度字段
   if (dimensions.length < 2) {
     tempChart.setOption(
-        {
-          dataset: {
-            dimensions: [],
-            source: [],
-          },
-          series: [{}]
+      {
+        dataset: {
+          dimensions: [],
+          source: [],
         },
-        {
-          replaceMerge: ['series']
-        });
-    return;
+        series: [{}],
+      },
+      {
+        replaceMerge: ['series'],
+      },
+    )
+    return
   }
-  let source: Array<Array<object>> = allData.map((item) => getMapData(item, dimensions));
+  let source: Array<Array<object>> = allData.map((item) => getMapData(item, dimensions))
 
-  option.dataset.dimensions = dimensions;
-  option.dataset.source = source;
+  option.dataset.dimensions = dimensions
+  option.dataset.source = source
 
   // 设置给变量
-  tempChartOption.value.dataset = option.dataset;
+  tempChartOption.value.dataset = option.dataset
   tempChartOption.value.series = option.series
 
   // 设置图标配置
   tempChart.setOption(option, {
-    replaceMerge: ['series']
-  });
+    replaceMerge: ['series'],
+  })
 }
 
 function renderScatter() {
-  dimensions.length = 0;
+  dimensions.length = 0
   // 图表渲染
   let option = {
     dataset: {
@@ -775,15 +756,15 @@ function renderScatter() {
     },
     series: [{}] as Array<object>,
     xAxis: {} as any,
-  };
+  }
 
   // 必须要有维度字段;
   if (dimensionsFields.length > 0) {
-    dimensions[0] = dimensionsFields[0].fieldAlias;
+    dimensions[0] = dimensionsFields[0].fieldAlias
 
     for (let i = 0; i < metricsFields.length; i++) {
-      let index = i + 1;
-      dimensions[index] = metricsFields[i].fieldAlias;
+      let index = i + 1
+      dimensions[index] = metricsFields[i].fieldAlias
 
       option.series[i] = {
         id: index.toString(),
@@ -794,22 +775,21 @@ function renderScatter() {
         label: {
           show: false,
           position: 'top',
-
         },
         itemStyle: {
           opacity: 0.8,
           shadowColor: 'rgba(0, 0, 0, 0.3)',
           shadowOffsetX: 0,
           shadowOffsetY: 0,
-          shadowBlur: 10
+          shadowBlur: 10,
         },
         emphasis: {
           disabled: false,
           focus: 'series',
           // 强调时显示label
-          label: {show: true}
+          label: { show: true },
         },
-        encode: {x: dimensions[0], y: metricsFields[i].fieldAlias, itemName: dimensions[0]}
+        encode: { x: dimensions[0], y: metricsFields[i].fieldAlias, itemName: dimensions[0] },
       }
     }
   }
@@ -817,133 +797,131 @@ function renderScatter() {
   // 必须要有至少两个字段，其中一个必须为维度字段
   if (dimensions.length < 2) {
     tempChart.setOption(
-        {
-          dataset: {
-            dimensions: [],
-            source: [],
-          },
-          series: [{}]
+      {
+        dataset: {
+          dimensions: [],
+          source: [],
         },
-        {
-          replaceMerge: ['series', 'dataset'],
-        });
-    return;
+        series: [{}],
+      },
+      {
+        replaceMerge: ['series', 'dataset'],
+      },
+    )
+    return
   }
-  let source: Array<Array<object>> = allData.map((item) => getMapData(item, dimensions));
+  let source: Array<Array<object>> = allData.map((item) => getMapData(item, dimensions))
 
-  option.dataset.dimensions = dimensions;
-  option.dataset.source = source;
+  option.dataset.dimensions = dimensions
+  option.dataset.source = source
 
   // 设置给变量
-  tempChartOption.value.dataset = option.dataset;
+  tempChartOption.value.dataset = option.dataset
   tempChartOption.value.series = option.series
 
   //
   if (dimensionsFields[0].fieldType2 == 'Number') {
-    option.xAxis.type = 'value';
-    option.xAxis.boundaryGap = ['5%', '5%'];
+    option.xAxis.type = 'value'
+    option.xAxis.boundaryGap = ['5%', '5%']
 
     // @ts-ignore
-    tempChartOption.value.xAxis.type = 'value';
+    tempChartOption.value.xAxis.type = 'value'
     // @ts-ignore
-    tempChartOption.value.xAxis.boundaryGap = ['5%', '5%'];
+    tempChartOption.value.xAxis.boundaryGap = ['5%', '5%']
   } else if (dimensionsFields[0].fieldType2 == 'Time') {
-    option.xAxis.type = 'time';
-    option.xAxis.boundaryGap = true;
+    option.xAxis.type = 'time'
+    option.xAxis.boundaryGap = true
 
     // @ts-ignore
-    tempChartOption.value.xAxis.type = 'time';
+    tempChartOption.value.xAxis.type = 'time'
     // @ts-ignore
-    tempChartOption.value.xAxis.boundaryGap = ['5%', '5%'];
+    tempChartOption.value.xAxis.boundaryGap = ['5%', '5%']
   } else {
-    option.xAxis.type = 'category';
-    option.xAxis.boundaryGap = true;
+    option.xAxis.type = 'category'
+    option.xAxis.boundaryGap = true
 
     // @ts-ignore
-    tempChartOption.value.xAxis.type = 'category';
+    tempChartOption.value.xAxis.type = 'category'
     // @ts-ignore
-    tempChartOption.value.xAxis.boundaryGap = true;
+    tempChartOption.value.xAxis.boundaryGap = true
   }
   // 设置图标配置
   tempChart.setOption(option, {
     replaceMerge: ['series', 'dataset'],
-  });
-
-
+  })
 }
 
-function getRadarData(dimensions: string[]):
-    { indicator: Array<string>, data: Array<{ name: string, data: Array<any> }> } {
-
-  let result: { indicator: Array<string>, data: Array<{ name: string, data: Array<any> }> } = {
-    indicator: [], data: []
-  };
+function getRadarData(dimensions: string[]): {
+  indicator: Array<string>
+  data: Array<{ name: string; data: Array<any> }>
+} {
+  let result: { indicator: Array<string>; data: Array<{ name: string; data: Array<any> }> } = {
+    indicator: [],
+    data: [],
+  }
   // Array<Map<string, object>>
 
-  let d = new Array(dimensions.length - 1) as Array<Array<object>>;
+  let d = new Array(dimensions.length - 1) as Array<Array<object>>
   for (let i = 0; i < d.length; i++) {
-    d[i] = new Array(allData.length);
+    d[i] = new Array(allData.length)
   }
 
   for (let i = 0; i < allData.length; i++) {
-    let item = allData[i];
+    let item = allData[i]
 
     // @ts-ignore
-    result.indicator.push(item[dimensions[0]]);
+    result.indicator.push(item[dimensions[0]])
 
     for (let j = 1; j < dimensions.length; j++) {
-
       // @ts-ignore
-      d[j - 1][i] = item[dimensions[j]];
+      d[j - 1][i] = item[dimensions[j]]
     }
   }
 
   for (let i = 0; i < d.length; i++) {
     result.data.push({
-      name: dimensions[i + 1], data: d[i]
+      name: dimensions[i + 1],
+      data: d[i],
     })
   }
 
-  return result;
+  return result
 }
 
 function renderRadar() {
-
-  dimensions.length = 0;
+  dimensions.length = 0
   // 图表渲染
   let option = {
     radar: {
-      indicator: [] as Array<any>
+      indicator: [] as Array<any>,
     },
     series: {
       name: '' as string,
       type: 'radar',
       data: [] as Array<any>,
     },
-  };
+  }
 
   // 必须要有维度字段;
   if (dimensionsFields.length > 0) {
-    dimensions[0] = dimensionsFields[0].fieldAlias;
+    dimensions[0] = dimensionsFields[0].fieldAlias
 
     for (let i = 0; i < metricsFields.length; i++) {
-      let index = i + 1;
-      dimensions[index] = metricsFields[i].fieldAlias;
+      let index = i + 1
+      dimensions[index] = metricsFields[i].fieldAlias
     }
   }
 
   // 必须要有至少两个字段，其中一个必须为维度字段
   if (dimensions.length < 2) {
-    tempChart.setOption(
-        option,
-        {
-          replaceMerge: ['series']
-        });
-    return;
+    tempChart.setOption(option, {
+      replaceMerge: ['series'],
+    })
+    return
   }
 
-  let source: { indicator: Array<string>, data: Array<{ name: string, data: Array<any> }> } =
-      getRadarData(dimensions);
+  let source: { indicator: Array<string>; data: Array<{ name: string; data: Array<any> }> } =
+    getRadarData(dimensions)
 
   for (let i = 0; i < source.indicator.length; i++) {
     if (i == 0) {
@@ -960,18 +938,17 @@ function renderRadar() {
           show: false,
         },
         // 刻度标签 刻度值
-        axisLabel: {show: false},
+        axisLabel: { show: false },
       }
     } else {
-      option.radar.indicator[i] = {name: source.indicator[i]};
+      option.radar.indicator[i] = { name: source.indicator[i] }
     }
   }
 
-  option.series.name = dimensions[0];
+  option.series.name = dimensions[0]
 
   for (let i = 0; i < source.data.length; i++) {
     option.series.data[i] = {
-
       // 该id 属性不是echarts的自有属性，仅用于调整配置时修改数据
       id: i.toString(),
       value: source.data[i].data,
@@ -997,34 +974,32 @@ function renderRadar() {
   }
 
   // @ts-ignore 设置给变量
-  tempChartOption.value.radar.indicator = option.radar.indicator;
+  tempChartOption.value.radar.indicator = option.radar.indicator
   tempChartOption.value.series = option.series
 
   // 设置图标配置
   tempChart.setOption(option, {
-    replaceMerge: ['series']
-  });
-
+    replaceMerge: ['series'],
+  })
 }
 
-function getGaugeData(dimensions: Array<string>): Array<{ name: string, value: object }> {
-
-  let gauge: Array<{ name: string, value: object }> = [];
+function getGaugeData(dimensions: Array<string>): Array<{ name: string; value: object }> {
+  let gauge: Array<{ name: string; value: object }> = []
   // Array<Map<string, object>>
   for (let j = 0; j < dimensions.length; j++) {
-    let value = allData[0][dimensions[j]];
+    // @ts-ignore
+    let value = allData[0][dimensions[j]]
 
     gauge[j] = {
       name: dimensions[j],
       value: value != undefined ? value : null,
-    };
+    }
   }
-  return gauge;
+  return gauge
 }
 
 function renderGauge() {
-
-  dimensions.length = 0;
+  dimensions.length = 0
   // 图表渲染
   let option = {
     series: {
@@ -1033,83 +1008,81 @@ function renderGauge() {
       max: 200,
       data: [] as Array<any>,
     },
-  };
+  }
 
   // 仅仅指标字段
   if (metricsFields.length > 0) {
     for (let i = 0; i < metricsFields.length; i++) {
-      dimensions[i] = metricsFields[i].fieldAlias;
+      dimensions[i] = metricsFields[i].fieldAlias
     }
   }
 
   if (dimensions.length < 1) {
     // 设置空数组
-    tempChart.setOption(option);
-    return;
+    tempChart.setOption(option)
+    return
   }
 
-
-  let source: Array<{ name: string, value: object }> = getGaugeData(dimensions);
+  let source: Array<{ name: string; value: object }> = getGaugeData(dimensions)
 
   // 获取最大值
-  let max = source[0].value;
+  let max = source[0].value
 
   if (source.length > 1) {
     for (let i = 1; i < source.length; i++) {
-      let value = source[i].value;
+      let value = source[i].value
 
       if (source[i].value > max) {
-        max = value;
+        max = value
       }
     }
   }
   // @ts-ignore
-  max = 1.25 * max;
-  option.series.max = parseFloat(max.toString());
+  max = 1.25 * max
+  option.series.max = parseFloat(max.toString())
   // @ts-ignore
-  tempChartOption.value.series.max = parseFloat(max.toString());
+  tempChartOption.value.series.max = parseFloat(max.toString())
 
   for (let i = 0; i < source.length; i++) {
     // id:i.toString(), 并非echarts需要的id，为了唯一区分，我加上的字段
-    option.series.data[i] =
-        {
-          id: i.toString(),
-          name: source[i].name,
-          value: source[i].value,
-          title: {
-            show: false,
-            fontSize: 16,
-            overflow: 'truncate',
-            ellipsis: '…',
-            width: 64,
-            offsetCenter: ['0', '0']
-          },
-          detail: {
-            show: false,
-            fontSize: 16,
-            overflow: 'truncate',
-            ellipsis: '…',
-            width: 64,
-            offsetCenter: ['0', '0']
-          }
-        }
+    option.series.data[i] = {
+      id: i.toString(),
+      name: source[i].name,
+      value: source[i].value,
+      title: {
+        show: false,
+        fontSize: 16,
+        overflow: 'truncate',
+        ellipsis: '…',
+        width: 64,
+        offsetCenter: ['0', '0'],
+      },
+      detail: {
+        show: false,
+        fontSize: 16,
+        overflow: 'truncate',
+        ellipsis: '…',
+        width: 64,
+        offsetCenter: ['0', '0'],
+      },
+    }
   }
 
   // @ts-ignore 设置给变量
-  tempChartOption.value.series.data = option.series.data;
+  tempChartOption.value.series.data = option.series.data
   // 设置图标配置
-  tempChart.setOption(option);
+  tempChart.setOption(option)
 }
 
 function renderChart() {
   if (lastChartType.value == 'barChart') {
-    renderBarChart();
+    renderBarChart()
   } else if (lastChartType.value == 'pieChart') {
-    renderPieChart();
+    renderPieChart()
   } else if (lastChartType.value == 'lineChart') {
-    renderLineChart();
+    renderLineChart()
   } else if (lastChartType.value == 'scatter') {
-    renderScatter();
+    renderScatter()
   } else if (lastChartType.value == 'radar') {
     renderRadar()
   } else if (lastChartType.value == 'gauge') {
@@ -1117,63 +1090,115 @@ function renderChart() {
   }
 }
 
-// 监听字段的变化去渲染数据
-watch(dimensionsFields, renderChart);
+const chartResizeMouseDown = (id: string, event: Event) => {
+  event.stopPropagation()
+
+  if (isDragging.value) {
+    return
+  }
+
+  isDragging.value = true
+
+  let find = items.find((item) => item.id == id)
+  currentRowSpan.value = find?.xSpan ? find?.xSpan : 0
+  currentColSpan.value = find?.ySpan ? find?.ySpan : 0
+
+  // @ts-ignore
+  startClientX.value = event.clientX
+  // @ts-ignore
+  startClientY.value = event.clientY
+
+  const chartResizeMouseMove = (event: Event) => {
+    if (!isDragging.value) {
+      return
+    }
+
+    // @ts-ignore
+    let width = event.clientX - startClientX.value
+    // @ts-ignore
+    let height = event.clientY - startClientY.value
+
+    // 计算下
+    let rowSpan = Math.round(height / threeEmSize.value);
+    let colSpan = Math.round(width / oneFrSize.value);
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].id == id) {
+        items[i].xSpan = rowSpan + currentRowSpan.value
+        items[i].ySpan = colSpan + currentColSpan.value
+      }
+    }
+  }
+
+  const chartResizeMouseUp = (event: Event) => {
+    if (!isDragging.value) {
+      return
+    }
+    isDragging.value = false
+    // 移除document事件
+    window.removeEventListener('mousemove', chartResizeMouseMove)
+    window.removeEventListener('mouseup', chartResizeMouseUp)
+  }
+
+  window.addEventListener('mousemove', chartResizeMouseMove)
+  window.addEventListener('mouseup', chartResizeMouseUp)
+}
 
 // 监听字段的变化去渲染数据
-watch(metricsFields,
-    renderChart
-)
+watch(dimensionsFields, renderChart)
+
+// 监听字段的变化去渲染数据
+watch(metricsFields, renderChart)
 </script>
 
 <template>
   <a-layout :style="{ height: '100%', width: '100%' }">
     <a-layout-sider
-        :style="{
+      :style="{
         border: '1px solid black',
         height: '100%',
         backgroundColor: 'transparent',
         overflowY: 'auto',
       }"
-        class="verticalScrollBar"
+      class="verticalScrollBar"
     >
       <div class="diagramContainer">
         <span class="diagramTitle">图表</span>
         <!--        <Diagram @mousedown="testDown($event)" @mouseup="testUp($event)" @mousemove="testMove($event)"/>-->
-        <Diagram/>
+        <Diagram />
       </div>
 
       <div class="filterContainer">
         <span class="filterTitle">过滤器</span>
-        <Filter/>
+        <Filter />
       </div>
 
       <!-- 图表绑定的数据 选择择模态框-->
       <a-modal
-          v-model:open="sqlSelectorModal.open"
-          title="请选择需要渲染的数据！"
-          @ok="sqlSelectorModal.ok"
-          @cancel="sqlSelectorModal.cancel"
-          ok-text="确认"
-          cancel-text="取消"
+        v-model:open="sqlSelectorModal.open"
+        title="请选择需要渲染的数据！"
+        @ok="sqlSelectorModal.ok"
+        @cancel="sqlSelectorModal.cancel"
+        ok-text="确认"
+        cancel-text="取消"
       >
         <a-select
-            v-model:value="sqlSelectorModal.selected"
-            placeholder="请选择数据!"
-            :options="sqlSelectorModal.data"
-            :style="{ width: '60%' }"
-            allowClear
+          v-model:value="sqlSelectorModal.selected"
+          placeholder="请选择数据!"
+          :options="sqlSelectorModal.data"
+          :style="{ width: '60%' }"
+          allowClear
         >
         </a-select>
         <span :style="{ marginLeft: '10px' }" v-if="sqlSelectorModal.showError">
-          <CloseCircleOutlined :style="{ color: 'red' }"/>
+          <CloseCircleOutlined :style="{ color: 'red' }" />
           请选择正确的数据！
         </span>
       </a-modal>
     </a-layout-sider>
 
     <a-layout-content
-        :style="{
+      :style="{
         border: '1px solid black',
         height: '100%',
         width: '100%',
@@ -1184,57 +1209,58 @@ watch(metricsFields,
 
         /*alignContent:'center'*/
       }"
-        class="verticalScrollBar"
+      class="verticalScrollBar"
     >
       <draggable
-          :style="{
+        :style="{
           display: 'grid',
           gridTemplateColumns: 'repeat(24,1fr)',
           gridAutoRows: '3em',
           justifyContent: 'center',
           gridAutoFlow: 'row dense',
         }"
-          class="allChartContainer"
-          handle=".drag-class"
-          :list="items"
-          :group="{ name: 'outerContainer', pull: false, put: true }"
-          animation="500"
-          @end="endTest"
-          @move="moveTest"
-          @add="addTest"
-          @change="change"
-          item-key="id"
-          tag="div"
+        class="allChartContainer"
+        handle=".drag-class"
+        :list="items"
+        :group="{ name: 'outerContainer', pull: false, put: true }"
+        animation="500"
+        @end="endTest"
+        @move="moveTest"
+        @add="addTest"
+        @change="change"
+        item-key="id"
+        tag="div"
       >
         <template #item="{ element }">
           <div
-
-              :style="{
+            :style="{
               gridRowStart: `span ${element.xSpan}`,
               gridColumnStart: `span ${element.ySpan}`,
-              position:'relative',
+              position: 'relative',
               // resize:'none',
               // overflow:'hidden',
               /*cursor:'nw-resize',*/
               /*backgroundColor: generateRandomBrightColor(),*/
             }"
-              class="chart"
-              @click="
+            class="chart"
+            @click="
               () => {
-               /* element.xSpan++
+                /* element.xSpan++
                 element.ySpan++*/
               }
             "
           >
-            <div :id="element.id" style="height: 100%;width: 100%">
-
-            </div>
+            <div :id="element.id" style="height: 100%; width: 100%"></div>
             <div class="drag-class">
-              <fullscreen-outlined :rotate='45'></fullscreen-outlined>
+              <fullscreen-outlined :rotate="45"></fullscreen-outlined>
             </div>
 
-            <div class="chart-resize" :data-resize-id="element.id">
-              <Resize/>
+            <div
+              class="chart-resize"
+              :data-resize-id="element.id"
+              @mousedown="chartResizeMouseDown(element.id, $event)"
+            >
+              <Resize />
             </div>
           </div>
         </template>
@@ -1242,34 +1268,34 @@ watch(metricsFields,
       <!-- 图形配置模态框-->
       <!-- v-if 控制销毁模态框以及模态框中的组件-->
       <a-modal
-          v-if="tempChartModal.open"
-          :open="tempChartModal.open"
-          @ok="tempChartModal.ok"
-          @cancel="tempChartModal.cancel"
-          ok-text="确认"
-          cancel-text="取消"
-          :style="{ backgroundColor: 'transparent' }"
-          width="100%"
-          wrap-class-name="full-modal"
+        v-if="tempChartModal.open"
+        :open="tempChartModal.open"
+        @ok="tempChartModal.ok"
+        @cancel="tempChartModal.cancel"
+        ok-text="确认"
+        cancel-text="取消"
+        :style="{ backgroundColor: 'transparent' }"
+        width="100%"
+        wrap-class-name="full-modal"
       >
         <template #title><span>配置图表</span></template>
 
         <a-layout :style="{ height: '100%', width: '100%', backgroundColor: 'transparent' }">
           <!-- 配置模态框 左侧字段选择区域-->
           <a-layout-sider
-              :style="{
+            :style="{
               height: '100%',
               backgroundColor: 'transparent',
               borderTop: '1px solid black',
               borderBottom: '1px solid black',
             }"
-              width="240px"
+            width="240px"
           >
             <div class="chart-group">
               <a-collapse
-                  v-model:activeKey="fieldContainerActiveKey"
-                  expand-icon-position="end"
-                  :style="{
+                v-model:activeKey="fieldContainerActiveKey"
+                expand-icon-position="end"
+                :style="{
                   border: 'none',
                   backgroundColor: 'transparent',
                   margin: '0',
@@ -1277,31 +1303,31 @@ watch(metricsFields,
                 }"
               >
                 <a-collapse-panel
-                    key="fieldContainer"
-                    header="字段"
-                    :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
+                  key="fieldContainer"
+                  header="字段"
+                  :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
                 >
                   <draggable
-                      class="fieldsContainer"
-                      :list="allFields"
-                      :sort="false"
-                      :group="{ name: 'fieldsContainer', pull: 'clone', put: false }"
-                      animation="100"
-                      item-key="fieldId"
-                      tag="div"
+                    class="fieldsContainer"
+                    :list="allFields"
+                    :sort="false"
+                    :group="{ name: 'fieldsContainer', pull: 'clone', put: false }"
+                    animation="100"
+                    item-key="fieldId"
+                    tag="div"
                   >
                     <template #item="{ element }">
                       <div :id="element.fieldId" class="field">
                         <span v-if="element.fieldType2 == 'Number'" class="field-label">
-                          <FieldNumberOutlined :style="{ color: '#6fd845' }"/>
+                          <FieldNumberOutlined :style="{ color: '#6fd845' }" />
                           {{ element.fieldAlias }}
                         </span>
                         <span v-else-if="element.fieldType2 == 'Time'" class="field-label">
-                          <FieldTimeOutlined :style="{ color: '#1890ff' }"/>
+                          <FieldTimeOutlined :style="{ color: '#1890ff' }" />
                           {{ element.fieldAlias }}
                         </span>
                         <span v-else class="field-label">
-                          <FieldStringOutlined :style="{ color: '#efb056' }"/>
+                          <FieldStringOutlined :style="{ color: '#efb056' }" />
                           {{ element.fieldAlias }}
                         </span>
                       </div>
@@ -1315,7 +1341,7 @@ watch(metricsFields,
           <a-layout>
             <!-- 配置模态框 中间 维度配置区域-->
             <a-layout-header
-                :style="{
+              :style="{
                 backgroundColor: 'transparent',
                 border: '1px solid black',
                 height: '15%',
@@ -1325,35 +1351,40 @@ watch(metricsFields,
             >
               <div class="fieldsDimensionsAndMetrics">
                 <div class="dimensions">
-                  <span style="font-size: 12px;padding: 0 6px;height: 28px;line-height: 28px;">维度</span>
+                  <span style="font-size: 12px; padding: 0 6px; height: 28px; line-height: 28px"
+                    >维度</span
+                  >
                   <draggable
-                      class="dimensionsContainer"
-                      :list="dimensionsFields"
-                      :order="false"
-                      :move="()=>false"
-                      :group="{ name: 'dimensionsContainer', pull: false, put:dimensionsPut}"
-                      animation="100"
-                      item-key="fieldId"
-                      tag="div"
+                    class="dimensionsContainer"
+                    :list="dimensionsFields"
+                    :order="false"
+                    :move="() => false"
+                    :group="{ name: 'dimensionsContainer', pull: false, put: dimensionsPut }"
+                    animation="100"
+                    item-key="fieldId"
+                    tag="div"
                   >
                     <template #item="{ element }">
                       <div class="field" :id="element.fieldId">
                         <span class="field-label" v-if="element.fieldType2 == 'Number'">
-                          <FieldNumberOutlined :style="{ color: '#6fd845' }"/>
+                          <FieldNumberOutlined :style="{ color: '#6fd845' }" />
                           {{ element.fieldAlias }}
                         </span>
                         <span class="field-label" v-else-if="element.fieldType2 == 'Time'">
-                          <FieldTimeOutlined :style="{ color: '#1890ff' }"/>
+                          <FieldTimeOutlined :style="{ color: '#1890ff' }" />
                           {{ element.fieldAlias }}
                         </span>
                         <span class="field-label" v-else>
-                          <FieldStringOutlined :style="{ color: '#efb056' }"/>
+                          <FieldStringOutlined :style="{ color: '#efb056' }" />
                           {{ element.fieldAlias }}
                         </span>
-                        <a-button @click="removeDimensionsById(element.fieldId)" size="small"
-                                  class="close-btn">
+                        <a-button
+                          @click="removeDimensionsById(element.fieldId)"
+                          size="small"
+                          class="close-btn"
+                        >
                           <template #icon>
-                            <CloseOutlined/>
+                            <CloseOutlined />
                           </template>
                         </a-button>
                       </div>
@@ -1362,46 +1393,51 @@ watch(metricsFields,
                 </div>
 
                 <div class="metrics">
-                  <span style="font-size: 12px;padding: 0 6px;height: 28px;line-height: 28px">指标</span>
+                  <span style="font-size: 12px; padding: 0 6px; height: 28px; line-height: 28px"
+                    >指标</span
+                  >
                   <draggable
-                      class="metricsContainer"
-                      :list="metricsFields"
-                      :order="false"
-                      :group="{ name: 'metricsContainer', pull: false, put:metricsPut}"
-                      animation="100"
-                      item-key="fieldId"
-                      tag="div"
+                    class="metricsContainer"
+                    :list="metricsFields"
+                    :order="false"
+                    :group="{ name: 'metricsContainer', pull: false, put: metricsPut }"
+                    animation="100"
+                    item-key="fieldId"
+                    tag="div"
                   >
                     <template #item="{ element }">
                       <div class="field" :id="element.fieldId">
                         <span class="field-label" v-if="element.fieldType2 == 'Number'">
-                          <FieldNumberOutlined :style="{ color: '#6fd845' }"/>
+                          <FieldNumberOutlined :style="{ color: '#6fd845' }" />
                           {{ element.fieldAlias }}
                         </span>
                         <span class="field-label" v-else-if="element.fieldType2 == 'Time'">
-                          <FieldTimeOutlined :style="{ color: '#1890ff' }"/>
+                          <FieldTimeOutlined :style="{ color: '#1890ff' }" />
                           {{ element.fieldAlias }}
                         </span>
                         <span class="field-label" v-else>
-                          <FieldStringOutlined :style="{ color: '#efb056' }"/>
+                          <FieldStringOutlined :style="{ color: '#efb056' }" />
                           {{ element.fieldAlias }}
                         </span>
-                        <a-button @click="removeMetricsById(element.fieldId)" size="small" class="close-btn">
+                        <a-button
+                          @click="removeMetricsById(element.fieldId)"
+                          size="small"
+                          class="close-btn"
+                        >
                           <template #icon>
-                            <CloseOutlined/>
+                            <CloseOutlined />
                           </template>
                         </a-button>
                       </div>
                     </template>
                   </draggable>
                 </div>
-
               </div>
             </a-layout-header>
 
             <!-- 配置模态框 中间 图表渲染区域-->
             <a-layout-content
-                :style="{
+              :style="{
                 height: '100%',
                 width: '100%',
                 backgroundColor: 'transparent',
@@ -1409,16 +1445,16 @@ watch(metricsFields,
               }"
             >
               <div
-                  id="tempChartContainer"
-                  ref="tempChartContainer"
-                  :style="{ height: '100%' }"
+                id="tempChartContainer"
+                ref="tempChartContainer"
+                :style="{ height: '100%' }"
               ></div>
             </a-layout-content>
           </a-layout>
 
           <!-- 配置模态框 右侧 图表各类配置区域-->
           <a-layout-sider
-              :style="{
+            :style="{
               height: '100%',
               maxHeight: '100%',
               backgroundColor: 'transparent',
@@ -1426,62 +1462,67 @@ watch(metricsFields,
               borderTop: '1px solid black',
               overflowY: 'auto', // abc todo
             }"
-              width="240px"
-              class="viewConfig verticalScrollBar"
+            width="240px"
+            class="viewConfig verticalScrollBar"
           >
-            <BarConfig v-if="lastChartType == 'barChart'"
-                       :getChartConfig="getTempChart"
-                       :setChartConfig="setTempChart"
-                       :clearCurrentConfig="clearCurrentConfig"
-                       :chartOption="tempChartOption"
-                       :chartContainer="tempChartContainer"
+            <BarConfig
+              v-if="lastChartType == 'barChart'"
+              :getChartConfig="getTempChart"
+              :setChartConfig="setTempChart"
+              :clearCurrentConfig="clearCurrentConfig"
+              :chartOption="tempChartOption"
+              :chartContainer="tempChartContainer"
             ></BarConfig>
 
-            <PieConfig v-else-if="lastChartType == 'pieChart'"
-                       :getChartConfig="getTempChart"
-                       :setChartConfig="setTempChart"
-                       :clearCurrentConfig="clearCurrentConfig"
-                       :chartOption="tempChartOption"
-                       :chartContainer="tempChartContainer">
-
+            <PieConfig
+              v-else-if="lastChartType == 'pieChart'"
+              :getChartConfig="getTempChart"
+              :setChartConfig="setTempChart"
+              :clearCurrentConfig="clearCurrentConfig"
+              :chartOption="tempChartOption"
+              :chartContainer="tempChartContainer"
+            >
             </PieConfig>
 
-            <LineConfig v-else-if="lastChartType == 'lineChart'"
-                        :getChartConfig="getTempChart"
-                        :setChartConfig="setTempChart"
-                        :clearCurrentConfig="clearCurrentConfig"
-                        :chartOption="tempChartOption"
-                        :chartContainer="tempChartContainer">
-
+            <LineConfig
+              v-else-if="lastChartType == 'lineChart'"
+              :getChartConfig="getTempChart"
+              :setChartConfig="setTempChart"
+              :clearCurrentConfig="clearCurrentConfig"
+              :chartOption="tempChartOption"
+              :chartContainer="tempChartContainer"
+            >
             </LineConfig>
 
-            <ScatterConfig v-else-if="lastChartType == 'scatter'"
-                           :getChartConfig="getTempChart"
-                           :setChartConfig="setTempChart"
-                           :clearCurrentConfig="clearCurrentConfig"
-                           :chartOption="tempChartOption"
-                           :chartContainer="tempChartContainer">
-
+            <ScatterConfig
+              v-else-if="lastChartType == 'scatter'"
+              :getChartConfig="getTempChart"
+              :setChartConfig="setTempChart"
+              :clearCurrentConfig="clearCurrentConfig"
+              :chartOption="tempChartOption"
+              :chartContainer="tempChartContainer"
+            >
             </ScatterConfig>
 
-            <RadarConfig v-else-if="lastChartType == 'radar'"
-                         :getChartConfig="getTempChart"
-                         :setChartConfig="setTempChart"
-                         :clearCurrentConfig="clearCurrentConfig"
-                         :chartOption="tempChartOption"
-                         :chartContainer="tempChartContainer">
-
+            <RadarConfig
+              v-else-if="lastChartType == 'radar'"
+              :getChartConfig="getTempChart"
+              :setChartConfig="setTempChart"
+              :clearCurrentConfig="clearCurrentConfig"
+              :chartOption="tempChartOption"
+              :chartContainer="tempChartContainer"
+            >
             </RadarConfig>
 
-            <GaugeConfig v-else-if="lastChartType == 'gauge'"
-                         :getChartConfig="getTempChart"
-                         :setChartConfig="setTempChart"
-                         :clearCurrentConfig="clearCurrentConfig"
-                         :chartOption="tempChartOption"
-                         :chartContainer="tempChartContainer">
-
+            <GaugeConfig
+              v-else-if="lastChartType == 'gauge'"
+              :getChartConfig="getTempChart"
+              :setChartConfig="setTempChart"
+              :clearCurrentConfig="clearCurrentConfig"
+              :chartOption="tempChartOption"
+              :chartContainer="tempChartContainer"
+            >
             </GaugeConfig>
-
           </a-layout-sider>
         </a-layout>
       </a-modal>
@@ -1490,7 +1531,6 @@ watch(metricsFields,
 </template>
 
 <style scoped>
-
 /*ant-collapse 折叠区域 去掉自带样式*/
 
 :deep(.ant-collapse .ant-collapse-item .ant-collapse-header) {
@@ -1505,7 +1545,6 @@ watch(metricsFields,
 :deep(.ant-collapse .ant-collapse-item .ant-collapse-content .ant-collapse-content-box) {
   padding: 0;
 }
-
 
 /*左侧 柱状图、折线图、等图标*/
 
@@ -1534,8 +1573,10 @@ watch(metricsFields,
 
 .allChartContainer .chart .chart-resize {
   position: absolute;
-  display: none;
+  display: block;
   border: 1px solid #a7e88e;
+  width: 14px;
+  height: 14px;
   bottom: 0;
   right: 0;
 }
@@ -1684,7 +1725,6 @@ watch(metricsFields,
   z-index: 1;
 }
 
-
 .fieldsDimensionsAndMetrics .dimensions .dimensionsContainer .field .field-label,
 .fieldsDimensionsAndMetrics .metrics .metricsContainer .field .field-label {
   height: 28px;
@@ -1716,6 +1756,4 @@ watch(metricsFields,
   top: 0;
   right: 2px;
 }
-
-
 </style>

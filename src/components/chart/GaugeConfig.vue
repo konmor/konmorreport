@@ -115,6 +115,8 @@ const chartConfigFunction = {
         // @ts-ignore
         basicOption.series.data[0].value = temp.series[0].data[0].value
       }
+      // @ts-ignore
+      delete basicOption.series.axisLine.lineStyle.color
     } else {
       // @ts-ignore
       basicOption.series.data = temp.series[0].data;
@@ -199,15 +201,18 @@ const chartConfigFunction = {
 }
 
 watch(()=>chartConfigControl.pickColor, (value) => {
-  let afterChange = [[]] as Array<Array<any>>
-  for (let i = 0; i < value.length; i++) {
-    let start = parseFloat((value[i][0] / 100).toFixed(2))
-    afterChange[i] = [start, value[i][1]]
+
+  if(chartConfigControl.gaugeType.startsWith('gauge')) {
+      let afterChange = [[]] as Array<Array<any>>
+      for (let i = 0; i < value.length; i++) {
+        let start = parseFloat((value[i][0] / 100).toFixed(2))
+        afterChange[i] = [start, value[i][1]]
+      }
+
+      chartOption.series.axisLine.lineStyle.color = afterChange
+
+      chartConfig.setOption(chartOption)
   }
-
-  chartOption.series.axisLine.lineStyle.color = afterChange
-
-  chartConfig.setOption(chartOption)
 })
 
 watch(()=>chartConfigControl.progressColor,(value)=>{
