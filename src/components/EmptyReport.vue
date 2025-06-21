@@ -19,7 +19,13 @@ import type {ECBasicOption} from 'echarts/types/dist/shared'
 import BarConfig from '@/components/chart/BarConfig.vue'
 import {sqlQueryData} from '@/api/sql.ts'
 import type {SQLQuery, SQLResultField} from '@/types/api.ts';
-import {FieldStringOutlined, FieldNumberOutlined, FieldTimeOutlined, CloseOutlined} from '@ant-design/icons-vue'
+import {
+  FieldStringOutlined,
+  FieldNumberOutlined,
+  FieldTimeOutlined,
+  CloseOutlined,
+  FullscreenOutlined
+} from '@ant-design/icons-vue'
 import PieConfig from "@/components/chart/PieConfig.vue";
 import LineConfig from '@/components/chart/LineConfig.vue'
 import ScatterConfig from "@/components/chart/ScatterConfig.vue";
@@ -161,7 +167,7 @@ const setTempChart = (value: EChartsType) => {
   // 重新绑定页面大小变化 resizeObserve
   tempChart = value;
 
-  tempObserver = new ResizeObserver((entries:any) => {
+  tempObserver = new ResizeObserver((entries: any) => {
     if (tempChart) tempChart.resize()
   });
   tempObserver.observe(tempChartContainer.value as Element)
@@ -186,7 +192,7 @@ const change = function change(event: Event) {
     // 放入allChartsInstance容器中
     allChartsInstance.push(newEchartsInstance)
 
-    let observer = new ResizeObserver((entries:any) => {
+    let observer = new ResizeObserver((entries: any) => {
 
       if (newEchartsInstance) newEchartsInstance.resize()
     })
@@ -372,6 +378,10 @@ const sqlSelectorModal = reactive<{
   showError: false,
 })
 
+const moveChart = (icon: any, event: any, id: string) => {
+  console.log('icon,event,id', icon, event, id);
+}
+
 onMounted(() => {
   // 渲染图表
   for (let i = 0; i < items.slice().length; i++) {
@@ -389,6 +399,46 @@ onMounted(() => {
     })
     observer.observe(container as Element)
     allResizeObserver.push(observer)
+  }
+
+  let allChartResizeIcon = document.getElementsByClassName('chart-resize');
+  console.log('allChartResizeIcon', allChartResizeIcon);
+  for (let i = 0; i < allChartResizeIcon.length; i++) {
+    let resizeIcon = allChartResizeIcon[i];
+
+    // @ts-ignore
+    let id = resizeIcon.dataset.resizeId;
+
+    let isDragging = false;
+
+    function mouseDown(e: any) {
+      if (isDragging) {
+        return;
+      }
+      isDragging = true;
+      window.addEventListener('mousemove', mouseMove);
+      window.addEventListener('mouseup', mouseUp);
+    }
+
+    function mouseUp() {
+      if (!isDragging) {
+        return;
+      }
+
+      isDragging = false;
+      window.removeEventListener('mousemove', mouseMove);
+      window.removeEventListener('mouseup', mouseUp);
+    }
+
+    function mouseMove(e: any) {
+        if(!isDragging) {
+          return;
+        }
+        moveChart(resizeIcon,e,id);
+    }
+
+    resizeIcon.addEventListener('mousedown', mouseDown);
+
   }
 })
 
@@ -1004,11 +1054,11 @@ function renderGauge() {
   // 获取最大值
   let max = source[0].value;
 
-  if(source.length>1){
+  if (source.length > 1) {
     for (let i = 1; i < source.length; i++) {
       let value = source[i].value;
 
-      if(source[i].value > max) {
+      if (source[i].value > max) {
         max = value;
       }
     }
@@ -1145,6 +1195,7 @@ watch(metricsFields,
           gridAutoFlow: 'row dense',
         }"
           class="allChartContainer"
+          handle=".drag-class"
           :list="items"
           :group="{ name: 'outerContainer', pull: false, put: true }"
           animation="500"
@@ -1178,8 +1229,11 @@ watch(metricsFields,
             <div :id="element.id" style="height: 100%;width: 100%">
 
             </div>
+            <div class="drag-class">
+              <fullscreen-outlined :rotate='45'></fullscreen-outlined>
+            </div>
 
-            <div class="chart-resize">
+            <div class="chart-resize" :data-resize-id="element.id">
               <Resize/>
             </div>
           </div>
@@ -1478,19 +1532,36 @@ watch(metricsFields,
   margin: 1px;
 }
 
- .allChartContainer .chart .chart-resize {
-   position: absolute;
-   display: none;
-   bottom: 0;
-   right: 0;
- }
+.allChartContainer .chart .chart-resize {
+  position: absolute;
+  display: none;
+  border: 1px solid #a7e88e;
+  bottom: 0;
+  right: 0;
+}
 
-.allChartContainer .chart:hover .chart-resize{
+.allChartContainer .chart:hover .chart-resize {
   display: inline-block;
 }
 
 .allChartContainer .chart .chart-resize:hover {
- cursor: nw-resize;
+  cursor: nw-resize;
+}
+
+.allChartContainer .chart .drag-class {
+  position: absolute;
+  display: none;
+  border: 1px solid #a7e88e;
+  top: 0;
+  right: 0;
+}
+
+.allChartContainer .chart:hover .drag-class {
+  display: inline-block;
+}
+
+.allChartContainer .chart .drag-class:hover {
+  cursor: move;
 }
 
 /*模态框全屏样式*/
