@@ -25,6 +25,7 @@ import LineConfig from '@/components/chart/LineConfig.vue'
 import ScatterConfig from "@/components/chart/ScatterConfig.vue";
 import RadarConfig from "@/components/chart/RadarConfig.vue";
 import GaugeConfig from "@/components/chart/GaugeConfig.vue";
+import Resize from "@/assets/icon/Resize.vue";
 
 const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number }[]>([
   {
@@ -160,7 +161,7 @@ const setTempChart = (value: EChartsType) => {
   // 重新绑定页面大小变化 resizeObserve
   tempChart = value;
 
-  tempObserver = new ResizeObserver(() => {
+  tempObserver = new ResizeObserver((entries:any) => {
     if (tempChart) tempChart.resize()
   });
   tempObserver.observe(tempChartContainer.value as Element)
@@ -185,7 +186,8 @@ const change = function change(event: Event) {
     // 放入allChartsInstance容器中
     allChartsInstance.push(newEchartsInstance)
 
-    let observer = new ResizeObserver(() => {
+    let observer = new ResizeObserver((entries:any) => {
+
       if (newEchartsInstance) newEchartsInstance.resize()
     })
     observer.observe(newContainer as Element)
@@ -381,7 +383,7 @@ onMounted(() => {
 
     allChartsInstance.push(myEcharts)
     let observer = new ResizeObserver(() => {
-      if (myEcharts) myEcharts.resize()
+      if (myEcharts) myEcharts.resize();
     })
     observer.observe(container as Element)
     allResizeObserver.push(observer)
@@ -1153,20 +1155,32 @@ watch(metricsFields,
       >
         <template #item="{ element }">
           <div
-              :id="element.id"
+
               :style="{
               gridRowStart: `span ${element.xSpan}`,
               gridColumnStart: `span ${element.ySpan}`,
+              position:'relative',
+              // resize:'none',
+              // overflow:'hidden',
+              /*cursor:'nw-resize',*/
               /*backgroundColor: generateRandomBrightColor(),*/
             }"
               class="chart"
               @click="
               () => {
-                element.xSpan++
-                element.ySpan++
+               /* element.xSpan++
+                element.ySpan++*/
               }
             "
-          ></div>
+          >
+            <div :id="element.id" style="height: 100%;width: 100%">
+
+            </div>
+
+            <div class="chart-resize">
+              <Resize/>
+            </div>
+          </div>
         </template>
       </draggable>
       <!-- 图形配置模态框-->
@@ -1460,6 +1474,21 @@ watch(metricsFields,
 .allChartContainer .chart {
   border: black 1px solid;
   margin: 1px;
+}
+
+ .allChartContainer .chart .chart-resize {
+   position: absolute;
+   display: none;
+   bottom: 0;
+   right: 0;
+ }
+
+.allChartContainer .chart:hover .chart-resize{
+  display: inline-block;
+}
+
+.allChartContainer .chart .chart-resize:hover {
+ cursor: nw-resize;
 }
 
 /*模态框全屏样式*/
