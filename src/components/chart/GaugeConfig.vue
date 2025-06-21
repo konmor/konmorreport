@@ -60,9 +60,10 @@ const chartConfigFunction = {
 
       for (let i = 0; i < gaugeColorObj.colors.length; i++) {
         colors[i] = new Array(2)
-        colors[i] = [gaugeColorObj.range[i], gaugeColorObj.colors[i]]
-        chartConfigControl.pickColor[i] = [Math.floor(100 * colors[i][0]), colors[i][1]]
+        colors[i] = [Math.floor(100 * gaugeColorObj.range[i]), gaugeColorObj.colors[i]]
+        // chartConfigControl.pickColor[i] = [Math.floor(100 * colors[i][0]), colors[i][1]]
       }
+      chartConfigControl.pickColor = colors;
     }
   },
   changeRangeColor: (index: number, type?: 'add' | 'remove', color?: string) => {
@@ -197,7 +198,7 @@ const chartConfigFunction = {
   },
 }
 
-watch(chartConfigControl.pickColor, (value) => {
+watch(()=>chartConfigControl.pickColor, (value) => {
   let afterChange = [[]] as Array<Array<any>>
   for (let i = 0; i < value.length; i++) {
     let start = parseFloat((value[i][0] / 100).toFixed(2))
