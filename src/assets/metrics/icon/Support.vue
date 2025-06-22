@@ -1,0 +1,18 @@
+<script setup lang="ts">
+import Icon from "@ant-design/icons-vue";
+</script>
+
+<template>
+  <icon>
+    <template #component="{fill,height,width,style}">
+      <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"
+           :width="width" :height="height" :style="style">
+        <path
+            d="M259.2 528h-99.2c-19.2 0-32 12.8-32 32v288c0 19.2 16 32 32 32h96l3.2-352z m12.8-64l217.6-368c6.4-9.6 16-16 28.8-16 70.4 0 128 57.6 128 128v160h217.6c54.4 0 96 41.6 96 96v12.8l-48 384c-6.4 48-48 83.2-96 83.2h-656c-54.4 0-96-41.6-96-96v-288c0-54.4 44.8-96 96-96h112z m342.4-32c-19.2 0-32-12.8-32-32v-192c0-28.8-19.2-54.4-48-60.8l-211.2 358.4v374.4h492.8c16 0 28.8-12.8 32-28.8l48-384v-3.2c0-19.2-16-32-32-32h-249.6z"
+            :fill="fill"/>
+      </svg>
+    </template>
+  </icon>
+</template>
+
+

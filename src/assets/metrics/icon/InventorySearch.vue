@@ -1,0 +1,33 @@
+<script setup lang="ts">
+import Icon from "@ant-design/icons-vue";
+</script>
+
+<template>
+  <icon>
+    <template #component="{fill,height,width,style}">
+      <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"
+           :width="width" :height="height" :style="style">
+        <path
+            d="M948.57 424.68L532.7 71.85a32 32 0 0 0-41.4 0L75.43 424.68a32 32 0 1 0 41.4 48.8l11.07-9.39v463.65a32 32 0 1 0 64 0V410.31v-0.5L512 138.22l320.16 271.63v198.24a32 32 0 1 0 64 0V464.14l11 9.34a32 32 0 1 0 41.4-48.8z"
+            :fill="fill"/>
+        <path d="M255.85 863.49m12 0l72 0q12 0 12 12l0 72q0 12-12 12l-72 0q-12 0-12-12l0-72q0-12 12-12Z"
+              :fill="fill"/>
+        <path d="M399.86 863.49m12 0l72 0q12 0 12 12l0 72q0 12-12 12l-72 0q-12 0-12-12l0-72q0-12 12-12Z"
+              :fill="fill"/>
+        <path d="M256.58 736.38m12 0l72 0q12 0 12 12l0 72q0 12-12 12l-72 0q-12 0-12-12l0-72q0-12 12-12Z"
+              :fill="fill"/>
+        <path d="M256.58 608.9m12 0l72 0q12 0 12 12l0 72q0 12-12 12l-72 0q-12 0-12-12l0-72q0-12 12-12Z"
+              :fill="fill"/>
+        <path d="M399.86 735.65m12 0l72 0q12 0 12 12l0 72q0 12-12 12l-72 0q-12 0-12-12l0-72q0-12 12-12Z"
+              :fill="fill"/>
+        <path d="M543.86 863.49m12 0l72 0q12 0 12 12l0 72q0 12-12 12l-72 0q-12 0-12-12l0-72q0-12 12-12Z"
+              :fill="fill"/>
+        <path
+            d="M840.31 820.51A101.18 101.18 0 1 0 805.07 856l48.82 48.93a25 25 0 1 0 35.4-35.31z m-87.1-0.17a51.1 51.1 0 1 1 51.1-51.1 51.16 51.16 0 0 1-51.1 51.1z"
+            :fill="fill"/>
+      </svg>
+    </template>
+  </icon>
+</template>
+
+
