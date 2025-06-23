@@ -33,8 +33,10 @@ import RadarConfig from '@/components/chart/RadarConfig.vue'
 import GaugeConfig from '@/components/chart/GaugeConfig.vue'
 import Resize from '@/assets/icon/Resize.vue'
 import IconPicker from '@/components/IconPicker.vue'
+import TrendChartUp from "@/assets/metrics/icon/TrendChartUp.vue";
+import MetricsCard from "@/components/chart/MetricsCard.vue";
 
-let tempIcon = ref('Alarm')
+
 
 const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number }[]>([
   {
@@ -1255,29 +1257,7 @@ watch(metricsFields, renderChart)
             "
           >
             <div :id="element.id" style="height: 100%; width: 100%">
-              <div class="chart-label">
-                <div class="title"><span>上海省</span></div>
-                <div class="content">
-                  <!--                  <div class="title"><span>上海省</span></div>-->
-                  <div class="label">
-                    <span class="name">订单金额</span>
-                    <span class="value">15.09万</span>
-                  </div>
-                  <div class="label">
-                    <span class="name">利润金额</span>
-                    <span class="prefix">同比</span>
-                    <span class="value">1.599</span>
-                    <span class="suffix">万</span>
-                  </div>
-                  <div class="label">
-                    <span class="name">运输成本</span>
-                    <span class="value">1502</span>
-                  </div>
-                  <div class="label">
-                    <IconPicker v-model:icon="tempIcon" />
-                  </div>
-                </div>
-              </div>
+              <MetricsCard/>
             </div>
             <div class="drag-class">
               <fullscreen-outlined :rotate="45"></fullscreen-outlined>
@@ -1785,96 +1765,4 @@ watch(metricsFields, renderChart)
   right: 2px;
 }
 
-//background-color: #1890ff;
-
-.chart-label {
-  width: 100%;
-  height: 100%;
-  padding: 8px;
-  border-radius: 12px;
-  border: 1px solid black;
-
-}
-
-.chart-label > .title {
-  height: 30px;
-  line-height: 30px;
-  font-size: 16px;
-  font-weight: bolder;
-  color: red;
-  background-color: #efb056;
-
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  align-items: center;
-
-  border: #ff4218 1px solid;
-}
-
-.chart-label > .content {
-  display: flex;
-  justify-content: space-around;
-  width: 100%;
-  max-height: 80%;
-  flex-direction: row;
-  flex-wrap: wrap;
-}
-
-.chart-label .content .label {
-  margin-top: 6px;
-  border: 1px solid #6fd845;
-  padding: 8px 4px 8px 4px;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  min-width: 200px;
-}
-
-.chart-label .content .label .name {
-  height: 30px;
-  line-height: 30px;
-  font-size: 16px;
-  font-weight: normal;
-  color: red;
-  background-color: #efb056;
-
-  display: block;
-
-  border: 1px solid #6fd845;
-}
-
-.chart-label .content .label .prefix {
-  height: 36px;
-  line-height: 36px;
-  font-size: 16px;
-  font-weight: normal;
-  color: red;
-  background-color: #efb056;
-
-  margin-left: 20px;
-  border: 1px solid #6fd845;
-}
-
-.chart-label .content .label .value {
-  height: 36px;
-  line-height: 36px;
-  font-size: 36px;
-  font-weight: normal;
-  color: red;
-  background-color: #efb056;
-
-  border: 1px solid #6fd845;
-}
-
-.chart-label .content .label .suffix {
-  height: 36px;
-  line-height: 36px;
-  font-size: 16px;
-  font-weight: normal;
-  color: red;
-  background-color: #efb056;
-
-  border: 1px solid #6fd845;
-}
 </style>
