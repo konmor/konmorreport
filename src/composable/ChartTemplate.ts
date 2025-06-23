@@ -1,6 +1,9 @@
 import type {ECBasicOption} from 'echarts/types/dist/shared'
 import * as echarts from 'echarts'
 import {ReportsError} from '@/utils/errorHandler/ReportsError.ts'
+import type { Component } from 'vue'
+import TrendUp from '@/assets/metrics/icon/TrendUp.vue'
+import TrendDown from '@/assets/metrics/icon/TrendDown.vue'
 
 export const BAR_TEMPLATE: ECBasicOption = {
     // 标题属性
@@ -1074,6 +1077,457 @@ export const PROGRESS_BOTTOM_TEMPLATE: ECBasicOption = {
 };
 
 
+export const MetricsCard = {
+  title: {
+    text: '公司总库存',
+    show: true,
+    // 位置 left right center 均在顶部
+    position: 'left',
+    textStyle: {
+      color: '#e8c917',
+      fontSize: 36,
+      fontWeight: 'bold',
+      height: 60,
+    },
+  },
+  content: {
+    labels: [
+      {
+        id: '1',
+        padding: [16, 8, 16, 8],
+        // 二选其一
+        minWidth: 486,
+        width: null,
+        minHeight:70,
+        height:null,
+        name: {
+          text: '',
+          show: false,
+          itemStyle: {
+            color: '#000',
+            fontSize: 14,
+            fontWeight: 'bold',
+            width: null,
+
+            minWidth: 32,
+            padding: [0, 4],
+            // start center end
+            alignSelf:'center',
+          }
+        },
+        value: {
+          width:null,
+          minWidth:128,
+          prefix: {
+            text: '',
+            show: false,
+            itemStyle: {
+              color: '#000',
+              fontSize: 14,
+              // bold bolder lighter normal
+              fontWeight: 'bold',
+
+              width: null,
+              minWidth: 32,
+              // start center end
+              alignSelf:'center',
+            }
+          },
+          metrics: {
+            text: '3.1',
+            show: true,
+            itemStyle: {
+              color: '#6ddf34',
+              fontSize: 70,
+              // bold bolder lighter normal
+              fontWeight: 'normal',
+              height: 92, // 22
+              width: null,
+              minWidth: 32,
+              // start center end
+              alignSelf:'center',
+            }
+          },
+          suffix: {
+            isIcon: false,
+            text: '万台' as string | Component,
+            show: true,
+            itemStyle: {
+              color: '#000',
+              fontSize: 14,
+              // bold bolder lighter normal
+              fontWeight: 'bold',
+
+              width: null,
+              minWidth: 32,
+              // start center end
+              alignSelf:'end',
+            }
+          }
+        },
+
+      },
+      {
+        id: '2',
+        padding: [16, 8, 16, 8],
+        // 二选其一
+        minWidth: 240,
+        width: null,
+        minHeight:70,
+        height:null,
+        name: {
+          text: '同比增长',
+          show: true,
+          itemStyle: {
+            color: '#000',
+            fontSize: 14,
+            // bold bolder lighter normal
+            fontWeight: 'bold',
+            width: null,
+
+            minWidth: 32,
+            padding: [0, 4],
+            // start center end
+            alignSelf:'center',
+          }
+        },
+        value: {
+          width:null,
+          minWidth:128,
+          prefix: {
+            text: '同比',
+            show: true,
+            itemStyle: {
+              color: '#000',
+              fontSize: 14,
+              // bold bolder lighter normal
+              fontWeight: 'bold',
+
+              width: null,
+              minWidth: 32,
+              // start center end
+              alignSelf:'center',
+            }
+          },
+          metrics: {
+            text: '0.9%',
+            show: true,
+            itemStyle: {
+              color: '#000',
+              fontSize: 14,
+              // bold bolder lighter normal
+              fontWeight: 'bold',
+
+              width: null,
+              minWidth: 32,
+              // start center end
+              alignSelf:'center',
+            }
+          },
+          suffix: {
+            isIcon: true,
+            text: TrendUp as string | Component,
+            show: true,
+            itemStyle: {
+              color: '#67ea44',
+              fontSize: 18,
+              // bold bolder lighter normal
+              fontWeight: 'bolder',
+
+              width: null,
+              minWidth: 32,
+              // start center end
+              alignSelf:'center',
+            }
+          }
+        },
+
+      },
+      {
+        id: '3',
+        padding: [16, 8, 16, 8],
+        // 二选其一
+        minWidth: 240,
+        width: null,
+        minHeight:70,
+        height:null,
+        name: {
+          text: '美国仓库',
+          show: true,
+          itemStyle: {
+            color: '#000',
+            fontSize: 14,
+            // bold bolder lighter normal
+            fontWeight: 'bold',
+            width: null,
+
+            minWidth: 32,
+            padding: [0, 4],
+            // start center end
+            alignSelf:'center',
+          }
+        },
+        value: {
+          width:null,
+          minWidth:128,
+          prefix: {
+            text: '',
+            show: false,
+            itemStyle: {
+              color: '#000',
+              fontSize: 14,
+              // bold bolder lighter normal
+              fontWeight: 'bold',
+
+              width: null,
+              minWidth: 32,
+            }
+          },
+          metrics: {
+            text: '1.8万台',
+            show: true,
+            itemStyle: {
+              color: '#000',
+              fontSize: 14,
+              // bold bolder lighter normal
+              fontWeight: 'bold',
+
+              width: null,
+              minWidth: 32,
+            }
+          },
+          suffix: {
+            isIcon: true,
+            text: TrendUp as string | Component,
+            show: true,
+            itemStyle: {
+              color: '#000',
+              fontSize: 14,
+              // bold bolder lighter normal
+              fontWeight: 'bold',
+
+              width: null,
+              minWidth: 32,
+            }
+          }
+        },
+
+      },
+      {
+        id: '4',
+        padding: [16, 8, 16, 8],
+        // 二选其一
+        minWidth: 240,
+        width: null,
+        minHeight:70,
+        height:null,
+        name: {
+          text: '加拿大库存',
+          show: true,
+          itemStyle: {
+            color: '#000',
+            fontSize: 14,
+            // bold bolder lighter normal
+            fontWeight: 'bold',
+            width: null,
+
+            minWidth: 32,
+            padding: [0, 4],
+            // start center end
+            alignSelf:'center',
+          }
+        },
+        value: {
+          width:null,
+          minWidth:128,
+          prefix: {
+            text: '',
+            show: false,
+            itemStyle: {
+              color: '#000',
+              fontSize: 14,
+              // bold bolder lighter normal
+              fontWeight: 'bold',
+
+              width: null,
+              minWidth: 32,
+            }
+          },
+          metrics: {
+            text: '2582台',
+            show: true,
+            itemStyle: {
+              color: '#000',
+              fontSize: 14,
+              // bold bolder lighter normal
+              fontWeight: 'bold',
+
+              width: null,
+              minWidth: 32,
+              alignSelf: 'center'
+            }
+          },
+          suffix: {
+            isIcon: true,
+            text: TrendDown as string | Component,
+            show: true,
+            itemStyle: {
+              color: '#000',
+              fontSize: 14,
+              // bold bolder lighter normal
+              fontWeight: 'bold',
+
+              width: null,
+              minWidth: 32,
+            }
+          }
+        },
+
+      },
+      {
+        id: '5',
+        padding: [16, 8, 16, 8],
+        // 二选其一
+        minWidth: 240,
+        width: null,
+        minHeight:70,
+        height:null,
+        name: {
+          text: '墨西哥仓库',
+          show: true,
+          itemStyle: {
+            color: '#000',
+            fontSize: 14,
+            // bold bolder lighter normal
+            fontWeight: 'bold',
+            width: null,
+
+            minWidth: 32,
+            padding: [0, 4],
+            // start center end
+            alignSelf:'center',
+          }
+        },
+        value: {
+          width:null,
+          minWidth:128,
+          prefix: {
+            text: '',
+            show: false,
+            itemStyle: {
+              color: '#000',
+              fontSize: 14,
+              // bold bolder lighter normal
+              fontWeight: 'bold',
+
+              width: null,
+              minWidth: 32,
+            }
+          },
+          metrics: {
+            text: '1万台',
+            show: true,
+            itemStyle: {
+              color: '#000',
+              fontSize: 14,
+              // bold bolder lighter normal
+              fontWeight: 'bold',
+
+              width: null,
+              minWidth: 32,
+            }
+          },
+          suffix: {
+            isIcon: true,
+            text: TrendDown as string | Component,
+            show: true,
+            itemStyle: {
+              color: '#000',
+              fontSize: 14,
+              // bold bolder lighter normal
+              fontWeight: 'bold',
+
+              width: null,
+              minWidth: 32,
+            }
+          }
+        },
+
+      },
+      {
+        id: '6',
+        padding: [16, 8, 16, 8],
+        // 二选其一
+        minWidth: 240,
+        width: null,
+        minHeight:70,
+        height:null,
+        name: {
+          text: '墨西哥仓库',
+          show: true,
+          itemStyle: {
+            color: '#000',
+            fontSize: 14,
+            // bold bolder lighter normal
+            fontWeight: 'bold',
+            width: null,
+
+            minWidth: 32,
+            padding: [0, 4],
+            // start center end
+            alignSelf:'center',
+          }
+        },
+        value: {
+          width:null,
+          minWidth:128,
+          prefix: {
+            text: '',
+            show: false,
+            itemStyle: {
+              color: '#000',
+              fontSize: 14,
+              // bold bolder lighter normal
+              fontWeight: 'bold',
+
+              width: null,
+              minWidth: 32,
+            }
+          },
+          metrics: {
+            text: '1万台',
+            show: true,
+            itemStyle: {
+              color: '#000',
+              fontSize: 14,
+              // bold bolder lighter normal
+              fontWeight: 'bold',
+
+              width: null,
+              minWidth: 32,
+            }
+          },
+          suffix: {
+            isIcon: true,
+            text: TrendDown as string | Component,
+            show: true,
+            itemStyle: {
+              color: '#000',
+              fontSize: 14,
+              // bold bolder lighter normal
+              fontWeight: 'bold',
+
+              width: null,
+              minWidth: 32,
+            }
+          }
+        },
+
+      }
+    ]
+  }
+};
+
 export const templateFunctionMap: Record<string, (title: string) => ECBasicOption> = {
     barChart: barTemplate,
     pieChart: pieTemplate,
@@ -1084,6 +1538,7 @@ export const templateFunctionMap: Record<string, (title: string) => ECBasicOptio
     gaugeHalf: gaugeHalfTemplate,
     progressCircle: progressCircleTemplate,
     progressBottom: progressBottomTemplate,
+    tag:tagTemplate,
 }
 
 export function chartTemplate(title: string, type: string): ECBasicOption {
@@ -1186,4 +1641,15 @@ function progressBottomTemplate(title: string): ECBasicOption {
         option.title.text = title
     }
     return option
+}
+
+function tagTemplate(title: string) {
+  let option = {};
+  Object.assign(option, MetricsCard);
+
+  if (title) {
+    // @ts-ignore
+    option.title.text = title
+  }
+  return option
 }

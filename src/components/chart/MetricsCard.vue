@@ -4,475 +4,27 @@ import {type Component, ref} from "vue";
 import TrendUp from "@/assets/metrics/icon/TrendUp.vue";
 import TrendDown from "@/assets/metrics/icon/TrendDown.vue";
 
-let tempIcon = ref('Alarm');
+let props = defineProps(['options']);
 
+let emits = defineEmits(['update:options']);
 
-let options = ref({
-  title: {
-    text: '公司总库存',
-    show: true,
-    // 位置 left right center 均在顶部
-    position: 'left',
-    textStyle: {
-      color: '#e8c917',
-      fontSize: 36,
-      fontWeight: 'bold',
-      height: 60,
-    },
-  },
-  content: {
-    labels: [
-      {
-        id: '1',
-        padding: [16, 8, 16, 8],
-        // 二选其一
-        minWidth: 486,
-        width: null,
-        minHeight:70,
-        height:null,
-        name: {
-          text: '',
-          show: false,
-          itemStyle: {
-            color: '#000',
-            fontSize: 14,
-            fontWeight: 'bold',
-            width: null,
-
-            minWidth: 32,
-            padding: [0, 4],
-            // start center end
-            alignSelf:'center',
-          }
-        },
-        value: {
-          width:null,
-          minWidth:128,
-          prefix: {
-            text: '',
-            show: false,
-            itemStyle: {
-              color: '#000',
-              fontSize: 14,
-              // bold bolder lighter normal
-              fontWeight: 'bold',
-
-              width: null,
-              minWidth: 32,
-              // start center end
-              alignSelf:'center',
-            }
-          },
-          metrics: {
-            text: '3.1',
-            show: true,
-            itemStyle: {
-              color: '#6ddf34',
-              fontSize: 70,
-              // bold bolder lighter normal
-              fontWeight: 'normal',
-              height: 92, // 22
-              width: null,
-              minWidth: 32,
-              // start center end
-              alignSelf:'center',
-            }
-          },
-          suffix: {
-            isIcon: false,
-            text: '万台' as string | Component,
-            show: true,
-            itemStyle: {
-              color: '#000',
-              fontSize: 14,
-              // bold bolder lighter normal
-              fontWeight: 'bold',
-
-              width: null,
-              minWidth: 32,
-              // start center end
-              alignSelf:'end',
-            }
-          }
-        },
-
-      },
-      {
-        id: '2',
-        padding: [16, 8, 16, 8],
-        // 二选其一
-        minWidth: 240,
-        width: null,
-        minHeight:70,
-        height:null,
-        name: {
-          text: '同比增长',
-          show: true,
-          itemStyle: {
-            color: '#000',
-            fontSize: 14,
-            // bold bolder lighter normal
-            fontWeight: 'bold',
-            width: null,
-
-            minWidth: 32,
-            padding: [0, 4],
-            // start center end
-            alignSelf:'end',
-          }
-        },
-        value: {
-          width:null,
-          minWidth:128,
-          prefix: {
-            text: '同比',
-            show: true,
-            itemStyle: {
-              color: '#000',
-              fontSize: 14,
-              // bold bolder lighter normal
-              fontWeight: 'bold',
-
-              width: null,
-              minWidth: 32,
-              // start center end
-              alignSelf:'start',
-            }
-          },
-          metrics: {
-            text: '0.9%',
-            show: true,
-            itemStyle: {
-              color: '#000',
-              fontSize: 14,
-              // bold bolder lighter normal
-              fontWeight: 'bold',
-
-              width: null,
-              minWidth: 32,
-              // start center end
-              alignSelf:'center',
-            }
-          },
-          suffix: {
-            isIcon: true,
-            text: TrendUp as string | Component,
-            show: true,
-            itemStyle: {
-              color: '#67ea44',
-              fontSize: 18,
-              // bold bolder lighter normal
-              fontWeight: 'bolder',
-
-              width: null,
-              minWidth: 32,
-              // start center end
-              alignSelf:'start',
-            }
-          }
-        },
-
-      },
-      {
-        id: '3',
-        padding: [16, 8, 16, 8],
-        // 二选其一
-        minWidth: 240,
-        width: null,
-        minHeight:70,
-        height:null,
-        name: {
-          text: '美国仓库',
-          show: true,
-          itemStyle: {
-            color: '#000',
-            fontSize: 14,
-            // bold bolder lighter normal
-            fontWeight: 'bold',
-            width: null,
-
-            minWidth: 32,
-            padding: [0, 4],
-            // start center end
-            alignSelf:'center',
-          }
-        },
-        value: {
-          width:null,
-          minWidth:128,
-          prefix: {
-            text: '',
-            show: false,
-            itemStyle: {
-              color: '#000',
-              fontSize: 14,
-              // bold bolder lighter normal
-              fontWeight: 'bold',
-
-              width: null,
-              minWidth: 32,
-            }
-          },
-          metrics: {
-            text: '1.8万台',
-            show: true,
-            itemStyle: {
-              color: '#000',
-              fontSize: 14,
-              // bold bolder lighter normal
-              fontWeight: 'bold',
-
-              width: null,
-              minWidth: 32,
-            }
-          },
-          suffix: {
-            isIcon: true,
-            text: TrendUp as string | Component,
-            show: true,
-            itemStyle: {
-              color: '#000',
-              fontSize: 14,
-              // bold bolder lighter normal
-              fontWeight: 'bold',
-
-              width: null,
-              minWidth: 32,
-            }
-          }
-        },
-
-      },
-      {
-        id: '4',
-        padding: [16, 8, 16, 8],
-        // 二选其一
-        minWidth: 240,
-        width: null,
-        minHeight:70,
-        height:null,
-        name: {
-          text: '加拿大库存',
-          show: true,
-          itemStyle: {
-            color: '#000',
-            fontSize: 14,
-            // bold bolder lighter normal
-            fontWeight: 'bold',
-            width: null,
-
-            minWidth: 32,
-            padding: [0, 4],
-            // start center end
-            alignSelf:'center',
-          }
-        },
-        value: {
-          width:null,
-          minWidth:128,
-          prefix: {
-            text: '',
-            show: false,
-            itemStyle: {
-              color: '#000',
-              fontSize: 14,
-              // bold bolder lighter normal
-              fontWeight: 'bold',
-
-              width: null,
-              minWidth: 32,
-            }
-          },
-          metrics: {
-            text: '2582台',
-            show: true,
-            itemStyle: {
-              color: '#000',
-              fontSize: 14,
-              // bold bolder lighter normal
-              fontWeight: 'bold',
-
-              width: null,
-              minWidth: 32,
-            }
-          },
-          suffix: {
-            isIcon: true,
-            text: TrendDown as string | Component,
-            show: true,
-            itemStyle: {
-              color: '#000',
-              fontSize: 14,
-              // bold bolder lighter normal
-              fontWeight: 'bold',
-
-              width: null,
-              minWidth: 32,
-            }
-          }
-        },
-
-      },
-      {
-        id: '5',
-        padding: [16, 8, 16, 8],
-        // 二选其一
-        minWidth: 240,
-        width: null,
-        minHeight:70,
-        height:null,
-        name: {
-          text: '墨西哥仓库',
-          show: true,
-          itemStyle: {
-            color: '#000',
-            fontSize: 14,
-            // bold bolder lighter normal
-            fontWeight: 'bold',
-            width: null,
-
-            minWidth: 32,
-            padding: [0, 4],
-            // start center end
-            alignSelf:'center',
-          }
-        },
-        value: {
-          width:null,
-          minWidth:128,
-          prefix: {
-            text: '',
-            show: false,
-            itemStyle: {
-              color: '#000',
-              fontSize: 14,
-              // bold bolder lighter normal
-              fontWeight: 'bold',
-
-              width: null,
-              minWidth: 32,
-            }
-          },
-          metrics: {
-            text: '1万台',
-            show: true,
-            itemStyle: {
-              color: '#000',
-              fontSize: 14,
-              // bold bolder lighter normal
-              fontWeight: 'bold',
-
-              width: null,
-              minWidth: 32,
-            }
-          },
-          suffix: {
-            isIcon: true,
-            text: TrendDown as string | Component,
-            show: true,
-            itemStyle: {
-              color: '#000',
-              fontSize: 14,
-              // bold bolder lighter normal
-              fontWeight: 'bold',
-
-              width: null,
-              minWidth: 32,
-            }
-          }
-        },
-
-      },
-      {
-        id: '6',
-        padding: [16, 8, 16, 8],
-        // 二选其一
-        minWidth: 240,
-        width: null,
-        minHeight:70,
-        height:null,
-        name: {
-          text: '墨西哥仓库',
-          show: true,
-          itemStyle: {
-            color: '#000',
-            fontSize: 14,
-            // bold bolder lighter normal
-            fontWeight: 'bold',
-            width: null,
-
-            minWidth: 32,
-            padding: [0, 4],
-            // start center end
-            alignSelf:'center',
-          }
-        },
-        value: {
-          width:null,
-          minWidth:128,
-          prefix: {
-            text: '',
-            show: false,
-            itemStyle: {
-              color: '#000',
-              fontSize: 14,
-              // bold bolder lighter normal
-              fontWeight: 'bold',
-
-              width: null,
-              minWidth: 32,
-            }
-          },
-          metrics: {
-            text: '1万台',
-            show: true,
-            itemStyle: {
-              color: '#000',
-              fontSize: 14,
-              // bold bolder lighter normal
-              fontWeight: 'bold',
-
-              width: null,
-              minWidth: 32,
-            }
-          },
-          suffix: {
-            isIcon: true,
-            text: TrendDown as string | Component,
-            show: true,
-            itemStyle: {
-              color: '#000',
-              fontSize: 14,
-              // bold bolder lighter normal
-              fontWeight: 'bold',
-
-              width: null,
-              minWidth: 32,
-            }
-          }
-        },
-
-      }
-    ]
-  }
-})
 
 
 </script>
 
 <template>
-  <div class="chart-label" v-if="options != null">
-    <div class="title" v-show="options.title.show"
+  <div class="chart-label" v-if="props.options != null">
+    <div class="title" v-show="props.options.title.show"
          :style="{
-          height:options.title.textStyle.height+'px',
-          lineHeight:options.title.textStyle.height+'px',
-          fontSize:options.title.textStyle.fontSize+'px',
-          fontWeight:options.title.textStyle.fontWeight,
-          color:options.title.textStyle.color,
-          justifyContent:options.title.position,
-         }"><span>{{ options.title.text }}</span></div>
-    <div class="content" v-if="options.content.labels.length>0">
-      <div class="label" v-for="(item,index) in options.content.labels"
+          height:props.options.title.textStyle.height+'px',
+          lineHeight:props.options.title.textStyle.height+'px',
+          fontSize:props.options.title.textStyle.fontSize+'px',
+          fontWeight:props.options.title.textStyle.fontWeight,
+          color:props.options.title.textStyle.color,
+          justifyContent:props.options.title.position,
+         }"><span>{{ props.options.title.text }}</span></div>
+    <div class="content" v-if="props.options.content.labels.length>0">
+      <div class="label" v-for="(item,index) in props.options.content.labels"
       :id="item.id"
            :style="
            {
@@ -573,6 +125,7 @@ let options = ref({
   justify-content: space-between;
   /*卡片效果*/
   margin-right: 6px;
+  margin-top: 12px;
   border-radius: 8px;
   box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
 }
@@ -586,8 +139,8 @@ let options = ref({
 
 .chart-label .content .label > .name {
   display: block;
-  height: 36px;
-  line-height: 36px;
+  height: 16px;
+  line-height: 16px;
 }
 
 .chart-label .content .label > .value {
@@ -599,8 +152,8 @@ let options = ref({
 .chart-label .content .label > .value .prefix ,
 .chart-label .content .label > .value .metrics,
 .chart-label .content .label > .value .suffix{
-  height: 36px;
-  line-height: 36px;
+  height: 16px;
+  line-height: 16px;
 }
 
 

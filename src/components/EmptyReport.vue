@@ -35,6 +35,7 @@ import Resize from '@/assets/icon/Resize.vue'
 import IconPicker from '@/components/IconPicker.vue'
 import TrendChartUp from "@/assets/metrics/icon/TrendChartUp.vue";
 import MetricsCard from "@/components/chart/MetricsCard.vue";
+import TagConfig from '@/components/chart/TagConfig.vue'
 
 
 
@@ -119,21 +120,29 @@ const change = function change(event: Event) {
     // @ts-ignore 刚刚拖拽进来的图表类型，也许不是图表
     lastChartType.value = event['added'].element.type
     // @ts-ignore window.console.log(event['added'])
-    lastEchartsContainerID = event['added'].element.id
-    let newContainer = document.getElementById(lastEchartsContainerID)
-    // 2.初始化echarts 挂载的位置
-    let newEchartsInstance = echarts.init(newContainer) // 参数是dom节点
-    // 3. 设置默认数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
-    newEchartsInstance.setOption(chartTemplate('test2', lastChartType.value))
+    lastEchartsContainerID = event['added'].element.id;
 
-    // 放入allChartsInstance容器中
-    allChartsInstance.push(newEchartsInstance)
+    if(lastChartType.value == 'tag'){
 
-    let observer = new ResizeObserver((entries: any) => {
-      if (newEchartsInstance) newEchartsInstance.resize()
-    })
-    observer.observe(newContainer as Element)
-    allResizeObserver.push(observer)
+    } else {
+      // 如果是标签则不参数echarts 渲染
+      let newContainer = document.getElementById(lastEchartsContainerID)
+      // 2.初始化echarts 挂载的位置
+      let newEchartsInstance = echarts.init(newContainer) // 参数是dom节点
+      // 3. 设置默认数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
+      newEchartsInstance.setOption(chartTemplate('test2', lastChartType.value))
+
+      // 放入allChartsInstance容器中
+      allChartsInstance.push(newEchartsInstance)
+
+      let observer = new ResizeObserver((entries: any) => {
+        if (newEchartsInstance) newEchartsInstance.resize()
+      })
+      observer.observe(newContainer as Element)
+      allResizeObserver.push(observer)
+    }
+
+
   }
 }
 
@@ -163,8 +172,12 @@ const tempChartModal = reactive<{ open: boolean; ok: (reject: any) => void; canc
   open: false,
   ok: (reject: any) => {
     tempChartModal.open = false
-    // 配置好之后从 temChart 中获取数据，并渲染给最后一个 chartArray 中的chart
-    allChartsInstance[allChartsInstance.length - 1].setOption(tempChart.getOption(), true)
+    if(lastChartType.value == 'tag'){
+
+    }else {
+      // 配置好之后从 temChart 中获取数据，并渲染给最后一个 chartArray 中的chart
+      allChartsInstance[allChartsInstance.length - 1].setOption(tempChart.getOption(), true)
+    }
     clearCurrentConfig()
   },
   cancel: () => {
@@ -175,19 +188,24 @@ const tempChartModal = reactive<{ open: boolean; ok: (reject: any) => void; canc
 })
 
 function removeLastEchartsInstance() {
-  //删除刚刚创建的数据,删除echarts实例，删除draagabel的元素
-  let lastEchartsInstance = allChartsInstance.pop()
-  if (lastEchartsInstance != undefined) {
-    lastEchartsInstance.dispose()
-    lastEchartsInstance.clear()
-  }
+  if(lastChartType.value == 'tag'){
 
-  for (let i = items.length - 1; i >= 0; i--) {
-    if (items[i].id == lastEchartsContainerID) {
-      items.splice(i, 1)
-      break
+  } else {
+    //删除刚刚创建的数据,删除echarts实例，删除draagabel的元素
+    let lastEchartsInstance = allChartsInstance.pop()
+    if (lastEchartsInstance != undefined) {
+      lastEchartsInstance.dispose()
+      lastEchartsInstance.clear()
+    }
+
+    for (let i = items.length - 1; i >= 0; i--) {
+      if (items[i].id == lastEchartsContainerID) {
+        items.splice(i, 1)
+        break
+      }
     }
   }
+
 }
 
 function dimensionsPut(to: any, from: any, htmlElement: any, dragEvent: any): boolean {
@@ -289,20 +307,26 @@ const sqlSelectorModal = reactive<{
 
       // 保证已经渲染完毕
       nextTick(() => {
-        // 开始渲染图表
-        // let container = document.getElementById('chartContainer');
-        let container = tempChartContainer.value
-        // 2.初始化echarts 挂载的位置
-        let newEchartsInstance = echarts.init(container)
-        tempChart = newEchartsInstance // 交给外部临时变量
-        // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
-        newEchartsInstance.setOption(tempChartOption.value)
+        if(lastChartType.value == 'tag'){
+          // todo tag 标签
 
-        let observer = new ResizeObserver(() => {
-          if (newEchartsInstance) newEchartsInstance.resize()
-        })
-        tempObserver = observer
-        observer.observe(container as Element)
+        } else {
+          // 开始渲染图表
+          // let container = document.getElementById('chartContainer');
+          let container = tempChartContainer.value
+          // 2.初始化echarts 挂载的位置
+          let newEchartsInstance = echarts.init(container)
+          tempChart = newEchartsInstance // 交给外部临时变量
+          // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
+          newEchartsInstance.setOption(tempChartOption.value)
+
+          let observer = new ResizeObserver(() => {
+            if (newEchartsInstance) newEchartsInstance.resize()
+          })
+          tempObserver = observer
+          observer.observe(container as Element)
+        }
+
       })
     }
   },
@@ -352,21 +376,26 @@ function changeThreeEmSize() {
 onMounted(() => {
   // 渲染图表
   for (let i = 0; i < items.slice().length; i++) {
-    // todo
-    /*let container = document.getElementById(items[i].id)
-    // 2.初始化echarts 挂载的位置
-    let myEcharts = echarts.init(container) // 参数是dom节点
-    // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
-    let ecBasicOption = chartTemplate('test1', items[i].value)
+    if(items[i].value == 'tag'){
+      // 添加标签的options
+    } else {
+      // todo
+      let container = document.getElementById(items[i].id)
+      // 2.初始化echarts 挂载的位置
+      let myEcharts = echarts.init(container) // 参数是dom节点
+      // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
+      let ecBasicOption = chartTemplate('test1', items[i].value)
 
-     myEcharts.setOption(ecBasicOption)
+      myEcharts.setOption(ecBasicOption)
 
-    allChartsInstance.push(myEcharts)
-    let observer = new ResizeObserver(() => {
-      if (myEcharts) myEcharts.resize()
-    })
-    observer.observe(container as Element)
-    allResizeObserver.push(observer)*/
+      allChartsInstance.push(myEcharts)
+      let observer = new ResizeObserver(() => {
+        if (myEcharts) myEcharts.resize()
+      })
+      observer.observe(container as Element)
+      allResizeObserver.push(observer)
+    }
+
   }
 
   // 计算一次 1fr的大小
@@ -380,48 +409,7 @@ onMounted(() => {
     changeOneFrSize()
   })
   allChartContainerResizeObserver.observe(allChartContainer as Element)
-
-  /*let allChartResizeIcon = document.getElementsByClassName('chart-resize')
-  for (let i = 0; i < allChartResizeIcon.length; i++) {
-    let resizeIcon = allChartResizeIcon[i]
-
-    // @ts-ignore
-    let id = resizeIcon.dataset.resizeId
-
-    let isDragging = false
-
-    function mouseDown(e: any) {
-      if (isDragging) {
-        return
-      }
-      isDragging = true
-      startPageX.value = e.pageX
-      startPageY.value = e.pageY
-      window.addEventListener('mousemove', mouseMove)
-      window.addEventListener('mouseup', mouseUp)
-    }
-
-    function mouseUp() {
-      if (!isDragging) {
-        return
-      }
-      startPageX.value =0;
-      startPageY.value =0;
-      isDragging = false
-      window.removeEventListener('mousemove', mouseMove)
-      window.removeEventListener('mouseup', mouseUp)
-    }
-
-    function mouseMove(e: any) {
-      if (!isDragging) {
-        return
-      }
-      moveChart(resizeIcon, e, id)
-    }
-
-    resizeIcon.addEventListener('mousedown', mouseDown)
-  }*/
-})
+});
 
 onUnmounted(() => {
   allResizeObserver.forEach((item) => {
@@ -1456,7 +1444,9 @@ watch(metricsFields, renderChart)
                 id="tempChartContainer"
                 ref="tempChartContainer"
                 :style="{ height: '100%' }"
-              ></div>
+              >
+                <MetricsCard v-if="lastChartType == 'tag'" :options="tempChartOption"/>
+              </div>
             </a-layout-content>
           </a-layout>
 
@@ -1531,6 +1521,17 @@ watch(metricsFields, renderChart)
               :chartContainer="tempChartContainer"
             >
             </GaugeConfig>
+
+            <TagConfig
+              v-else-if="lastChartType == 'tag'"
+              :getChartConfig="getTempChart"
+              :setChartConfig="setTempChart"
+              :clearCurrentConfig="clearCurrentConfig"
+              :chartOption="tempChartOption"
+              :chartContainer="tempChartContainer"
+            >
+            </TagConfig>
+
           </a-layout-sider>
         </a-layout>
       </a-modal>
