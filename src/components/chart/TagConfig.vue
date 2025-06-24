@@ -2,6 +2,7 @@
 import {nextTick, onMounted, onUnmounted, reactive} from 'vue'
 import {themArray} from '@/echartsThem/registerThem.ts'
 import * as echarts from 'echarts'
+import {SettingOutlined} from "@ant-design/icons-vue";
 import Left from '@/assets/icon/Left.vue'
 import Right from '@/assets/icon/Right.vue'
 import Center from '@/assets/icon/Center.vue'
@@ -10,6 +11,10 @@ import BoldLighter from "@/assets/icon/BoldLighter.vue";
 import BoldNormal from "@/assets/icon/BoldNormal.vue";
 import BoldBold from "@/assets/icon/BoldBold.vue";
 import BoldBolder from "@/assets/icon/BoldBolder.vue";
+import AlignTop from "@/assets/icon/AlignTop.vue";
+import AlignMiddle from "@/assets/icon/AlignMiddle.vue";
+import AlignBottom from "@/assets/icon/AlignBottom.vue";
+import MetricsDetailsConfig from "@/components/chart/MetricsDetailsConfig.vue";
 
 let {getChartConfig, setChartConfig, chartOption, chartContainer, clearCurrentConfig} =
     defineProps([
@@ -25,9 +30,25 @@ let chartConfigControl = reactive({
   themActiveKey: '', // 展开主题折叠面板
   currentThem: 'customized', // 当前主题
   currentColors: themArray.find((item) => item.themeName == 'customized')!.theme.color, // 当前主题的颜色
+
   titleDetailConfigShow: false,
   titleHeightAuto: true,
 
+  seriesActiveKey: [] as Array<string>,
+
+  allSeriesEqual: false,
+  //
+  seriesWidthAuto: {} as Record<string, boolean>,
+  //
+  seriesHeightAuto: {} as Record<string, boolean>,
+  //
+  seriesNameWidthAuto: {} as Record<string, boolean>,
+  //
+  seriesValuePrefixWidthAuto: {} as Record<string, boolean>,
+  //
+  seriesValueMetricsAuto: {} as Record<string, boolean>,
+  //
+  seriesValueSuffixAuto: {} as Record<string, boolean>,
 
   legendPosition: 'topCenter', // 图例的位置
 
@@ -190,7 +211,7 @@ onUnmounted(() => {
             v-model:value="chartOption.title.textStyle.fontSize"
             allow-clear
             size="small"
-            min="22"
+            min="12"
             :style="{ width: '100%', fontSize: '12px', height: '22px' }"
             @change="()=>{
               if(chartConfigControl.titleHeightAuto){
@@ -230,7 +251,7 @@ onUnmounted(() => {
       <span class="label-left" style="width: 24px">行高</span>
       <div class="component-right">
         <a-checkbox v-model:checked="chartConfigControl.titleHeightAuto"
-        @change="(v:any)=>{
+                    @change="(v:any)=>{
           if(v.target.checked){
             chartOption.title.textStyle.height = chartOption.title.textStyle.fontSize + 24;
           }
@@ -249,6 +270,239 @@ onUnmounted(() => {
         ></a-input-number>
       </div>
     </div>
+  </div>
+
+  <!--  数据系列-->
+
+  <div class="chart-group">
+    <!--各系列一致-->
+    <div class="chart-item">
+      <span class="label-left" style="width: 48px">数据系列</span>
+      <div class="component-right">
+        <a-checkbox v-model:checked="chartConfigControl.allSeriesEqual"
+                    @change="(v:any)=>{
+          if(v.target.checked){
+            chartConfigControl.seriesActiveKey.length = 1;
+            chartConfigControl.seriesActiveKey[0] = chartOption.content.labels[0].id || '0'
+          } else {
+            chartConfigControl.seriesActiveKey = [];
+          }
+        }">
+          <span class="label-normal">各系列一致</span>
+        </a-checkbox>
+      </div>
+    </div>
+
+
+    <a-collapse
+        v-model:activeKey="chartConfigControl.seriesActiveKey"
+        expand-icon-position="end"
+        :style="{
+        border: 'none',
+        backgroundColor: 'transparent',
+        margin: '0',
+        padding: '0',
+      }"
+    >
+      <a-collapse-panel
+          v-for="(item,index) in chartOption.content.labels"
+          :key="item.id || index"
+          :header="item.name.text?item.name.text:'无名称'"
+          :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
+      >
+        <!--宽度-->
+        <div class="chart-item">
+          <span class="label-left" style="width: 48px">宽度</span>
+          <div class="component-right">
+            <a-checkbox v-model:checked="chartConfigControl.seriesWidthAuto[item.id || index]"
+                        @change="(v:any)=>{
+                          // todo
+                        }">
+          <span class="label-normal" v-if="chartConfigControl.seriesWidthAuto[item.id || index]">
+            自动
+          </span>
+            </a-checkbox>
+
+            <a-input-number
+                v-if="!chartConfigControl.seriesWidthAuto[item.id || index]"
+                v-model:value=" item.minWidth"
+                allow-clear
+                size="small"
+                :style="{ width: '80%', fontSize: '12px', height: '22px' }"
+            ></a-input-number>
+          </div>
+        </div>
+
+        <!--高度-->
+        <div class="chart-item">
+          <span class="label-left" style="width: 48px">高度</span>
+          <div class="component-right">
+            <a-checkbox v-model:checked="chartConfigControl.seriesHeightAuto[item.id || index]"
+                        @change="(v:any)=>{
+                          // todo
+                        }">
+          <span class="label-normal" v-if="chartConfigControl.seriesHeightAuto[item.id || index]">
+            自动
+          </span>
+            </a-checkbox>
+
+            <a-input-number
+                v-if="!chartConfigControl.seriesHeightAuto[item.id || index]"
+                v-model:value=" item.minHeight"
+                allow-clear
+                size="small"
+                :style="{ width: '80%', fontSize: '12px', height: '22px' }"
+            ></a-input-number>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <div class="chart-item">
+            <span class="label-left" style="width: 48px">系列名称</span>
+
+            <div class="component-right">
+              <a-checkbox v-model:checked="item.name.show">
+                <span class="label-normal">显示</span>
+              </a-checkbox>
+            </div>
+          </div>
+
+          <div class="chart-item">
+          <span class="label-left" style="width: 60px;display: flex;align-items: center;
+          justify-content: flex-start">
+            <a-color-picker v-model:color="item.name.itemStyle.color"></a-color-picker>
+            <MetricsDetailsConfig v-model:itemStyle="item.name.itemStyle"
+                                  v-model:widthAuto="chartConfigControl.seriesNameWidthAuto[item.id||index]"/>
+          </span>
+
+            <div class="component-right">
+              <a-input
+                  v-model:value="item.name.text"
+                  size="small"
+                  :style="{ width: '100%', fontSize: '12px', height: '22px' }"
+                  @change="
+                () => {
+
+                }
+              "
+              >
+              </a-input>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-item metrics">
+          <div class="chart-item">
+            <span class="label-left" style="width: 48px">指标</span>
+
+            <div class="component-right">
+              <a-checkbox v-model:checked="item.value.metrics.show">
+                <span class="label-normal">显示</span>
+              </a-checkbox>
+            </div>
+          </div>
+
+          <div class="chart-item">
+          <span class="label-left" style="width: 60px;display: flex;align-items: center;
+          justify-content: flex-start">
+            <a-color-picker v-model:color="item.value.metrics.itemStyle.color"></a-color-picker>
+            <MetricsDetailsConfig v-model:itemStyle="item.value.metrics.itemStyle"
+                                  v-model:widthAuto="chartConfigControl.seriesValueMetricsAuto[item.id||index]"/>
+          </span>
+
+            <div class="component-right">
+              <a-input
+                  v-model:value="item.value.metrics.text"
+                  size="small"
+                  :style="{ width: '100%', fontSize: '12px', height: '22px' }"
+                  @change="
+                () => {
+
+                }
+              "
+              >
+              </a-input>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-item metrics">
+          <div class="chart-item">
+            <span class="label-left" style="width: 48px">指标前缀</span>
+
+            <div class="component-right">
+              <a-checkbox v-model:checked="item.value.prefix.show">
+                <span class="label-normal">显示</span>
+              </a-checkbox>
+            </div>
+          </div>
+
+          <div class="chart-item">
+          <span class="label-left" style="width: 60px;display: flex;align-items: center;
+          justify-content: flex-start">
+            <a-color-picker v-model:color="item.value.prefix.itemStyle.color"></a-color-picker>
+            <MetricsDetailsConfig v-model:itemStyle="item.value.prefix.itemStyle"
+                                  v-model:widthAuto="chartConfigControl.seriesValuePrefixWidthAuto[item.id||index]"/>
+          </span>
+
+            <div class="component-right">
+              <a-input
+                  v-model:value="item.value.prefix.text"
+                  size="small"
+                  :style="{ width: '100%', fontSize: '12px', height: '22px' }"
+                  @change="
+                () => {
+
+                }
+              "
+              >
+              </a-input>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-item metrics">
+          <div class="chart-item">
+            <span class="label-left" style="width: 48px">指标后缀</span>
+
+            <div class="component-right">
+              <a-checkbox v-model:checked="item.value.suffix.show">
+                <span class="label-normal">显示</span>
+              </a-checkbox>
+            </div>
+          </div>
+
+          <div class="chart-item">
+          <span class="label-left" style="width: 60px;display: flex;align-items: center;
+          justify-content: flex-start">
+            <a-color-picker v-model:color="item.value.suffix.itemStyle.color"></a-color-picker>
+            <MetricsDetailsConfig v-model:itemStyle="item.value.suffix.itemStyle"
+                                  v-model:widthAuto="chartConfigControl.seriesValueSuffixAuto[item.id||index]"/>
+          </span>
+
+            <div class="component-right">
+              <component :is="item.value.suffix.text" v-if="item.value.suffix.isIcon"></component>
+              <a-input
+                  v-else
+                  v-model:value="item.value.suffix.text"
+                  size="small"
+                  :style="{ width: '100%', fontSize: '12px', height: '22px' }"
+                  @change="
+                () => {
+
+                }
+              "
+              >
+              </a-input>
+            </div>
+          </div>
+        </div>
+
+
+      </a-collapse-panel>
+    </a-collapse>
+
+
   </div>
 </template>
 
@@ -302,6 +556,12 @@ onUnmounted(() => {
   height: 32px;
   justify-content: space-between;
 }
+
+.chart-group .detail-item {
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
 
 .label-left,
 .label-normal {
