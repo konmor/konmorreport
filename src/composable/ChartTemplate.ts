@@ -1150,7 +1150,7 @@ export const MetricsCard = {
           },
           suffix: {
             isIcon: false,
-            text: '万台' as string | Component,
+            text: '万台' as string,
             show: true,
             itemStyle: {
               color: '#000',
@@ -1226,7 +1226,7 @@ export const MetricsCard = {
           },
           suffix: {
             isIcon: true,
-            text: TrendUp as string | Component,
+            text: 'TrendUp' as string,
             show: true,
             itemStyle: {
               color: '#67ea44',
@@ -1298,7 +1298,7 @@ export const MetricsCard = {
           },
           suffix: {
             isIcon: true,
-            text: TrendUp as string | Component,
+            text: 'TrendUp' as string,
             show: true,
             itemStyle: {
               color: '#000',
@@ -1369,7 +1369,7 @@ export const MetricsCard = {
           },
           suffix: {
             isIcon: true,
-            text: TrendDown as string | Component,
+            text: 'TrendDown' as string,
             show: true,
             itemStyle: {
               color: '#000',
@@ -1439,7 +1439,7 @@ export const MetricsCard = {
           },
           suffix: {
             isIcon: true,
-            text: TrendDown as string | Component,
+            text: 'TrendDown' as string,
             show: true,
             itemStyle: {
               color: '#000',
@@ -1509,7 +1509,7 @@ export const MetricsCard = {
           },
           suffix: {
             isIcon: true,
-            text: TrendDown as string | Component,
+            text: 'TrendDown' as string,
             show: true,
             itemStyle: {
               color: '#000',

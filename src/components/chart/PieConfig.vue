@@ -547,6 +547,7 @@ onUnmounted(() => {
     <a-collapse
       v-model:activeKey="chartConfigControl.allSeriesConfigShow"
       expand-icon-position="end"
+      accordion
       :style="{
         border: 'none',
         backgroundColor: 'transparent',

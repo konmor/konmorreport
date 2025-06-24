@@ -14,7 +14,8 @@ import BoldBolder from "@/assets/icon/BoldBolder.vue";
 import AlignTop from "@/assets/icon/AlignTop.vue";
 import AlignMiddle from "@/assets/icon/AlignMiddle.vue";
 import AlignBottom from "@/assets/icon/AlignBottom.vue";
-import MetricsDetailsConfig from "@/components/chart/MetricsDetailsConfig.vue";
+import MetricsDetailsConfig from "@/components/chart/metrics/MetricsDetailsConfig.vue";
+import IconPicker from "@/components/IconPicker.vue";
 
 let {getChartConfig, setChartConfig, chartOption, chartContainer, clearCurrentConfig} =
     defineProps([
@@ -297,6 +298,7 @@ onUnmounted(() => {
     <a-collapse
         v-model:activeKey="chartConfigControl.seriesActiveKey"
         expand-icon-position="end"
+        accordion
         :style="{
         border: 'none',
         backgroundColor: 'transparent',
@@ -469,6 +471,16 @@ onUnmounted(() => {
               <a-checkbox v-model:checked="item.value.suffix.show">
                 <span class="label-normal">显示</span>
               </a-checkbox>
+
+              <a-checkbox v-model:checked="item.value.suffix.isIcon" @change="(v:any)=>{
+                if(v.target.checked) {
+                  item.value.suffix.text = 'Alarm';
+                } else {
+                  item.value.suffix.text = '';
+                }
+              }">
+                <span class="label-normal">图标</span>
+              </a-checkbox>
             </div>
           </div>
 
@@ -481,7 +493,7 @@ onUnmounted(() => {
           </span>
 
             <div class="component-right">
-              <component :is="item.value.suffix.text" v-if="item.value.suffix.isIcon"></component>
+              <icon-picker v-model:icon="item.value.suffix.text" v-if="item.value.suffix.isIcon"></icon-picker>
               <a-input
                   v-else
                   v-model:value="item.value.suffix.text"
@@ -510,6 +522,7 @@ onUnmounted(() => {
 :deep(.ant-collapse .ant-collapse-item .ant-collapse-header) {
   margin: 0;
   padding: 0;
+  height: 32px;
 }
 
 :deep(.ant-collapse .ant-collapse-item .ant-collapse-content) {

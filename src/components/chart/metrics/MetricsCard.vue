@@ -3,6 +3,8 @@
 import {type Component, ref} from "vue";
 import TrendUp from "@/assets/metrics/icon/TrendUp.vue";
 import TrendDown from "@/assets/metrics/icon/TrendDown.vue";
+import IconPicker from "@/components/IconPicker.vue";
+import {findIcon} from "@/assets/metrics/factory.ts";
 
 let props = defineProps(['options']);
 
@@ -80,7 +82,7 @@ let emits = defineEmits(['update:options']);
             alignSelf:item.value.suffix.itemStyle.alignSelf,
           }">
            <span v-if="item.value.suffix.isIcon">
-             <component  :is="item.value.suffix.text"></component>
+             <component  :is="findIcon(item.value.suffix.text)?.value"></component>
            </span>
             <span v-else>{{item.value.suffix.text}} </span>
             </span>
@@ -139,7 +141,6 @@ let emits = defineEmits(['update:options']);
 
 .chart-label .content .label > .name {
   display: block;
-  height: 16px;
   line-height: 16px;
 }
 
@@ -152,7 +153,6 @@ let emits = defineEmits(['update:options']);
 .chart-label .content .label > .value .prefix ,
 .chart-label .content .label > .value .metrics,
 .chart-label .content .label > .value .suffix{
-  height: 16px;
   line-height: 16px;
 }
 

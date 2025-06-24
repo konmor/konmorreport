@@ -34,8 +34,8 @@ import GaugeConfig from '@/components/chart/GaugeConfig.vue'
 import Resize from '@/assets/icon/Resize.vue'
 import IconPicker from '@/components/IconPicker.vue'
 import TrendChartUp from "@/assets/metrics/icon/TrendChartUp.vue";
-import MetricsCard from "@/components/chart/MetricsCard.vue";
-import TagConfig from '@/components/chart/TagConfig.vue'
+import MetricsCard from "@/components/chart/metrics/MetricsCard.vue";
+import TagConfig from '@/components/chart/metrics/TagConfig.vue'
 
 
 
