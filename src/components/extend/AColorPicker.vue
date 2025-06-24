@@ -4,8 +4,8 @@ import ColorPicker from '@/components/extend/ColorPicker.vue'
 
 let { color } = defineProps(['color'])
 
-// 声明事件
-const emit = defineEmits(['update:color'])
+// 声明事件 ,'color-change' 不生效
+const emit = defineEmits(['update:color','colorChange'])
 
 let openColorSelector = ref(false)
 
@@ -15,7 +15,8 @@ const openColorPicker = (e: any) => {
 
 const getColor = (currentColor: string) => {
   // 触发事件
-  emit('update:color', currentColor)
+  emit('update:color', currentColor);
+  emit('colorChange',currentColor);
 }
 </script>
 

@@ -1,23 +1,32 @@
 <script setup lang="ts">
+import BoldLighter from '@/assets/icon/BoldLighter.vue'
+import { SettingOutlined } from '@ant-design/icons-vue'
+import AlignTop from '@/assets/icon/AlignTop.vue'
+import AlignBottom from '@/assets/icon/AlignBottom.vue'
+import BoldNormal from '@/assets/icon/BoldNormal.vue'
+import BoldBold from '@/assets/icon/BoldBold.vue'
+import AlignMiddle from '@/assets/icon/AlignMiddle.vue'
+import BoldBolder from '@/assets/icon/BoldBolder.vue'
+import { watch } from 'vue'
 
-import BoldLighter from "@/assets/icon/BoldLighter.vue";
-import {SettingOutlined} from "@ant-design/icons-vue";
-import AlignTop from "@/assets/icon/AlignTop.vue";
-import AlignBottom from "@/assets/icon/AlignBottom.vue";
-import BoldNormal from "@/assets/icon/BoldNormal.vue";
-import BoldBold from "@/assets/icon/BoldBold.vue";
-import AlignMiddle from "@/assets/icon/AlignMiddle.vue";
-import BoldBolder from "@/assets/icon/BoldBolder.vue";
-import {watch} from "vue";
+let props = defineProps(['itemStyle', 'widthAuto'])
 
-let props = defineProps(['itemStyle', 'widthAuto']);
+let emits = defineEmits([
+  'update:itemStyle',
+  'update:widthAuto',
+  'fontSizeChange',
+  'fontWeightChange',
+  'minWidthChange',
+  'positionChange',
+  'widthAutoChange',
+])
 
-let emits = defineEmits(['update:itemStyle', 'update:widthAuto']);
-
-
-watch(() => props.itemStyle.fontSize, () => {
-  console.log(props.itemStyle.fontSize);
-})
+watch(
+  () => props.itemStyle.fontSize,
+  () => {
+    console.log(props.itemStyle.fontSize)
+  },
+)
 </script>
 
 <template>
@@ -26,96 +35,108 @@ watch(() => props.itemStyle.fontSize, () => {
     <template #content>
       <!-- 字体大小、字体粗细、宽度、上中下-->
       <div class="configItems">
-
         <div class="configItem">
           <span class="itemName">字体大小</span>
           <div class="itemContent">
             <a-input-number
-                v-model:value="itemStyle.fontSize"
-                allow-clear
-                size="small"
-                min="12"
-                :style="{ width: '100%', fontSize: '12px', height: '22px' }"
-
+              v-model:value="itemStyle.fontSize"
+              @change="
+                () => {
+                  itemStyle.height = itemStyle.fontSize
+                  emits('fontSizeChange', itemStyle.fontSize)
+                }
+              "
+              allow-clear
+              size="small"
+              min="12"
+              :style="{ width: '100%', fontSize: '12px', height: '22px' }"
             ></a-input-number>
           </div>
         </div>
 
-        <div class="configItem"
-        >
+        <div class="configItem">
           <span class="itemName">字体粗细</span>
 
           <div class="itemContent">
             <a-radio-group
-                v-model:value="itemStyle.fontWeight"
-                button-style="outline"
-                size="small">
+              v-model:value="itemStyle.fontWeight"
+              button-style="outline"
+              size="small"
+              @change="emits('fontWeightChange', itemStyle.fontWeight)"
+            >
               <a-radio-button value="lighter">
-                <BoldLighter/>
+                <BoldLighter />
               </a-radio-button>
               <a-radio-button value="normal">
-                <BoldNormal/>
+                <BoldNormal />
               </a-radio-button>
               <a-radio-button value="bold">
-                <BoldBold/>
+                <BoldBold />
               </a-radio-button>
               <a-radio-button value="bolder">
-                <BoldBolder/>
+                <BoldBolder />
               </a-radio-button>
             </a-radio-group>
           </div>
         </div>
 
-
         <div class="configItem">
           <span class="itemName">宽度</span>
 
           <div class="itemContent">
-            <a-checkbox @change="(v:any)=>{
-                          emits('update:widthAuto',v.target.checked);
-                        }">
-                        <span class="label-normal" v-if="widthAuto">
-                          自动
-                        </span>
+            <a-checkbox
+              @change="
+                (v: any) => {
+                  emits('update:widthAuto', v.target.checked)
+                  emits('widthAutoChange', v.target.checked)
+                }
+              "
+            >
+              <span class="label-normal" v-if="widthAuto"> 自动 </span>
             </a-checkbox>
 
             <a-input-number
-                v-if="!widthAuto"
-                v-model:value="itemStyle.minWidth"
-                allow-clear
-                size="small"
-                :style="{ width: '136px', fontSize: '12px', height: '22px',marginLeft:'8px' }"
-            ></a-input-number>
+              v-if="!widthAuto"
+              v-model:value="itemStyle.minWidth"
+              @change="emits('minWidthChange', itemStyle.minWidth)"
+              allow-clear
+              size="small"
+              :style="{ width: '136px', fontSize: '12px', height: '22px',marginLeft:'6px' }"
+            >
+              allow-clear size="small" :style="{ width: '136px', fontSize: '12px', height: '22px',
+              marginLeft: '8px' }" >
+            </a-input-number>
           </div>
         </div>
 
-        <div class="configItem"
-        >
+        <div class="configItem">
           <span class="itemName">位置</span>
           <div class="itemContent">
-            <a-radio-group v-model:value="itemStyle.alignSelf"
-                           button-style="outline"
-                           size="small">
+            <a-radio-group
+              v-model:value="itemStyle.alignSelf"
+              button-style="outline"
+              size="small"
+              @change="emits('positionChange', itemStyle.alignSelf)"
+              >>
               <a-radio-button value="start">
-                <AlignTop/>
+                <AlignTop />
               </a-radio-button>
               <a-radio-button value="center">
-                <AlignMiddle/>
+                <AlignMiddle />
               </a-radio-button>
               <a-radio-button value="end">
-                <AlignBottom/>
+                <AlignBottom />
               </a-radio-button>
             </a-radio-group>
           </div>
         </div>
       </div>
     </template>
-    <SettingOutlined :style="{marginLeft:'6px',fontSize:'14px'}"/>
+    <SettingOutlined :style="{ marginLeft: '6px', fontSize: '14px' }" />
   </a-popover>
 </template>
 
 <style scoped>
-
 .configItems {
   width: 256px;
 }
@@ -131,7 +152,6 @@ watch(() => props.itemStyle.fontSize, () => {
 .configItems .configItem .itemName,
 .configItems .configItem .itemContent {
   font-size: 12px;
-
 }
 
 .configItems .configItem .itemContent {

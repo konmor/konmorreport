@@ -1141,7 +1141,7 @@ export const MetricsCard = {
               fontSize: 70,
               // bold bolder lighter normal
               fontWeight: 'normal',
-              height: 92, // 22
+              height: 16, // 22
               width: null,
               minWidth: 32,
               // start center end
