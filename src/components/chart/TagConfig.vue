@@ -1,27 +1,37 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, reactive } from 'vue'
-import { themArray } from '@/echartsThem/registerThem.ts'
+import {nextTick, onMounted, onUnmounted, reactive} from 'vue'
+import {themArray} from '@/echartsThem/registerThem.ts'
 import * as echarts from 'echarts'
 import Left from '@/assets/icon/Left.vue'
 import Right from '@/assets/icon/Right.vue'
 import Center from '@/assets/icon/Center.vue'
+import AColorPicker from "@/components/extend/AColorPicker.vue";
+import BoldLighter from "@/assets/icon/BoldLighter.vue";
+import BoldNormal from "@/assets/icon/BoldNormal.vue";
+import BoldBold from "@/assets/icon/BoldBold.vue";
+import BoldBolder from "@/assets/icon/BoldBolder.vue";
 
 let {getChartConfig, setChartConfig, chartOption, chartContainer, clearCurrentConfig} =
-  defineProps([
-    'getChartConfig',
-    'setChartConfig',
-    'chartOption',
-    'chartContainer',
-    'clearCurrentConfig',
-  ])
+    defineProps([
+      'getChartConfig',
+      'setChartConfig',
+      'chartOption',
+      'chartContainer',
+      'clearCurrentConfig',
+    ])
 let chartConfig: any
 
 let chartConfigControl = reactive({
   themActiveKey: '', // 展开主题折叠面板
   currentThem: 'customized', // 当前主题
   currentColors: themArray.find((item) => item.themeName == 'customized')!.theme.color, // 当前主题的颜色
+  titleDetailConfigShow: false,
+  titleHeightAuto: true,
+
 
   legendPosition: 'topCenter', // 图例的位置
+
+
 })
 
 const chartConfigFunction = {
@@ -59,9 +69,9 @@ onUnmounted(() => {
   <!--主题-->
   <div class="chart-group">
     <a-collapse
-      v-model:activeKey="chartConfigControl.themActiveKey"
-      expand-icon-position="end"
-      :style="{
+        v-model:activeKey="chartConfigControl.themActiveKey"
+        expand-icon-position="end"
+        :style="{
         border: 'none',
         backgroundColor: 'transparent',
         margin: '0',
@@ -69,15 +79,15 @@ onUnmounted(() => {
       }"
     >
       <a-collapse-panel
-        key="them"
-        header="主题"
-        :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
+          key="them"
+          header="主题"
+          :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
       >
         <div
-          class="chart-item color-items"
-          v-for="(item, index) in themArray"
-          :key="index"
-          :style="{
+            class="chart-item color-items"
+            v-for="(item, index) in themArray"
+            :key="index"
+            :style="{
             backgroundColor: item.theme.backgroundColor,
             paddingLeft: '6px',
             paddingRight: '6px',
@@ -86,15 +96,15 @@ onUnmounted(() => {
             border: '1px solid #eee',
             cursor: 'pointer',
           }"
-          @click="chartConfigFunction.changeThem(item.themeName)"
+            @click="chartConfigFunction.changeThem(item.themeName)"
         >
           <div
-            v-for="(colorItem, colorIndex) in item.theme.color.length > 7
+              v-for="(colorItem, colorIndex) in item.theme.color.length > 7
               ? 7
               : item.theme.color.length"
-            class="color-item"
-            :key="colorIndex"
-            :style="{
+              class="color-item"
+              :key="colorIndex"
+              :style="{
               backgroundColor: item.theme.color[colorIndex],
               height: '20px',
               width: '20px',
@@ -108,10 +118,10 @@ onUnmounted(() => {
   <!-- 标题-->
   <div class="chart-group">
     <a-input
-      v-show="false"
-      size="small"
-      v-model:value="chartOption.title.id"
-      placeholder="组件唯一id"
+        v-show="false"
+        size="small"
+        v-model:value="chartOption.title.id"
+        placeholder="组件唯一id"
     ></a-input>
 
     <!--标题开关以及位置-->
@@ -119,32 +129,13 @@ onUnmounted(() => {
       <span class="label-left" style="width: 48px">标题</span>
       <div class="component-right">
         <a-switch
-          size="small"
-          v-model:checked="chartOption.title.show"
-          @change="chartConfigFunction.titleSwitchChange()"
-        ></a-switch>
+            size="small"
+            v-model:checked="chartOption.title.show"></a-switch>
         <a-radio-group
-          v-model:value="chartOption.title.left"
-          :disabled="!chartOption.title.show"
-          button-style="solid"
-          size="small"
-          @change="
-            () => {
-              // 1. 设置图表配置
-              let option = { title: { left: chartOption.title.left } }
-              chartConfig.setOption(option)
-
-              //2. 计算该组件需要的grid调整的空间
-              let { top, left, right, bottom } = chartConfigFunction.changeComponentPosition(
-                chartConfigControl.currentTitlePosition,
-                chartOption.title.left,
-              )
-
-              // 3. 调整grid的位置
-              chartConfigFunction.changeGridPosition(top, left, right, bottom)
-            }
-          "
-        >
+            v-model:value="chartOption.title.position"
+            :disabled="!chartOption.title.show"
+            button-style="solid"
+            size="small">
           <a-radio-button value="left">
             <Left/>
           </a-radio-button>
@@ -162,14 +153,100 @@ onUnmounted(() => {
       <span class="label-left" style="width: 24px">名称</span>
       <div class="component-right">
         <a-input
-          v-model:value="chartOption.title.text"
-          placeholder="图表名称"
-          allow-clear
-          :disabled="!chartOption.title.show"
-          size="small"
-          :style="{ width: '100%', fontSize: '12px', height: '22px' }"
-          @change="chartConfig.setOption({ title: { text: chartOption.title.text } })"
+            v-model:value="chartOption.title.text"
+            placeholder="图表名称"
+            allow-clear
+            :disabled="!chartOption.title.show"
+            size="small"
+            :style="{ width: '100%', fontSize: '12px', height: '22px' }"
         ></a-input>
+      </div>
+    </div>
+
+    <!--细节配置-->
+    <div class="chart-item">
+      <span class="label-left" style="width: 48px">细节</span>
+      <div class="component-right">
+        <a-checkbox v-model:checked="chartConfigControl.titleDetailConfigShow"
+                    :disabled="!chartOption.title.show">
+
+        </a-checkbox>
+      </div>
+    </div>
+
+    <!--标题颜色-->
+    <div class="chart-item" v-show="chartConfigControl.titleDetailConfigShow && chartOption.title.show">
+      <span class="label-left" style="width: 24px">颜色</span>
+      <div class="component-right">
+        <a-color-picker v-model:color="chartOption.title.textStyle.color"></a-color-picker>
+      </div>
+    </div>
+
+    <!--标题字体大小-->
+    <div class="chart-item" v-show="chartConfigControl.titleDetailConfigShow && chartOption.title.show">
+      <span class="label-left" style="width: 48px">大小</span>
+      <div class="component-right">
+        <a-input-number
+            v-model:value="chartOption.title.textStyle.fontSize"
+            allow-clear
+            size="small"
+            min="22"
+            :style="{ width: '100%', fontSize: '12px', height: '22px' }"
+            @change="()=>{
+              if(chartConfigControl.titleHeightAuto){
+                chartOption.title.textStyle.height = chartOption.title.textStyle.fontSize +24;
+              }
+            }"
+        ></a-input-number>
+      </div>
+    </div>
+
+    <!--标题字体粗细-->
+    <div class="chart-item" v-show="chartConfigControl.titleDetailConfigShow && chartOption.title.show">
+      <span class="label-left" style="width: 24px">粗细</span>
+      <div class="component-right">
+        <a-radio-group
+            v-model:value="chartOption.title.textStyle.fontWeight"
+            button-style="outline"
+            size="small">
+          <a-radio-button value="lighter">
+            <BoldLighter/>
+          </a-radio-button>
+          <a-radio-button value="normal">
+            <BoldNormal/>
+          </a-radio-button>
+          <a-radio-button value="bold">
+            <BoldBold/>
+          </a-radio-button>
+          <a-radio-button value="bolder">
+            <BoldBolder/>
+          </a-radio-button>
+        </a-radio-group>
+      </div>
+    </div>
+
+    <!--字体行高-->
+    <div class="chart-item" v-show="chartConfigControl.titleDetailConfigShow && chartOption.title.show">
+      <span class="label-left" style="width: 24px">行高</span>
+      <div class="component-right">
+        <a-checkbox v-model:checked="chartConfigControl.titleHeightAuto"
+        @change="(v:any)=>{
+          if(v.target.checked){
+            chartOption.title.textStyle.height = chartOption.title.textStyle.fontSize + 24;
+          }
+        }">
+          <span class="label-normal" v-if="chartConfigControl.titleHeightAuto">
+            自动
+          </span>
+        </a-checkbox>
+
+        <a-input-number
+            v-if="!chartConfigControl.titleHeightAuto"
+            v-model:value=" chartOption.title.textStyle.height"
+            allow-clear
+            size="small"
+            :style="{ width: '80%', fontSize: '12px', height: '22px' }"
+        ></a-input-number>
       </div>
     </div>
   </div>

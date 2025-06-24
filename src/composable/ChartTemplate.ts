@@ -1086,7 +1086,7 @@ export const MetricsCard = {
     textStyle: {
       color: '#e8c917',
       fontSize: 36,
-      fontWeight: 'bold',
+      fontWeight: 'normal',
       height: 60,
     },
   },
