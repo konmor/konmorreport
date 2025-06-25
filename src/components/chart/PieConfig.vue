@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onMounted, onUnmounted, reactive, watch } from 'vue'
-import { themArray } from '@/echartsThem/registerThem.ts'
+import {DefaultThem, themArray} from '@/echartsThem/registerThem.ts'
 import * as echarts from 'echarts'
 import Center from '@/assets/icon/Center.vue'
 import Left from '@/assets/icon/Left.vue'

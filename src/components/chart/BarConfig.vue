@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import {themArray} from "@/echartsThem/registerThem.ts";
+import {DefaultThem, themArray} from "@/echartsThem/registerThem.ts";
 import LeftCenter from "@/assets/icon/legend/LeftCenter.vue";
 import TopCenter from "@/assets/icon/legend/TopCenter.vue";
 import Position from "@/assets/icon/legend/Position.vue";
