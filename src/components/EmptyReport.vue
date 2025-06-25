@@ -32,11 +32,10 @@ import ScatterConfig from '@/components/chart/ScatterConfig.vue'
 import RadarConfig from '@/components/chart/RadarConfig.vue'
 import GaugeConfig from '@/components/chart/GaugeConfig.vue'
 import Resize from '@/assets/icon/Resize.vue'
-import IconPicker from '@/components/IconPicker.vue'
-import TrendChartUp from "@/assets/metrics/icon/TrendChartUp.vue";
 import MetricsCard from "@/components/chart/metrics/MetricsCard.vue";
 import TagConfig from '@/components/chart/metrics/TagConfig.vue'
-import {DefaultThem, findDefaultColor, themArray} from "@/echartsThem/registerThem.ts";
+import {findDefaultColor} from "@/echartsThem/registerThem.ts";
+import Table from "@/components/chart/table/Table.vue";
 
 
 const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number }[]>([
@@ -125,6 +124,8 @@ const change = function change(event: Event) {
 
     if (lastChartType.value == 'tag') {
       allMetricsContainerId.push(lastEchartsContainerID);
+    } else if (lastChartType.value == 'table') {
+      // todo
     } else {
       // 如果是标签则不参数echarts 渲染
       let newContainer = document.getElementById(lastEchartsContainerID)
@@ -181,6 +182,8 @@ const tempChartModal = reactive<{ open: boolean; ok: (reject: any) => void; canc
       if (container) {
         render(vNode, container);
       }
+    } else if (lastChartType.value == 'table') {
+      //todo
     } else {
       // 配置好之后从 temChart 中获取数据，并渲染给最后一个 chartArray 中的chart
       allChartsInstance[allChartsInstance.length - 1].setOption(tempChart.getOption(), true)
@@ -198,6 +201,8 @@ function removeLastEchartsInstance() {
   if (lastChartType.value == 'tag') {
     // 删除一个id
     allMetricsContainerId.pop();
+  } else if (lastChartType.value == 'table') {
+    // todo
   } else {
     //删除刚刚创建的数据,删除echarts实例，删除draagabel的元素
     let lastEchartsInstance = allChartsInstance.pop()
@@ -386,9 +391,11 @@ onMounted(() => {
   for (let i = 0; i < items.slice().length; i++) {
     if (items[i].value == 'tag') {
       // todo 添加标签的options
+    } else if (items[i].value == 'table') {
+      // todo 表格渲染
     } else {
       // todo
-      let container = document.getElementById(items[i].id)
+      /*let container = document.getElementById(items[i].id)
       // 2.初始化echarts 挂载的位置
       let myEcharts = echarts.init(container) // 参数是dom节点
       // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
@@ -401,7 +408,7 @@ onMounted(() => {
         if (myEcharts) myEcharts.resize()
       })
       observer.observe(container as Element)
-      allResizeObserver.push(observer)
+      allResizeObserver.push(observer)*/
     }
 
   }
@@ -1198,6 +1205,9 @@ function renderTag() {
   tempChartOption.value.content.labels = options;
 }
 
+function renderTable() {
+
+}
 
 function renderChart() {
   if (lastChartType.value == 'barChart') {
@@ -1214,6 +1224,8 @@ function renderChart() {
     renderGauge()
   } else if (lastChartType.value == 'tag') {
     renderTag()
+  } else if (lastChartType.value == 'table') {
+    renderTable()
   }
 }
 
@@ -1378,7 +1390,7 @@ watch(metricsFields, renderChart)
             "
           >
             <div :id="element.id" style="height: 100%; width: 100%">
-
+              <Table></Table>
             </div>
             <div class="drag-class">
               <fullscreen-outlined :rotate="45"></fullscreen-outlined>
