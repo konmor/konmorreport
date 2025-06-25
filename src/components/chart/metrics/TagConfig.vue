@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onMounted, onUnmounted, reactive, watch } from 'vue'
-import {findThem, themArray} from '@/echartsThem/registerThem.ts'
-import * as echarts from 'echarts'
-import { SettingOutlined } from '@ant-design/icons-vue'
+import {DefaultThem, findThem, themArray} from '@/echartsThem/registerThem.ts'
 import Left from '@/assets/icon/Left.vue'
 import Right from '@/assets/icon/Right.vue'
 import Center from '@/assets/icon/Center.vue'
@@ -13,6 +11,7 @@ import BoldBold from '@/assets/icon/BoldBold.vue'
 import BoldBolder from '@/assets/icon/BoldBolder.vue'
 import MetricsDetailsConfig from '@/components/chart/metrics/MetricsDetailsConfig.vue'
 import IconPicker from '@/components/IconPicker.vue'
+import Tag from "@/assets/diagram-icon/Tag.vue";
 
 let { getChartConfig, setChartConfig, chartOption, chartContainer, clearCurrentConfig } =
   defineProps([
@@ -21,14 +20,14 @@ let { getChartConfig, setChartConfig, chartOption, chartContainer, clearCurrentC
     'chartOption',
     'chartContainer',
     'clearCurrentConfig',
-  ])
-let chartConfig: any
+  ]);
+
+// todo 背景颜色、自适应大小
 
 let chartConfigControl = reactive({
   themActiveKey: '', // 展开主题折叠面板
   currentThem: 'customized', // 当前主题
-  currentColors: themArray.find((item) => item.themeName == 'customized')!.theme.color, // 当前主题的颜色
-
+  currentColors: DefaultThem.theme.color as Array<string>,
   titleDetailConfigShow: false,
   titleHeightAuto: true,
 
@@ -48,20 +47,22 @@ let chartConfigControl = reactive({
   //
   seriesValueSuffixWidthAuto: {} as Record<string, boolean>,
 
-  legendPosition: 'topCenter', // 图例的位置
 })
 
 const chartConfigFunction = {
   changeThem: (themName: string) => {
     chartConfigControl.currentThem = themName // 当前主题
 
-    let colors = findThem(themName).color;
+    chartConfigControl.currentColors = findThem(themName).color;
 
     for (let i = 0; i < chartOption.content.labels.length; i++) {
-      let index = i % colors.length;
-      chartOption.content.labels[i].value.metrics.itemStyle.color = colors[index];
+      let index = i % chartConfigControl.currentColors.length;
+      chartOption.content.labels[i].value.metrics.itemStyle.color = chartConfigControl.currentColors[index];
     }
-
+  },
+  getColor:(index:number)=>{
+    let i = index % chartConfigControl.currentColors.length;
+    return chartConfigControl.currentColors[i];
   },
   changeAllSeriesWidth: (index: number, minWidth: number) => {
     for (let i = 0; i < chartOption.content.labels.length; i++) {
@@ -314,10 +315,6 @@ const chartConfigFunction = {
 
 onMounted(() => {
   // 在页面渲染完成之后设置数据，这样才能拿到父级中的该变量  getChartConfig();
-  nextTick(() => {
-    // 初始化堆叠配置
-    chartConfig = getChartConfig()
-  })
 })
 
 onUnmounted(() => {
@@ -566,9 +563,20 @@ onUnmounted(() => {
       <a-collapse-panel
         v-for="(item, index) in chartOption.content.labels"
         :key="item.id || index"
-        :header="item.name.text ? item.name.text : '无名称'"
         :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
       >
+
+        <template #header>
+          <div :style="{ display: 'flex', justifyContent: 'space-between' }">
+            <span>
+              {{ item.name.text ? item.name.text : '无名称' }}
+            </span>
+            <span>
+              <Tag :style="{ color: chartConfigFunction.getColor(index) ,fontSize:'16px'}" />
+            </span>
+          </div>
+        </template>
+
         <!--宽度-->
         <div class="chart-item">
           <span class="label-left" style="width: 48px">宽度</span>

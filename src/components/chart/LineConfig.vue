@@ -78,7 +78,7 @@ const chartConfigConstParams = {
 let chartConfigControl = reactive({
   themActiveKey: '', // 展开主题折叠面板
   currentThem: 'customized', // 当前主题
-  currentColors: themArray.find((item) => item.themeName == 'customized')!.theme.color, // 当前主题的颜色
+  currentColors: DefaultThem.theme.color, // 当前主题的颜色
   pileActiveKey: '', // 展开堆叠折叠面板
   stackItems: [[]] as Array<Array<{ id: string; name: string; color: string }>>, // 堆叠的内容[[{name,id,color}]]
   legendPosition: 'topCenter', // 图例的位置
