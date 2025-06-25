@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import { type Component, nextTick, onMounted, ref, watch } from 'vue'
-import TrendUp from '@/assets/metrics/icon/TrendUp.vue'
-import TrendDown from '@/assets/metrics/icon/TrendDown.vue'
-import IconPicker from '@/components/IconPicker.vue'
-import { findIcon } from '@/assets/metrics/factory.ts'
+import {type Component} from 'vue'
+import {findIcon} from '@/assets/metrics/factory.ts'
 
 let props = defineProps(['options'])
 
 let emits = defineEmits(['update:options'])
 
-//
+// todo 自动计算宽高
 // let allObserver
 // let observer = new ResizeObserver(()=>{
 //
@@ -19,9 +16,9 @@ let emits = defineEmits(['update:options'])
 <template>
   <div class="chart-label" v-if="props.options != null">
     <div
-      class="title"
-      v-show="props.options.title.show"
-      :style="{
+        class="title"
+        v-show="props.options.title.show"
+        :style="{
         height: props.options.title.textStyle.height + 'px',
         lineHeight: props.options.title.textStyle.height + 'px',
         fontSize: props.options.title.textStyle.fontSize + 'px',
@@ -34,10 +31,10 @@ let emits = defineEmits(['update:options'])
     </div>
     <div class="content" v-if="props.options.content.labels.length > 0">
       <div
-        class="label"
-        v-for="(item, index) in props.options.content.labels"
-        :id="item.id"
-        :style="{
+          class="label"
+          v-for="(item, index) in props.options.content.labels"
+          :id="item.id"
+          :style="{
           padding: item.padding.join('px ').concat('px'),
           minWidth: item.minWidth + 'px',
           width: item.width ? item.width + 'px' : null,
@@ -46,9 +43,9 @@ let emits = defineEmits(['update:options'])
         }"
       >
         <div
-          class="name"
-          v-if="item.name.show"
-          :style="{
+            class="name"
+            v-if="item.name.show"
+            :style="{
             fontSize: item.name.itemStyle.fontSize + 'px',
             color: item.name.itemStyle.color,
             fontWeight: item.name.itemStyle.fontWeight,
@@ -63,16 +60,16 @@ let emits = defineEmits(['update:options'])
           <span>{{ item.name.text }}</span>
         </div>
         <div
-          class="value"
-          :style="{
+            class="value"
+            :style="{
             width: item.value.width ? item.value.width + 'px' : null,
             minWidth: item.value.minWidth ? item.value.minWidth + 'px' : null,
           }"
         >
           <span
-            class="prefix"
-            v-if="item.value.prefix.show"
-            :style="{
+              class="prefix"
+              v-if="item.value.prefix.show"
+              :style="{
               fontSize: item.value.prefix.itemStyle.fontSize + 'px',
               color: item.value.prefix.itemStyle.color,
               fontWeight: item.value.prefix.itemStyle.fontWeight,
@@ -90,12 +87,12 @@ let emits = defineEmits(['update:options'])
                 : '16px',
               alignSelf: item.value.prefix.itemStyle.alignSelf,
             }"
-            >{{ item.value.prefix.text }}</span
+          >{{ item.value.prefix.text }}</span
           >
           <span
-            class="metrics"
-            v-if="item.value.metrics.show"
-            :style="{
+              class="metrics"
+              v-if="item.value.metrics.show"
+              :style="{
               fontSize: item.value.metrics.itemStyle.fontSize + 'px',
               color: item.value.metrics.itemStyle.color,
               fontWeight: item.value.metrics.itemStyle.fontWeight,
@@ -113,12 +110,12 @@ let emits = defineEmits(['update:options'])
                 : null,
               alignSelf: item.value.metrics.itemStyle.alignSelf,
             }"
-            >{{ item.value.metrics.text }}</span
+          >{{ item.value.metrics.text }}</span
           >
           <span
-            class="suffix"
-            v-if="item.value.suffix.show"
-            :style="{
+              class="suffix"
+              v-if="item.value.suffix.show"
+              :style="{
               fontSize: item.value.suffix.itemStyle.fontSize + 'px',
               color: item.value.suffix.itemStyle.color,
               fontWeight: item.value.suffix.itemStyle.fontWeight,
@@ -188,9 +185,8 @@ let emits = defineEmits(['update:options'])
 
 .chart-label .content .label:hover {
   cursor: pointer;
-  transition:
-    box-shadow 0.2s,
-    border-color 0.2s;
+  transition: box-shadow 0.2s,
+  border-color 0.2s;
   box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
 }
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onMounted, onUnmounted, reactive, watch } from 'vue'
-import { themArray } from '@/echartsThem/registerThem.ts'
+import {findThem, themArray} from '@/echartsThem/registerThem.ts'
 import * as echarts from 'echarts'
 import { SettingOutlined } from '@ant-design/icons-vue'
 import Left from '@/assets/icon/Left.vue'
@@ -53,18 +53,15 @@ let chartConfigControl = reactive({
 
 const chartConfigFunction = {
   changeThem: (themName: string) => {
-    if (chartConfig == null) {
-      chartConfig = getChartConfig()
-    }
-    // let crtOption = chartConfig.getOption();
-    chartConfig.dispose()
-    // 赋新值
-    chartConfig = echarts.init(chartContainer, themName) // 参数是dom节点
-    // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
-    chartConfig.setOption(chartOption)
-
-    setChartConfig(chartConfig) // 传递给父级
     chartConfigControl.currentThem = themName // 当前主题
+
+    let colors = findThem(themName).color;
+
+    for (let i = 0; i < chartOption.content.labels.length; i++) {
+      let index = i % colors.length;
+      chartOption.content.labels[i].value.metrics.itemStyle.color = colors[index];
+    }
+
   },
   changeAllSeriesWidth: (index: number, minWidth: number) => {
     for (let i = 0; i < chartOption.content.labels.length; i++) {

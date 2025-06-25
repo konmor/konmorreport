@@ -19,10 +19,22 @@ import wonderland from './wonderland.project.json';
 import customized from './customized.json';
 import * as echarts from 'echarts';
 
-export let themArray = [customized,chalk, dark, essos, infographic, macarons, purplePassion, roma, shine, vintage, walden, westeros, wonderland];
+export let themArray = [customized, chalk, dark, essos, infographic, macarons, purplePassion, roma, shine, vintage, walden, westeros, wonderland];
 export default function registerThem() {
 
     themArray.forEach(item => {
         echarts.registerTheme(item.themeName, item.theme)
     })
+}
+
+export function findThem(themName: string) {
+    return themArray.find((item) => item.themeName == themName)!.theme;
+}
+
+export const DefaultThem = customized;
+
+export function findDefaultColor(index:number) {
+    var length = DefaultThem.theme.color.length;
+    let i = index % length;
+    return DefaultThem.theme.color[i];
 }
