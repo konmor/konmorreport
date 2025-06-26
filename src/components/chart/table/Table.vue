@@ -20,7 +20,36 @@ let options = ref({
       height: 23,
     },
   },
+  // 显示边框线
+  border: true,
+  page: {
+    show:true,
+    pageSize: 10,
+    current: 1,
+    pageSizeOptions: [5, 10, 15],
+  },
+  columns: [
+    {
+      id: '',
+      dataIndex: '',
+      title: '',
+      key: '',
+      // 是否自动省略
+      ellipsis: true,
+      width: null,
+      showIcon: true,
+      // vertical 、 horizontal
+      direction:'horizontal',
+      // progress 、 battery
+      iconType:'battery',
+      // 1. 纯色 给定一个分母值，用当前值除分母，icon按照百分比占据该条。 颜色唯一
+      // 2. 纯色 给定一个分母值，用当前值除分母。再给定 每个百分比之间的颜色，icon按照百分比占据该条，同时按照百分比适配颜色。
+      // 3. 颜色渐变 给定一个分母值，用当前值除分母。在给定、颜色渐变 、 给定渐变方向、从左到右 、 从下往上、从左下角到右上角
+    }
+  ]
 });
+
+
 
 // let fontSize = .style.fontSize
 let fontSize = window.getComputedStyle(document.getElementsByTagName('body')[0]).fontSize
@@ -279,7 +308,7 @@ const handleTableChange: TableProps['onChange'] = (pag: { pageSize: number; curr
   border-radius: 2px;
   border: 1px solid;
   border-color: blue;
-  padding: 1px  1px 1px 1px;
+  padding: 1px 1px 1px 1px;
   position: relative;
 }
 
@@ -287,7 +316,7 @@ const handleTableChange: TableProps['onChange'] = (pag: { pageSize: number; curr
   height: 100%;
   width: 100%;
   /*默认从上往下*/
-  background: linear-gradient(to right, #fff, yellow);;
+  background: linear-gradient(to right, #fff, yellow);
 }
 
 .metrics-mini-chart .vertical-battery-bar .items {
