@@ -16,6 +16,7 @@ provide('router', router)
 /*配置模态框 右侧超长滚动条*/
 .verticalScrollBar::-webkit-scrollbar {
   width: 4px;
+  height: 4px;
 }
 
 .verticalScrollBar::-webkit-scrollbar-thumb {

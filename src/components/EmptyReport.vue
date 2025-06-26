@@ -1390,7 +1390,7 @@ watch(metricsFields, renderChart)
             "
           >
             <div :id="element.id" style="height: 100%; width: 100%">
-              <Table></Table>
+              <Table :row-span="element.xSpan" :col-span="element.ySpan"></Table>
             </div>
             <div class="drag-class">
               <fullscreen-outlined :rotate="45"></fullscreen-outlined>
