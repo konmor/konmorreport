@@ -1,21 +1,27 @@
 <script setup lang="ts">
-import {nextTick, onMounted, onUnmounted, reactive} from "vue";
-import {DefaultThem, themArray} from "@/echartsThem/registerThem.ts";
-import Left from "@/assets/icon/Left.vue";
-import Right from "@/assets/icon/Right.vue";
-import Center from "@/assets/icon/Center.vue";
-import {BarChartOutlined, TableOutlined} from "@ant-design/icons-vue";
-import * as echarts from "echarts";
-import HorizontalBattery from "@/components/chart/table/HorizontalBattery.vue";
-import HorizontalProgress from "@/components/chart/table/HorizontalProgress.vue";
-import VerticalBattery from "@/components/chart/table/VerticalBattery.vue";
-import VerticalProgress from "@/components/chart/table/VerticalProgress.vue";
-import AColorPicker from "@/components/extend/AColorPicker.vue";
+import { nextTick, onMounted, onUnmounted, reactive } from 'vue'
+import { DefaultThem, themArray } from '@/echartsThem/registerThem.ts'
+import Left from '@/assets/icon/Left.vue'
+import Right from '@/assets/icon/Right.vue'
+import Center from '@/assets/icon/Center.vue'
+import { BarChartOutlined, TableOutlined } from '@ant-design/icons-vue'
+import * as echarts from 'echarts'
+import HorizontalBattery from '@/components/chart/table/HorizontalBattery.vue'
+import HorizontalProgress from '@/components/chart/table/HorizontalProgress.vue'
+import VerticalBattery from '@/components/chart/table/VerticalBattery.vue'
+import VerticalProgress from '@/components/chart/table/VerticalProgress.vue'
+import AColorPicker from '@/components/extend/AColorPicker.vue'
 
-let {getChartConfig, setChartConfig, chartOption, chartContainer, clearCurrentConfig} =
-    defineProps(['getChartConfig', 'setChartConfig', 'chartOption', 'chartContainer', 'clearCurrentConfig']);
+let { getChartConfig, setChartConfig, chartOption, chartContainer, clearCurrentConfig } =
+  defineProps([
+    'getChartConfig',
+    'setChartConfig',
+    'chartOption',
+    'chartContainer',
+    'clearCurrentConfig',
+  ])
 
-let chartConfig: any;
+let chartConfig: any
 
 let chartConfigControl = reactive({
   themActiveKey: '', // 展开主题折叠面板
@@ -28,30 +34,28 @@ let chartConfigControl = reactive({
   pureColorChecked: {} as Record<string, boolean>,
 })
 
-
 const chartConfigFunction = {
   changeThem: (themName: string) => {
     if (chartConfig == null) {
-      chartConfig = getChartConfig();
+      chartConfig = getChartConfig()
     }
     // let crtOption = chartConfig.getOption();
-    chartConfig.dispose();
+    chartConfig.dispose()
     // 赋新值
     chartConfig = echarts.init(chartContainer, themName) // 参数是dom节点
     // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
-    chartConfig.setOption(chartOption);
+    chartConfig.setOption(chartOption)
 
-    setChartConfig(chartConfig); // 传递给父级
+    setChartConfig(chartConfig) // 传递给父级
     chartConfigControl.currentThem = themName // 当前主题
   },
 }
 const caculatePercent = (value: number, max: number) => {
-  let percent = 100 * value / max;
-  return Math.round(percent > 100 ? 100 : percent);
+  let percent = (100 * value) / max
+  return Math.round(percent > 100 ? 100 : percent)
 }
 
-const witchType = (stages: boolean,
-                   linearGradient: boolean) => {
+const witchType = (stages: boolean, linearGradient: boolean) => {
   if (stages) {
     return 'stages'
   }
@@ -70,18 +74,17 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  clearCurrentConfig();
+  clearCurrentConfig()
 })
-
 </script>
 
 <template>
   <!--主题 todo 待适配-->
   <div class="chart-group">
     <a-collapse
-        v-model:activeKey="chartConfigControl.themActiveKey"
-        expand-icon-position="end"
-        :style="{
+      v-model:activeKey="chartConfigControl.themActiveKey"
+      expand-icon-position="end"
+      :style="{
         border: 'none',
         backgroundColor: 'transparent',
         margin: '0',
@@ -89,16 +92,16 @@ onUnmounted(() => {
       }"
     >
       <a-collapse-panel
-          key="them"
-          header="主题"
-          :disabled="true"
-          :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
+        key="them"
+        header="主题"
+        :disabled="true"
+        :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
       >
         <div
-            class="chart-item color-items"
-            v-for="(item, index) in themArray"
-            :key="index"
-            :style="{
+          class="chart-item color-items"
+          v-for="(item, index) in themArray"
+          :key="index"
+          :style="{
             backgroundColor: item.theme.backgroundColor,
             paddingLeft: '6px',
             paddingRight: '6px',
@@ -107,15 +110,15 @@ onUnmounted(() => {
             border: '1px solid #eee',
             cursor: 'pointer',
           }"
-            @click="chartConfigFunction.changeThem(item.themeName)"
+          @click="chartConfigFunction.changeThem(item.themeName)"
         >
           <div
-              v-for="(colorItem, colorIndex) in item.theme.color.length > 7
+            v-for="(colorItem, colorIndex) in item.theme.color.length > 7
               ? 7
               : item.theme.color.length"
-              class="color-item"
-              :key="colorIndex"
-              :style="{
+            class="color-item"
+            :key="colorIndex"
+            :style="{
               backgroundColor: item.theme.color[colorIndex],
               height: '20px',
               width: '20px',
@@ -130,34 +133,31 @@ onUnmounted(() => {
   <!-- 标题-->
   <div class="chart-group">
     <a-input
-        v-show="false"
-        size="small"
-        v-model:value="chartOption.title.id"
-        placeholder="组件唯一id"
+      v-show="false"
+      size="small"
+      v-model:value="chartOption.title.id"
+      placeholder="组件唯一id"
     ></a-input>
 
     <!--标题开关以及位置-->
     <div class="chart-item">
       <span class="label-left" style="width: 48px">标题</span>
       <div class="component-right">
-        <a-switch
-            size="small"
-            v-model:checked="chartOption.title.show"
-        ></a-switch>
+        <a-switch size="small" v-model:checked="chartOption.title.show"></a-switch>
         <a-radio-group
-            v-model:value="chartOption.title.position"
-            :disabled="!chartOption.title.show"
-            button-style="solid"
-            size="small"
+          v-model:value="chartOption.title.position"
+          :disabled="!chartOption.title.show"
+          button-style="solid"
+          size="small"
         >
           <a-radio-button value="left">
-            <Left/>
+            <Left />
           </a-radio-button>
           <a-radio-button value="center">
-            <Center/>
+            <Center />
           </a-radio-button>
           <a-radio-button value="right">
-            <Right/>
+            <Right />
           </a-radio-button>
         </a-radio-group>
       </div>
@@ -167,12 +167,12 @@ onUnmounted(() => {
       <span class="label-left" style="width: 24px">名称</span>
       <div class="component-right">
         <a-input
-            v-model:value="chartOption.title.text"
-            placeholder="图表名称"
-            allow-clear
-            :disabled="!chartOption.title.show"
-            size="small"
-            :style="{ width: '100%', fontSize: '12px', height: '22px' }"
+          v-model:value="chartOption.title.text"
+          placeholder="图表名称"
+          allow-clear
+          :disabled="!chartOption.title.show"
+          size="small"
+          :style="{ width: '100%', fontSize: '12px', height: '22px' }"
         ></a-input>
       </div>
     </div>
@@ -197,28 +197,27 @@ onUnmounted(() => {
       <span class="label-left" style="width: 48px">数据系列</span>
       <div class="component-right">
         <a-checkbox
-            v-model:checked="chartConfigControl.allSeriesEqual"
-            @change="
+          v-model:checked="chartConfigControl.allSeriesEqual"
+          @change="
             () => {
-                chartConfigControl.allSeriesConfigShow.length = 0;
-                chartConfigControl.allSeriesConfigShow[0] = chartOption.series[0].id||'0'
+              chartConfigControl.allSeriesConfigShow.length = 0
+              chartConfigControl.allSeriesConfigShow[0] = chartOption.series[0].id || '0'
               if (chartConfigControl.allSeriesEqual) {
-
               } else {
                 chartConfigControl.allSeriesConfigShow = []
               }
             }
           "
-        ><span style="font-size: 12px">各系列一致</span>
+          ><span style="font-size: 12px">各系列一致</span>
         </a-checkbox>
       </div>
     </div>
 
     <a-collapse
-        v-model:activeKey="chartConfigControl.allSeriesConfigShow"
-        expand-icon-position="end"
-        accordion
-        :style="{
+      v-model:activeKey="chartConfigControl.allSeriesConfigShow"
+      expand-icon-position="end"
+      accordion
+      :style="{
         border: 'none',
         backgroundColor: 'transparent',
         margin: '0',
@@ -226,16 +225,16 @@ onUnmounted(() => {
       }"
     >
       <a-collapse-panel
-          :style="{ border: 'none', marginTop: '8px', padding: '0', fontSize: '12px' }"
-          v-for="(item, index) in chartOption.series"
-          :key="item.id || index"
+        :style="{ border: 'none', marginTop: '8px', padding: '0', fontSize: '12px' }"
+        v-for="(item, index) in chartOption.series"
+        :key="item.id || index"
       >
         <template #header>
           <div :style="{ display: 'flex', justifyContent: 'space-between' }">
             <span>
               {{ item.title }}
             </span>
-            <TableOutlined :style="{ fontSize:'16px'}"/>
+            <TableOutlined :style="{ fontSize: '16px' }" />
           </div>
         </template>
 
@@ -244,162 +243,224 @@ onUnmounted(() => {
           <span class="label-left" style="width: 48px">系列名称</span>
           <div class="component-right">
             <a-input
-                v-model:value="item.title"
-                size="small"
-                :style="{ width: '100%', fontSize: '12px', height: '22px' }">
+              v-model:value="item.title"
+              size="small"
+              :style="{ width: '100%', fontSize: '12px', height: '22px' }"
+            >
             </a-input>
           </div>
         </div>
 
-        <!-- 转换 -->
-        <div class="chart-item">
-          <span class="label-left" style="width: 60px">转换为图形</span>
-          <div class="component-right">
-            <a-checkbox v-model:checked="chartOption.convert[item.dataIndex].showIcon">
-            </a-checkbox>
+        <div v-if="item.fieldType2 == 'Number'">
+          <!-- 转换 -->
+          <div class="chart-item">
+            <span class="label-left" style="width: 60px">转换</span>
+            <div class="component-right">
+              <a-tooltip title="将数据转为为进度'图形'，如cpu使用率:80，最大值为100。进度条展示80%">
+                <a-checkbox v-model:checked="chartOption.convert[item.dataIndex].showIcon">
+                </a-checkbox>
+              </a-tooltip>
+            </div>
           </div>
-        </div>
 
-        <div class="chart-item">
-          <span class="label-left" :style="{width:'36px'}">最大值</span>
-          <div class="component-right">
-            <a-input-number
+          <!--  图形-->
+          <div class="chart-item">
+            <span class="label-left">图形</span>
+            <div class="component-right">
+              <a-tooltip title="横向进度条">
+                <div class="metrics-mini-chart">
+                  <HorizontalProgress
+                    :color="chartOption.convert[item.dataIndex].color"
+                    :progress="caculatePercent(80, 100)"
+                    :type="
+                      witchType(
+                        chartOption.convert[item.dataIndex].stages,
+                        chartOption.convert[item.dataIndex].linearGradient,
+                      )
+                    "
+                    :colorDirection="'to right'"
+                    :borderColor="chartOption.convert[item.dataIndex].borderColor"
+                  />
+                </div>
+              </a-tooltip>
+              <a-tooltip title="垂直进度条">
+                <div class="metrics-mini-chart">
+                  <VerticalProgress
+                    :color="chartOption.convert[item.dataIndex].color"
+                    :progress="caculatePercent(80, 100)"
+                    :type="
+                      witchType(
+                        chartOption.convert[item.dataIndex].stages,
+                        chartOption.convert[item.dataIndex].linearGradient,
+                      )
+                    "
+                    :colorDirection="'to top'"
+                    :borderColor="chartOption.convert[item.dataIndex].borderColor"
+                  />
+                </div>
+              </a-tooltip>
+              <a-tooltip title="水平电池条"
+                >>
+                <div class="metrics-mini-chart">
+                  <HorizontalBattery
+                    :color="chartOption.convert[item.dataIndex].color"
+                    :progress="caculatePercent(80, 100)"
+                    :type="
+                      witchType(
+                        chartOption.convert[item.dataIndex].stages,
+                        chartOption.convert[item.dataIndex].linearGradient,
+                      )
+                    "
+                    :colorDirection="'to right'"
+                    :borderColor="chartOption.convert[item.dataIndex].borderColor"
+                  />
+                </div>
+              </a-tooltip>
+              <a-tooltip title="垂直电池条">
+                <div class="metrics-mini-chart">
+                  <VerticalBattery
+                    :color="chartOption.convert[item.dataIndex].color"
+                    :progress="caculatePercent(80, 100)"
+                    :type="
+                      witchType(
+                        chartOption.convert[item.dataIndex].stages,
+                        chartOption.convert[item.dataIndex].linearGradient,
+                      )
+                    "
+                    :colorDirection="'to top'"
+                    :borderColor="chartOption.convert[item.dataIndex].borderColor"
+                  />
+                </div>
+              </a-tooltip>
+            </div>
+          </div>
+
+          <div class="chart-item">
+            <span class="label-left" :style="{ width: '36px' }">最大值</span>
+            <div class="component-right">
+              <a-input-number
                 size="small"
                 min="8"
                 :style="{ width: '100%', fontSize: '12px' }"
                 :disabled="!chartOption.convert[item.dataIndex].showIcon"
                 v-model:value="chartOption.convert[item.dataIndex].max"
-            >
-            </a-input-number>
-          </div>
-        </div>
-
-        <div class="chart-item">
-          <span class="label-left">图形</span>
-          <div class="component-right">
-            <div class="metrics-mini-chart">
-              <HorizontalProgress :color="chartOption.convert[item.dataIndex].color"
-                                  :progress="caculatePercent(80,100)"
-                                  :type="witchType(chartOption.convert[item.dataIndex].stages,chartOption.convert[item.dataIndex].linearGradient)"
-                                  :colorDirection="chartOption.convert[item.dataIndex].colorDirection"
-                                  :borderColor="chartOption.convert[item.dataIndex].borderColor"/>
+              >
+              </a-input-number>
             </div>
-
-            <div class="metrics-mini-chart">
-              <VerticalProgress :color="chartOption.convert[item.dataIndex].color"
-                                :progress="caculatePercent(80,100)"
-                                :type="witchType(chartOption.convert[item.dataIndex].stages,chartOption.convert[item.dataIndex].linearGradient)"
-                                :colorDirection="chartOption.convert[item.dataIndex].colorDirection"
-                                :borderColor="chartOption.convert[item.dataIndex].borderColor"/>
+          </div>
+          <!--        边框颜色-->
+          <div class="chart-item">
+            <span class="label-left">边框颜色</span>
+            <div class="component-right">
+              <a-color-picker
+                v-model:color="chartOption.convert[item.dataIndex].borderColor"
+              ></a-color-picker>
             </div>
+          </div>
+          <!--        填充-->
+          <div class="chart-item">
+            <span class="label-left">填充</span>
+            <div class="component-right" style="width: 168px">
+              <a-checkbox
+                v-model:checked="chartConfigControl.pureColorChecked[item.dataIndex]"
+                @change="
+                  (v: any) => {
+                    if (v.target.checked) {
+                      chartOption.convert[item.dataIndex].stages = false
+                      chartOption.convert[item.dataIndex].linearGradient = false
+                      chartOption.convert[item.dataIndex].color = 'blue'
+                    }
+                  }
+                "
+              >
+                <span class="label-normal">纯色</span>
+              </a-checkbox>
 
-
-            <div class="metrics-mini-chart">
-              <HorizontalBattery :color="chartOption.convert[item.dataIndex].color"
-                                 :progress="caculatePercent(80,100)"
-                                 :type="witchType(chartOption.convert[item.dataIndex].stages,chartOption.convert[item.dataIndex].linearGradient)"
-                                 :colorDirection="chartOption.convert[item.dataIndex].colorDirection"
-                                 :borderColor="chartOption.convert[item.dataIndex].borderColor"/>
+              <a-checkbox
+                v-model:checked="chartOption.convert[item.dataIndex].stages"
+                @change="
+                  (v: any) => {
+                    if (v.target.checked) {
+                      chartConfigControl.pureColorChecked[item.dataIndex] = false
+                      chartOption.convert[item.dataIndex].linearGradient = false
+                      chartOption.convert[item.dataIndex].color = [
+                        [0.4, 'green'],
+                        [0.8, 'yellow'],
+                        [1, 'red'],
+                      ]
+                    }
+                  }
+                "
+              >
+                <span class="label-normal">分段</span>
+              </a-checkbox>
+              <a-checkbox
+                v-model:checked="chartOption.convert[item.dataIndex].linearGradient"
+                @change="
+                  (v: any) => {
+                    if (v.target.checked) {
+                      chartConfigControl.pureColorChecked[item.dataIndex] = false
+                      chartOption.convert[item.dataIndex].stages = false
+                      chartOption.convert[item.dataIndex].color = ['green', 'yellow', 'red']
+                      chartOption.convert[item.dataIndex].colorDirection = 'to top'
+                    }
+                  }
+                "
+              >
+                <span class="label-normal">渐变</span>
+              </a-checkbox>
             </div>
+          </div>
 
-
-            <div class="metrics-mini-chart">
-              <VerticalBattery :color="chartOption.convert[item.dataIndex].color"
-                               :progress="caculatePercent(80,100)"
-                               :type="witchType(chartOption.convert[item.dataIndex].stages,chartOption.convert[item.dataIndex].linearGradient)"
-                               :colorDirection="chartOption.convert[item.dataIndex].colorDirection"
-                               :borderColor="chartOption.convert[item.dataIndex].borderColor"/>
+          <!--        纯色配置-->
+          <div class="chart-item" v-show="chartConfigControl.pureColorChecked[item.dataIndex]">
+            <span class="label-left">纯色配置</span>
+            <div class="component-right">
+              <a-color-picker
+                v-model:color="chartOption.convert[item.dataIndex].color"
+              ></a-color-picker>
             </div>
-
-
           </div>
-        </div>
 
-        <div class="chart-item">
-          <span class="label-left">边框颜色</span>
-          <div class="component-right">
-            <a-color-picker v-model:color="chartOption.convert[item.dataIndex].borderColor"></a-color-picker>
-          </div>
-        </div>
+          <!-- 颜色分段-->
+          <div
+            class="chart-item"
+            v-for="(_, index) in 3"
+            v-if="chartOption.convert[item.dataIndex].stages"
+          >
+            <a-color-picker
+              v-model:color="chartOption.convert[item.dataIndex].color[index][1]"
+            ></a-color-picker>
 
-        <div class="chart-item">
-          <span class="label-left">填充</span>
-          <div class="component-right" style="width: 168px">
-            <a-checkbox v-model:checked="chartConfigControl.pureColorChecked[item.dataIndex]" @change="(v:any)=>{
-              if(v.target.checked){
-                chartOption.convert[item.dataIndex].stages=false;
-                chartOption.convert[item.dataIndex].linearGradient=false;
-                chartOption.convert[item.dataIndex].color = 'blue'
-              }
-            }">
-              <span class="label-normal">纯色</span>
-            </a-checkbox>
-
-            <a-checkbox v-model:checked="chartOption.convert[item.dataIndex].stages" @change="(v:any)=>{
-              if(v.target.checked){
-                chartConfigControl.pureColorChecked[item.dataIndex]=false;
-                chartOption.convert[item.dataIndex].linearGradient=false
-                chartOption.convert[item.dataIndex].color = [[0.4,'green'],[0.8,'yellow'],[1,'red']]
-              }
-            }">
-              <span class="label-normal">分段</span>
-            </a-checkbox>
-            <a-checkbox v-model:checked="chartOption.convert[item.dataIndex].linearGradient" @change="(v:any)=>{
-              if(v.target.checked){
-                chartConfigControl.pureColorChecked[item.dataIndex]=false;
-                chartOption.convert[item.dataIndex].stages=false;
-                 chartOption.convert[item.dataIndex].color = ['green','yellow','red'];
-                 chartOption.convert[item.dataIndex].color = ['green','yellow','red'];
-                 chartOption.convert[item.dataIndex].colorDirection ='to top';
-              }
-            }">
-              <span class="label-normal">渐变</span>
-            </a-checkbox>
-          </div>
-        </div>
-
-        <!--        纯色配置-->
-        <div class="chart-item" v-show="chartConfigControl.pureColorChecked[item.dataIndex]">
-          <span class="label-left">纯色配置</span>
-          <div class="component-right">
-            <a-color-picker v-model:color="chartOption.convert[item.dataIndex].color"></a-color-picker>
-          </div>
-        </div>
-
-        <!-- 颜色分段-->
-        <div class="chart-item" v-for="index in 3" v-if="chartOption.convert[item.dataIndex].stages">
-          <a-color-picker v-model:color="chartOption.convert[item.dataIndex].color[index][1]"></a-color-picker>
-
-          <div class="component-right">
-            <a-input-number
+            <div class="component-right">
+              <a-input-number
                 max="100"
                 min="0"
                 size="small"
                 :style="{ width: '100%', fontSize: '12px' }"
                 addon-after="%"
                 v-model:value="chartOption.convert[item.dataIndex].color[index][0]"
-            ></a-input-number>
+              ></a-input-number>
+            </div>
+          </div>
+
+          <!-- 渐变-->
+          <div class="chart-item" v-show="chartOption.convert[item.dataIndex].linearGradient">
+            <span class="label-left">渐变配置</span>
+            <div class="component-right">
+              <a-color-picker
+                v-for="(_, index) in 3"
+                v-model:color="chartOption.convert[item.dataIndex].color[index]"
+              ></a-color-picker>
+            </div>
           </div>
         </div>
-
-
-        <!-- 渐变-->
-        <div class="chart-item" v-show="chartOption.convert[item.dataIndex].linearGradient">
-          <span class="label-left">渐变配置</span>
-          <div class="component-right">
-            <a-color-picker v-model:color="chartOption.convert[item.dataIndex].color"></a-color-picker>
-          </div>
-        </div>
-
       </a-collapse-panel>
     </a-collapse>
   </div>
-
-
 </template>
 
 <style scoped>
-
 .metrics-mini-chart {
   border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 4px;
