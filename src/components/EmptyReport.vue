@@ -1407,7 +1407,7 @@ watch(metricsFields, renderChart)
             }"
               class="chart">
             <div :id="element.id" style="height: 100%; width: 100%">
-                            <Table :row-span="element.xSpan" :col-span="element.ySpan"></Table>
+              <!--              <Table :row-span="element.xSpan" :col-span="element.ySpan"></Table>-->
             </div>
             <div class="drag-class">
               <fullscreen-outlined :rotate="45"></fullscreen-outlined>
@@ -1614,8 +1614,9 @@ watch(metricsFields, renderChart)
                 queryCondition-->
                 <MetricsCard v-if="lastChartType == 'tag'" :options="tempChartOption"/>
 
-                <Table v-else-if="lastChartType == 'table'" :tableOptions="tempChartOption"
-                       :queryCondition="{sqlId: lastSQLId, sourceId: findSourceIdBySQLID(lastSQLId)}"/>
+                <!--                临时模态框 （配置图表页面）中的渲染-->
+                <Table v-else-if="lastChartType == 'table'" :options="tempChartOption"
+                       :queryCondition="{sqlId: lastSQLId, sourceId: findSourceIdBySQLID(lastSQLId), queryBySQLContent: false,}"/>
               </div>
             </a-layout-content>
           </a-layout>

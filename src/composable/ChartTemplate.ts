@@ -1076,7 +1076,6 @@ export const PROGRESS_BOTTOM_TEMPLATE: ECBasicOption = {
         }
 };
 
-
 export const MetricsCard = {
   title: {
     text: '公司总库存',
@@ -1096,6 +1095,105 @@ export const MetricsCard = {
   }
 };
 
+export const TABLE_TEMPLATE = {
+    title: {
+        text: '公司总库存',
+        show: true,
+        // 位置 left right center 均在顶部
+        position: 'right',
+        textStyle: {
+            color: '#000',
+            fontSize: 14,
+            fontWeight: 'bold',
+            height: 23,
+        },
+    },
+    // 显示边框线
+    border: true,
+    page: {
+        show: true,
+        pageSize: 10,
+        current: 1,
+        pageSizeOptions: [5, 10, 15],
+    },
+    convert: {
+        sales: {
+            showIcon: true,
+            // progress 、 battery
+            iconType: 'battery',
+            // vertical 、 horizontal
+            orient: 'horizontal',
+            max: 5000,
+            stages: false,
+            linearGradient: false,
+            borderColor: null,
+            // 纯色时使用 #fff \ 分阶段颜色 ： [[0.2,#fff],[0.5,red],[1,yellow]] , 颜色渐变： [yellow,blue]
+            color: 'red' as string | Array<[]> | Array<string>,
+            // 线性渐变的方向是从上到下 to bottom、 to top 、 to left、to right 、
+            // to top right 、 to top left 、 to bottom left 、 to bottom right
+            colorDirection: 'to right' as
+                | 'to bottom'
+                | 'to top'
+                | 'to left'
+                | 'to right'
+                | 'to top right'
+                | 'to top left'
+                | 'to bottom left'
+                | 'to bottom right',
+        },
+    } as Record<string, any>,
+    series: [
+        {
+            dataIndex: 'id',
+            title: 'id',
+            key: '61',
+            // 是否自动省略
+            ellipsis: true,
+            width: null,
+        },
+        {
+            dataIndex: 'product_name',
+            title: 'product_name',
+            key: '62',
+            // 是否自动省略
+            ellipsis: true,
+            width: null,
+        },
+        {
+            dataIndex: 'region',
+            title: 'region',
+            key: '63',
+            // 是否自动省略
+            ellipsis: true,
+            width: null,
+        },
+        {
+            dataIndex: 'sales',
+            title: 'sales',
+            key: '64',
+            // 是否自动省略
+            ellipsis: true,
+            width: null,
+        },
+        {
+            dataIndex: 'profit',
+            title: 'profit',
+            key: '65',
+            // 是否自动省略
+            ellipsis: true,
+            width: null,
+        },
+        {
+            dataIndex: 'quantity_sold',
+            title: 'quantity_sold',
+            key: '66',
+            // 是否自动省略
+            ellipsis: true,
+            width: null,
+        },
+    ]
+};
+
 export const templateFunctionMap: Record<string, (title: string) => ECBasicOption> = {
     barChart: barTemplate,
     pieChart: pieTemplate,
@@ -1107,6 +1205,7 @@ export const templateFunctionMap: Record<string, (title: string) => ECBasicOptio
     progressCircle: progressCircleTemplate,
     progressBottom: progressBottomTemplate,
     tag:tagTemplate,
+    table:tableTemplate,
 }
 
 export function chartTemplate(title: string, type: string): ECBasicOption {
@@ -1220,4 +1319,15 @@ function tagTemplate(title: string) {
     option.title.text = title
   }
   return option
+}
+
+function tableTemplate(title: string) {
+    let option = {};
+    Object.assign(option, TABLE_TEMPLATE);
+
+    if (title) {
+        // @ts-ignore
+        option.title.text = title
+    }
+    return option
 }

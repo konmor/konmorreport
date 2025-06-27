@@ -9,113 +9,7 @@ import VerticalProgress from "@/components/chart/table/VerticalProgress.vue";
 import VerticalBattery from "@/components/chart/table/VerticalBattery.vue";
 import HorizontalBattery from "@/components/chart/table/HorizontalBattery.vue";
 
-let props = defineProps(['rowSpan', 'colSpan', 'tableOptions', 'queryCondition'])
-
-
-let options = ref({
-  title: {
-    text: '公司总库存',
-    show: true,
-    // 位置 left right center 均在顶部
-    position: 'right',
-    textStyle: {
-      color: '#000',
-      fontSize: 14,
-      fontWeight: 'bold',
-      height: 23,
-    },
-  },
-  // 显示边框线
-  border: true,
-  page: {
-    show: true,
-    pageSize: 10,
-    current: 1,
-    pageSizeOptions: [5, 10, 15],
-  },
-  convert: {
-    sales: {
-      showIcon: true,
-      // progress 、 battery
-      iconType: 'battery',
-      // vertical 、 horizontal
-      orient: 'horizontal',
-      max: 5000,
-      stages: false,
-      linearGradient: false,
-      borderColor: null,
-      // 纯色时使用 #fff \ 分阶段颜色 ： [[0.2,#fff],[0.5,red],[1,yellow]] , 颜色渐变： [yellow,blue]
-      color: 'red' as string | Array<[]> | Array<string>,
-      // 线性渐变的方向是从上到下 to bottom、 to top 、 to left、to right 、
-      // to top right 、 to top left 、 to bottom left 、 to bottom right
-      colorDirection: 'to right' as
-          | 'to bottom'
-          | 'to top'
-          | 'to left'
-          | 'to right'
-          | 'to top right'
-          | 'to top left'
-          | 'to bottom left'
-          | 'to bottom right',
-    },
-  } as Record<string, any>,
-  series: [
-    {
-      dataIndex: 'id',
-      title: 'id',
-      key: '61',
-      // 是否自动省略
-      ellipsis: true,
-      width: null,
-    },
-    {
-      dataIndex: 'product_name',
-      title: 'product_name',
-      key: '62',
-      // 是否自动省略
-      ellipsis: true,
-      width: null,
-    },
-    {
-      dataIndex: 'region',
-      title: 'region',
-      key: '63',
-      // 是否自动省略
-      ellipsis: true,
-      width: null,
-    },
-    {
-      dataIndex: 'sales',
-      title: 'sales',
-      key: '64',
-      // 是否自动省略
-      ellipsis: true,
-      width: null,
-    },
-    {
-      dataIndex: 'profit',
-      title: 'profit',
-      key: '65',
-      // 是否自动省略
-      ellipsis: true,
-      width: null,
-    },
-    {
-      dataIndex: 'quantity_sold',
-      title: 'quantity_sold',
-      key: '66',
-      // 是否自动省略
-      ellipsis: true,
-      width: null,
-    },
-  ]
-});
-
-let queryCondition = ref({
-  sourceId: '10001',
-  sqlId: 13,
-  queryBySQLContent: false,
-})
+let props = defineProps(['rowSpan', 'colSpan', 'options', 'queryCondition'])
 
 // let fontSize = .style.fontSize
 let fontSize = window.getComputedStyle(document.getElementsByTagName('body')[0]).fontSize
@@ -129,10 +23,10 @@ let scrollY = computed(() => {
   let actualHeight = props.rowSpan * 3 * 14
   // 56 为页脚分页高度 39为title的高度
   let currentNeedSize =
-      (pagination.value.pageSize + 1) * 39 + 56 + (options.value.title.show ? 39 : 0)
+      (pagination.value.pageSize + 1) * 39 + 56 + (props.options.title.show ? 39 : 0)
   return actualHeight > currentNeedSize
       ? null
-      : actualHeight - (options.value.title.show ? 135 : 96) + 'px'
+      : actualHeight - (props.options.title.show ? 135 : 96) + 'px'
 })
 
 const {data, current, pageSize, loading, total, refresh, run} = usePagination(sqlQueryData, {
@@ -143,10 +37,10 @@ const {data, current, pageSize, loading, total, refresh, run} = usePagination(sq
   },
   defaultParams: [
     {
-      sourceId: queryCondition.value.sourceId,
-      sqlId: queryCondition.value.sqlId,
-      queryBySQLContent: queryCondition.value.queryBySQLContent,
-      pageInfo: {page: options.value.page.current, size: options.value.page.pageSize, total: 0},
+      sourceId: props.queryCondition.sourceId,
+      sqlId: props.queryCondition.sqlId,
+      queryBySQLContent: props.queryCondition.queryBySQLContent,
+      pageInfo: {page: props.options.page.current, size: props.options.page.pageSize, total: 0},
     },
   ],
 })
@@ -163,9 +57,9 @@ const pagination = computed(() => ({
 
 const handleTableChange: TableProps['onChange'] = (pag: { pageSize: number; current: number }) => {
   run({
-    sourceId: queryCondition.value.sourceId,
-    sqlId: queryCondition.value.sqlId,
-    queryBySQLContent: queryCondition.value.queryBySQLContent,
+    sourceId: props.queryCondition.sourceId,
+    sqlId: props.queryCondition.sqlId,
+    queryBySQLContent: props.queryCondition.queryBySQLContent,
     pageInfo: {
       page: pag.current,
       size: pag.pageSize,
