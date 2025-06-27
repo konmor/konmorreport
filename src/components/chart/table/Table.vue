@@ -6,6 +6,8 @@ import type { TableProps } from 'ant-design-vue'
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import HorizontalProgress from '@/components/chart/table/HorizontalProgress.vue'
 import VerticalProgress from '@/components/chart/table/VerticalProgress.vue'
+import HorizontalBattery from "@/components/chart/table/HorizontalBattery.vue";
+import VerticalBattery from "@/components/chart/table/VerticalBattery.vue";
 
 let props = defineProps(['rowSpan', 'colSpan'])
 
@@ -96,7 +98,7 @@ const { data, current, pageSize, loading, total, refresh, run } = usePagination(
   defaultParams: [
     {
       sourceId: '10001',
-      sqlId: 3,
+      sqlId: 13,
       queryBySQLContent: false,
       pageInfo: { page: 1, size: 10, total: 0 },
     },
@@ -166,7 +168,7 @@ watch(data, () => {
 const handleTableChange: TableProps['onChange'] = (pag: { pageSize: number; current: number }) => {
   run({
     sourceId: 10001,
-    sqlId: 3,
+    sqlId: 13,
     queryBySQLContent: false,
     pageInfo: {
       page: pag.current,
@@ -218,13 +220,21 @@ const handleTableChange: TableProps['onChange'] = (pag: { pageSize: number; curr
       <template #bodyCell="{ text, record, index, column }">
         <template v-if="options.columns[column.dataIndex] != null">
           <div class="metrics-mini-chart">
-            <HorizontalProgress :color="['green','yellow','red']" :progress="70" type="linear-gradient" color-direction="to right" />
-            <HorizontalProgress :color="'blue'" :progress="70"/>
-            <HorizontalProgress :color="[[0.5,'yellow'],[0.8,'red'],[1,'green']]" :progress="90" type="stage"/>
+            <HorizontalProgress :color="['green','yellow','red']" :progress="100" type="linear-gradient" color-direction="to right" border-color="black"/>
+            <HorizontalProgress :color="'blue'" :progress="100" border-color="black"/>
+            <HorizontalProgress :color="[[0.5,'yellow'],[0.8,'red'],[1,'green']]" :progress="100" type="stage" border-color="black"/>
             <!-- to top to bottom-->
-            <VerticalProgress :color="['green','yellow','red']" :progress="70" type="linear-gradient" color-direction="to top" />
-            <VerticalProgress :color="'green'" :progress="70"/>
-            <VerticalProgress :color="[[0.5,'yellow'],[0.8,'red']]" :progress="70" type="stage"/>
+            <VerticalProgress :color="['green','yellow','red']" :progress="100" type="linear-gradient" color-direction="to top" border-color="black"/>
+            <VerticalProgress :color="'green'" :progress="100" border-color="black"/>
+            <VerticalProgress :color="[[0.5,'yellow'],[0.8,'red'],[1,'green']]" :progress="100" type="stage" border-color="black"/>
+
+            <HorizontalBattery :color="['green','yellow','red']" :progress="100" type="linear-gradient" color-direction="to right" border-color="black"/>
+            <HorizontalBattery :color="'blue'" :progress="100" border-color="black"/>
+            <HorizontalBattery :color="[[0.5,'yellow'],[0.8,'red'],[1,'green']]" :progress="100" type="stage" border-color="black"/>
+
+            <VerticalBattery :color="['green','yellow','red']" :progress="100" type="linear-gradient" color-direction="to top" border-color="black"/>
+            <VerticalBattery :color="'blue'" :progress="100" border-color="black"/>
+            <VerticalBattery :color="[[0.5,'yellow'],[0.8,'red'],[1,'green']]" :progress="100" type="stage" border-color="black"/>
 
             <div class="vertical-battery-bar">
               <div class="inner"></div>
@@ -289,105 +299,7 @@ const handleTableChange: TableProps['onChange'] = (pag: { pageSize: number; curr
 
 .metrics-mini-chart {
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   box-sizing: border-box;
-}
-
-/*水平进度条*/
-.metrics-mini-chart .horizontal-progress-bar {
-  height: 23px;
-  width: 8px;
-  border-radius: 4px;
-  border: 1px solid;
-  border-color: #f0f0f0;
-  background-color: #ffffff;
-  display: flex;
-  align-items: end;
-}
-
-.metrics-mini-chart .horizontal-progress-bar .inner {
-  height: 70%;
-  width: 100%;
-  border-radius: 0 0 4px 4px;
-  background-color: #dee382;
-  vertical-align: bottom;
-}
-
-/*垂直进度条*/
-.metrics-mini-chart .vertical-progress-bar {
-  height: 8px;
-  width: 23px;
-  border-radius: 4px;
-  border: 1px solid;
-  border-color: #f0f0f0;
-  background-color: #ffffff;
-}
-
-.metrics-mini-chart .vertical-progress-bar .inner {
-  height: 100%;
-  width: 70%;
-  border-radius: 4px 0 0 4px;
-  background-color: #dee382;
-}
-
-/*颜色渐变*/
-.metrics-mini-chart .vertical-progress-linear-bar {
-  height: 8px;
-  width: 23px;
-  border-radius: 4px;
-  border: 1px solid;
-  border-color: #f0f0f0;
-  /*默认从上往下*/
-  background: linear-gradient(to right, #fff, yellow);
-  display: flex;
-  justify-content: flex-end;
-}
-
-.metrics-mini-chart .vertical-progress-linear-bar .inner {
-  height: 100%;
-  width: 20%;
-  border-radius: 0 4px 4px 0;
-  /*默认从上往下*/
-  background: #ffffff;
-}
-
-.metrics-mini-chart .vertical-battery-bar {
-  height: 8px;
-  width: 23px;
-  border-radius: 2px;
-  border: 1px solid;
-  border-color: blue;
-  padding: 1px 1px 1px 1px;
-  position: relative;
-}
-
-.metrics-mini-chart .vertical-battery-bar .inner {
-  height: 100%;
-  width: 100%;
-  /*默认从上往下
-   linear-gradient(to right, blue, red); */
-  background-color: red;
-}
-
-.metrics-mini-chart .vertical-battery-bar .items {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  left: 0;
-  top: 0;
-  display: flex;
-  justify-content: space-around;
-}
-
-.metrics-mini-chart .vertical-battery-bar .items .item {
-  width: 1px;
-  height: 6px;
-  background-color: #fff;
-}
-
-.metrics-mini-chart .horizontal-battery-bar {
-}
-
-.metrics-mini-chart .horizontal-battery-bar .inner {
 }
 </style>
