@@ -23,7 +23,7 @@ let scrollY = computed(() => {
   let actualHeight = props.rowSpan * 3 * 14
   // 56 为页脚分页高度 39为title的高度
   let currentNeedSize =
-      (pagination.value.pageSize + 1) * 39 + 56 + (props.options.title.show ? 39 : 0)
+      ((props.options.page.show ? pagination.value.pageSize : props.options.page.pageSize) + 1) * 39 + 56 + (props.options.title.show ? 39 : 0)
   return actualHeight > currentNeedSize
       ? null
       : actualHeight - (props.options.title.show ? 135 : 96) + 'px'
@@ -45,14 +45,20 @@ const {data, current, pageSize, loading, total, refresh, run} = usePagination(sq
   ],
 })
 
-const pagination = computed(() => ({
-  total: total.value,
-  current: data.value.data.page,
-  pageSize: data.value.data.size,
-  showSizeChanger: true,
-  showQuickJumper: true,
-  showTotal: (total, range) => '共 ' + total + ' 条',
-}))
+const pagination = computed(() => {
+  if (props.options.page.show) {
+    return {
+      total: total.value,
+      current: data.value.data.page,
+      pageSize: data.value.data.size,
+      showSizeChanger: true,
+      showQuickJumper: true,
+      showTotal: (total, range) => '共 ' + total + ' 条',
+    }
+  } else {
+    return false
+  }
+})
 
 
 const handleTableChange: TableProps['onChange'] = (pag: { pageSize: number; current: number }) => {
@@ -68,15 +74,15 @@ const handleTableChange: TableProps['onChange'] = (pag: { pageSize: number; curr
   })
 }
 
-const caculatePercent = (value: number, max: number) => {
-  let percent = 100 * value / max;
-  Math.round(percent > 100 ? 100 : percent);
+const caculatePercent = (value: string, max: number) => {
+  let percent = 100 * parseFloat(value) / max;
+  return Math.round(percent > 100 ? 100 : percent);
 }
 
 const witchType = (stages: boolean,
                    linearGradient: boolean) => {
   if (stages) {
-    return 'stage'
+    return 'stages'
   }
   if (linearGradient) {
     return 'linear-gradient'
@@ -119,7 +125,7 @@ const witchType = (stages: boolean,
         @change="handleTableChange"
     >
       <template #bodyCell="{ text, record, index, column }">
-        <template v-if="options.convert[column.dataIndex] != null">
+        <template v-if="options.convert[column.dataIndex] != null && options.convert[column.dataIndex].showIcon">
           <div class="metrics-mini-chart">
             <!--            progress 、 battery
             vertical 、 horizontal-->

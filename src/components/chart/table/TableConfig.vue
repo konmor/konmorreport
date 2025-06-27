@@ -4,8 +4,13 @@ import {DefaultThem, themArray} from "@/echartsThem/registerThem.ts";
 import Left from "@/assets/icon/Left.vue";
 import Right from "@/assets/icon/Right.vue";
 import Center from "@/assets/icon/Center.vue";
-import {BarChartOutlined, LineChartOutlined} from "@ant-design/icons-vue";
+import {BarChartOutlined, TableOutlined} from "@ant-design/icons-vue";
 import * as echarts from "echarts";
+import HorizontalBattery from "@/components/chart/table/HorizontalBattery.vue";
+import HorizontalProgress from "@/components/chart/table/HorizontalProgress.vue";
+import VerticalBattery from "@/components/chart/table/VerticalBattery.vue";
+import VerticalProgress from "@/components/chart/table/VerticalProgress.vue";
+import AColorPicker from "@/components/extend/AColorPicker.vue";
 
 let {getChartConfig, setChartConfig, chartOption, chartContainer, clearCurrentConfig} =
     defineProps(['getChartConfig', 'setChartConfig', 'chartOption', 'chartContainer', 'clearCurrentConfig']);
@@ -19,6 +24,8 @@ let chartConfigControl = reactive({
 
   allSeriesEqual: false, // 数据系列的配置，各系列全一一致
   allSeriesConfigShow: [] as Array<string>, // 数据系列：默认展开的内容
+
+  pureColorChecked: {} as Record<string, boolean>,
 })
 
 
@@ -38,16 +45,31 @@ const chartConfigFunction = {
     chartConfigControl.currentThem = themName // 当前主题
   },
 }
+const caculatePercent = (value: number, max: number) => {
+  let percent = 100 * value / max;
+  return Math.round(percent > 100 ? 100 : percent);
+}
 
-onMounted(()=>{
+const witchType = (stages: boolean,
+                   linearGradient: boolean) => {
+  if (stages) {
+    return 'stages'
+  }
+  if (linearGradient) {
+    return 'linear-gradient'
+  }
+  return null
+}
+
+onMounted(() => {
   // 在页面渲染完成之后设置数据，这样才能拿到父级中的该变量  getChartConfig();
-  nextTick(()=>{
+  nextTick(() => {
     // 初始化堆叠配置
     // chartConfig = getChartConfig();
   })
 })
 
-onUnmounted(()=>{
+onUnmounted(() => {
   clearCurrentConfig();
 })
 
@@ -121,29 +143,12 @@ onUnmounted(()=>{
         <a-switch
             size="small"
             v-model:checked="chartOption.title.show"
-            @change="chartConfigFunction.titleSwitchChange()"
         ></a-switch>
         <a-radio-group
-            v-model:value="chartOption.title.left"
+            v-model:value="chartOption.title.position"
             :disabled="!chartOption.title.show"
             button-style="solid"
             size="small"
-            @change="
-            () => {
-              // 1. 设置图表配置
-              let option = { title: { left: chartOption.title.left } }
-              chartConfig.setOption(option)
-
-              //2. 计算该组件需要的grid调整的空间
-              let { top, left, right, bottom } = chartConfigFunction.changeComponentPosition(
-                chartConfigControl.currentTitlePosition,
-                chartOption.title.left,
-              )
-
-              // 3. 调整grid的位置
-              chartConfigFunction.changeGridPosition(top, left, right, bottom)
-            }
-          "
         >
           <a-radio-button value="left">
             <Left/>
@@ -168,7 +173,6 @@ onUnmounted(()=>{
             :disabled="!chartOption.title.show"
             size="small"
             :style="{ width: '100%', fontSize: '12px', height: '22px' }"
-            @change="chartConfig.setOption({ title: { text: chartOption.title.text } })"
         ></a-input>
       </div>
     </div>
@@ -176,7 +180,14 @@ onUnmounted(()=>{
 
   <!--分页配置-->
   <div class="chart-group">
-
+    <div class="chart-item">
+      <span class="label-left">分页</span>
+      <div class="component-right">
+        <a-checkbox v-model:checked="chartOption.page.show">
+          <span class="label-normal">开启</span>
+        </a-checkbox>
+      </div>
+    </div>
   </div>
 
   <!--数据系列-->
@@ -222,35 +233,164 @@ onUnmounted(()=>{
         <template #header>
           <div :style="{ display: 'flex', justifyContent: 'space-between' }">
             <span>
-              {{ item.name }}
+              {{ item.title }}
             </span>
-            <span v-if="item.type == 'bar'">
-              <BarChartOutlined :style="{ color: chartConfigFunction.getColor(index) ,fontSize:'16px'}"/>
-            </span>
-            <span v-else-if="item.type == 'line'">
-              <LineChartOutlined :style="{ color: chartConfigFunction.getColor(index) ,fontSize:'16px'}"/>
-            </span>
+            <TableOutlined :style="{ fontSize:'16px'}"/>
           </div>
         </template>
 
         <!--系列名称-->
         <div class="chart-item">
           <span class="label-left" style="width: 48px">系列名称</span>
-
           <div class="component-right">
             <a-input
-                v-model:value="item.name"
+                v-model:value="item.title"
                 size="small"
-                :style="{ width: '100%', fontSize: '12px', height: '22px' }"
-                @change="
-                () => {
-                  chartConfig.setOption({ series: [{ id: item.id, name: item.name }] })
-                }
-              "
-            >
+                :style="{ width: '100%', fontSize: '12px', height: '22px' }">
             </a-input>
           </div>
         </div>
+
+        <!-- 转换 -->
+        <div class="chart-item">
+          <span class="label-left" style="width: 60px">转换为图形</span>
+          <div class="component-right">
+            <a-checkbox v-model:checked="chartOption.convert[item.dataIndex].showIcon">
+            </a-checkbox>
+          </div>
+        </div>
+
+        <div class="chart-item">
+          <span class="label-left" :style="{width:'36px'}">最大值</span>
+          <div class="component-right">
+            <a-input-number
+                size="small"
+                min="8"
+                :style="{ width: '100%', fontSize: '12px' }"
+                :disabled="!chartOption.convert[item.dataIndex].showIcon"
+                v-model:value="chartOption.convert[item.dataIndex].max"
+            >
+            </a-input-number>
+          </div>
+        </div>
+
+        <div class="chart-item">
+          <span class="label-left">图形</span>
+          <div class="component-right">
+            <div class="metrics-mini-chart">
+              <HorizontalProgress :color="chartOption.convert[item.dataIndex].color"
+                                  :progress="caculatePercent(80,100)"
+                                  :type="witchType(chartOption.convert[item.dataIndex].stages,chartOption.convert[item.dataIndex].linearGradient)"
+                                  :colorDirection="chartOption.convert[item.dataIndex].colorDirection"
+                                  :borderColor="chartOption.convert[item.dataIndex].borderColor"/>
+            </div>
+
+            <div class="metrics-mini-chart">
+              <VerticalProgress :color="chartOption.convert[item.dataIndex].color"
+                                :progress="caculatePercent(80,100)"
+                                :type="witchType(chartOption.convert[item.dataIndex].stages,chartOption.convert[item.dataIndex].linearGradient)"
+                                :colorDirection="chartOption.convert[item.dataIndex].colorDirection"
+                                :borderColor="chartOption.convert[item.dataIndex].borderColor"/>
+            </div>
+
+
+            <div class="metrics-mini-chart">
+              <HorizontalBattery :color="chartOption.convert[item.dataIndex].color"
+                                 :progress="caculatePercent(80,100)"
+                                 :type="witchType(chartOption.convert[item.dataIndex].stages,chartOption.convert[item.dataIndex].linearGradient)"
+                                 :colorDirection="chartOption.convert[item.dataIndex].colorDirection"
+                                 :borderColor="chartOption.convert[item.dataIndex].borderColor"/>
+            </div>
+
+
+            <div class="metrics-mini-chart">
+              <VerticalBattery :color="chartOption.convert[item.dataIndex].color"
+                               :progress="caculatePercent(80,100)"
+                               :type="witchType(chartOption.convert[item.dataIndex].stages,chartOption.convert[item.dataIndex].linearGradient)"
+                               :colorDirection="chartOption.convert[item.dataIndex].colorDirection"
+                               :borderColor="chartOption.convert[item.dataIndex].borderColor"/>
+            </div>
+
+
+          </div>
+        </div>
+
+        <div class="chart-item">
+          <span class="label-left">边框颜色</span>
+          <div class="component-right">
+            <a-color-picker v-model:color="chartOption.convert[item.dataIndex].borderColor"></a-color-picker>
+          </div>
+        </div>
+
+        <div class="chart-item">
+          <span class="label-left">填充</span>
+          <div class="component-right" style="width: 168px">
+            <a-checkbox v-model:checked="chartConfigControl.pureColorChecked[item.dataIndex]" @change="(v:any)=>{
+              if(v.target.checked){
+                chartOption.convert[item.dataIndex].stages=false;
+                chartOption.convert[item.dataIndex].linearGradient=false;
+                chartOption.convert[item.dataIndex].color = 'blue'
+              }
+            }">
+              <span class="label-normal">纯色</span>
+            </a-checkbox>
+
+            <a-checkbox v-model:checked="chartOption.convert[item.dataIndex].stages" @change="(v:any)=>{
+              if(v.target.checked){
+                chartConfigControl.pureColorChecked[item.dataIndex]=false;
+                chartOption.convert[item.dataIndex].linearGradient=false
+                chartOption.convert[item.dataIndex].color = [[0.4,'green'],[0.8,'yellow'],[1,'red']]
+              }
+            }">
+              <span class="label-normal">分段</span>
+            </a-checkbox>
+            <a-checkbox v-model:checked="chartOption.convert[item.dataIndex].linearGradient" @change="(v:any)=>{
+              if(v.target.checked){
+                chartConfigControl.pureColorChecked[item.dataIndex]=false;
+                chartOption.convert[item.dataIndex].stages=false;
+                 chartOption.convert[item.dataIndex].color = ['green','yellow','red'];
+                 chartOption.convert[item.dataIndex].color = ['green','yellow','red'];
+                 chartOption.convert[item.dataIndex].colorDirection ='to top';
+              }
+            }">
+              <span class="label-normal">渐变</span>
+            </a-checkbox>
+          </div>
+        </div>
+
+        <!--        纯色配置-->
+        <div class="chart-item" v-show="chartConfigControl.pureColorChecked[item.dataIndex]">
+          <span class="label-left">纯色配置</span>
+          <div class="component-right">
+            <a-color-picker v-model:color="chartOption.convert[item.dataIndex].color"></a-color-picker>
+          </div>
+        </div>
+
+        <!-- 颜色分段-->
+        <div class="chart-item" v-for="index in 3" v-if="chartOption.convert[item.dataIndex].stages">
+          <a-color-picker v-model:color="chartOption.convert[item.dataIndex].color[index][1]"></a-color-picker>
+
+          <div class="component-right">
+            <a-input-number
+                max="100"
+                min="0"
+                size="small"
+                :style="{ width: '100%', fontSize: '12px' }"
+                addon-after="%"
+                v-model:value="chartOption.convert[item.dataIndex].color[index][0]"
+            ></a-input-number>
+          </div>
+        </div>
+
+
+        <!-- 渐变-->
+        <div class="chart-item" v-show="chartOption.convert[item.dataIndex].linearGradient">
+          <span class="label-left">渐变配置</span>
+          <div class="component-right">
+            <a-color-picker v-model:color="chartOption.convert[item.dataIndex].color"></a-color-picker>
+          </div>
+        </div>
+
       </a-collapse-panel>
     </a-collapse>
   </div>
@@ -259,6 +399,22 @@ onUnmounted(()=>{
 </template>
 
 <style scoped>
+
+.metrics-mini-chart {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.metrics-mini-chart:active {
+  scale: calc(1.3);
+  box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.3);
+}
+
 :deep(.ant-collapse .ant-collapse-item .ant-collapse-header) {
   margin: 0;
   padding: 0;

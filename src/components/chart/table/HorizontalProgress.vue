@@ -43,7 +43,7 @@ let innerStyle = computed(() => {
   }
 
   if (props.type) {
-    if (props.type == 'stage') {
+    if (props.type == 'stages') {
       result.width = props.progress + '%'
       result.borderRadius = '4px'
       for (let i = 0; i < props.color.length; i++) {

@@ -27,7 +27,7 @@ let innerStyle = computed(() => {
   } = {}
 
   if (props.type) {
-    if (props.type == 'stage') {
+    if (props.type == 'stages') {
       result.height = props.progress + '%';
       for (let i = 0; i < props.color.length; i++) {
         // 需要传递过来的颜色 是从小到大排序的 [[0.5,'red'],['0.8','yellow'],['1','yellow']]

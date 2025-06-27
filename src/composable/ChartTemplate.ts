@@ -1126,7 +1126,7 @@ export const TABLE_TEMPLATE = {
             max: 5000,
             stages: false,
             linearGradient: false,
-            borderColor: null,
+            borderColor: 'black',
             // 纯色时使用 #fff \ 分阶段颜色 ： [[0.2,#fff],[0.5,red],[1,yellow]] , 颜色渐变： [yellow,blue]
             color: 'red' as string | Array<[]> | Array<string>,
             // 线性渐变的方向是从上到下 to bottom、 to top 、 to left、to right 、
@@ -1140,6 +1140,31 @@ export const TABLE_TEMPLATE = {
                 | 'to top left'
                 | 'to bottom left'
                 | 'to bottom right',
+        },
+        id:{
+            showIcon: false,
+            // progress 、 battery
+            iconType: 'battery',
+            // vertical 、 horizontal
+            orient: 'horizontal',
+            max: 5000,
+            stages: false,
+            linearGradient: false,
+            borderColor: 'black',
+            // 纯色时使用 #fff \ 分阶段颜色 ： [[0.2,#fff],[0.5,red],[1,yellow]] , 颜色渐变： [yellow,blue]
+            color: 'red' as string | Array<[]> | Array<string>,
+        },
+        product_name:{
+            showIcon: false,
+        },
+        region:{
+            showIcon: false,
+        },
+        profit:{
+            showIcon: false,
+        },
+        quantity_sold:{
+            showIcon: false,
         },
     } as Record<string, any>,
     series: [
