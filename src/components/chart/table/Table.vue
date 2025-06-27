@@ -5,8 +5,12 @@ import {sqlQueryData} from '@/api/sql.ts'
 import type {TableProps} from 'ant-design-vue'
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import HorizontalProgress from '@/components/chart/table/HorizontalProgress.vue'
+import VerticalProgress from "@/components/chart/table/VerticalProgress.vue";
+import VerticalBattery from "@/components/chart/table/VerticalBattery.vue";
+import HorizontalBattery from "@/components/chart/table/HorizontalBattery.vue";
 
-let props = defineProps(['rowSpan', 'colSpan'])
+let props = defineProps(['rowSpan', 'colSpan', 'tableOptions', 'queryCondition'])
+
 
 let options = ref({
   title: {
@@ -29,43 +33,88 @@ let options = ref({
     current: 1,
     pageSizeOptions: [5, 10, 15],
   },
-  columns: {
+  convert: {
     sales: {
-      id: '',
-      dataIndex: 'sales',
-      title: '',
-      key: '',
+      showIcon: true,
+      // progress 、 battery
+      iconType: 'battery',
+      // vertical 、 horizontal
+      orient: 'horizontal',
+      max: 5000,
+      stages: false,
+      linearGradient: false,
+      borderColor: null,
+      // 纯色时使用 #fff \ 分阶段颜色 ： [[0.2,#fff],[0.5,red],[1,yellow]] , 颜色渐变： [yellow,blue]
+      color: 'red' as string | Array<[]> | Array<string>,
+      // 线性渐变的方向是从上到下 to bottom、 to top 、 to left、to right 、
+      // to top right 、 to top left 、 to bottom left 、 to bottom right
+      colorDirection: 'to right' as
+          | 'to bottom'
+          | 'to top'
+          | 'to left'
+          | 'to right'
+          | 'to top right'
+          | 'to top left'
+          | 'to bottom left'
+          | 'to bottom right',
+    },
+  } as Record<string, any>,
+  series: [
+    {
+      dataIndex: 'id',
+      title: 'id',
+      key: '61',
       // 是否自动省略
       ellipsis: true,
       width: null,
-      convert: {
-        showIcon: true,
-        // progress 、 battery
-        iconType: 'battery',
-        // vertical 、 horizontal
-        direction: 'horizontal',
-        max: 5000,
-        stages: false,
-        linearGradient: false,
-        // 纯色时使用 #fff \ 分阶段颜色 ： [[0.2,#fff],[0.5,red],[1,yellow]] , 颜色渐变： [yellow,blue]
-        color: '' as string | Array<[]> | Array<string>,
-        // 线性渐变的方向是从上到下 to bottom、 to top 、 to left、to right 、
-        // to top right 、 to top left 、 to bottom left 、 to bottom right
-        colorDirection: 'to right' as
-            | 'to bottom'
-            | 'to top'
-            | 'to left'
-            | 'to right'
-            | 'to top right'
-            | 'to top left'
-            | 'to bottom left'
-            | 'to bottom right',
-        // 1. 纯色 给定一个分母值，用当前值除分母，icon按照百分比占据该条。 颜色唯一
-        // 2. 纯色 给定一个分母值，用当前值除分母。再给定 每个百分比之间的颜色，icon按照百分比占据该条，同时按照百分比适配颜色。
-        // 3. 颜色渐变 给定一个分母值，用当前值除分母。在给定、颜色渐变 、 给定渐变方向、从左到右 、 从下往上、从左下角到右上角
-      },
     },
-  },
+    {
+      dataIndex: 'product_name',
+      title: 'product_name',
+      key: '62',
+      // 是否自动省略
+      ellipsis: true,
+      width: null,
+    },
+    {
+      dataIndex: 'region',
+      title: 'region',
+      key: '63',
+      // 是否自动省略
+      ellipsis: true,
+      width: null,
+    },
+    {
+      dataIndex: 'sales',
+      title: 'sales',
+      key: '64',
+      // 是否自动省略
+      ellipsis: true,
+      width: null,
+    },
+    {
+      dataIndex: 'profit',
+      title: 'profit',
+      key: '65',
+      // 是否自动省略
+      ellipsis: true,
+      width: null,
+    },
+    {
+      dataIndex: 'quantity_sold',
+      title: 'quantity_sold',
+      key: '66',
+      // 是否自动省略
+      ellipsis: true,
+      width: null,
+    },
+  ]
+});
+
+let queryCondition = ref({
+  sourceId: '10001',
+  sqlId: 13,
+  queryBySQLContent: false,
 })
 
 // let fontSize = .style.fontSize
@@ -94,15 +143,13 @@ const {data, current, pageSize, loading, total, refresh, run} = usePagination(sq
   },
   defaultParams: [
     {
-      sourceId: '10001',
-      sqlId: 13,
-      queryBySQLContent: false,
-      pageInfo: {page: 1, size: 10, total: 0},
+      sourceId: queryCondition.value.sourceId,
+      sqlId: queryCondition.value.sqlId,
+      queryBySQLContent: queryCondition.value.queryBySQLContent,
+      pageInfo: {page: options.value.page.current, size: options.value.page.pageSize, total: 0},
     },
   ],
 })
-
-const columns = ref<Array<{ title: string; key: string | number; dataIndex: string | number }>>([])
 
 const pagination = computed(() => ({
   total: total.value,
@@ -113,58 +160,12 @@ const pagination = computed(() => ({
   showTotal: (total, range) => '共 ' + total + ' 条',
 }))
 
-watch(data, () => {
-  if (data.value.data.columns != null && data.value.data.columns.length > 0) {
-    columns.value = data.value.data.columns.map((item) => {
-      if (item.fieldAlias == 'sales') {
-        return {
-          title: item.fieldAlias,
-          dataIndex: item.fieldAlias,
-          key: item.fieldId,
-          // 超长自动省略
-          ellipsis: true,
-          convert: {
-            showIcon: true,
-            // progress 、 battery
-            iconType: 'battery',
-            // vertical 、 horizontal
-            orient: 'horizontal',
-            max: 5000,
-            stages: false,
-            linearGradient: false,
-            borderColor: null,
-            // 纯色时使用 #fff \ 分阶段颜色 ： [[0.2,#fff],[0.5,red],[1,yellow]] , 颜色渐变： [yellow,blue]
-            color: 'red' as string | Array<[]> | Array<string>,
-            // 线性渐变的方向是从上到下 to bottom、 to top 、 to left、to right 、
-            // to top right 、 to top left 、 to bottom left 、 to bottom right
-            colorDirection: 'to right' as
-                | 'to bottom'
-                | 'to top'
-                | 'to left'
-                | 'to right'
-                | 'to top right'
-                | 'to top left'
-                | 'to bottom left'
-                | 'to bottom right',
-          },
-        }
-      }
-      return {
-        title: item.fieldAlias,
-        dataIndex: item.fieldAlias,
-        key: item.fieldId,
-        // 超长自动省略
-        ellipsis: true,
-      }
-    })
-  }
-})
 
 const handleTableChange: TableProps['onChange'] = (pag: { pageSize: number; current: number }) => {
   run({
-    sourceId: 10001,
-    sqlId: 13,
-    queryBySQLContent: false,
+    sourceId: queryCondition.value.sourceId,
+    sqlId: queryCondition.value.sqlId,
+    queryBySQLContent: queryCondition.value.queryBySQLContent,
     pageInfo: {
       page: pag.current,
       size: pag.pageSize,
@@ -172,12 +173,23 @@ const handleTableChange: TableProps['onChange'] = (pag: { pageSize: number; curr
     },
   })
 }
-/**
- *             <div class="horizontal-battery-bar"></div>
- *             <div class="vertical-battery-bar"></div>
- *             <div class="horizontal-progress-bar"></div>
- *             <div class="vertical-progress-bar"></div>
- */
+
+const caculatePercent = (value: number, max: number) => {
+  let percent = 100 * value / max;
+  Math.round(percent > 100 ? 100 : percent);
+}
+
+const witchType = (stages: boolean,
+                   linearGradient: boolean) => {
+  if (stages) {
+    return 'stage'
+  }
+  if (linearGradient) {
+    return 'linear-gradient'
+  }
+  return null
+}
+
 </script>
 
 <template>
@@ -199,7 +211,7 @@ const handleTableChange: TableProps['onChange'] = (pag: { pageSize: number; curr
     <a-table
         class="ant-table-striped verticalScrollBar"
         :rowClassName="(_record: any, index: number) => (index % 2 === 1 ? 'table-striped' : null)"
-        :columns="columns"
+        :columns="options.series"
         :data-source="data?.data.data"
         :pagination="pagination"
         :loading="loading"
@@ -213,26 +225,51 @@ const handleTableChange: TableProps['onChange'] = (pag: { pageSize: number; curr
         @change="handleTableChange"
     >
       <template #bodyCell="{ text, record, index, column }">
-        <template v-if="options.columns[column.dataIndex] != null">
+        <template v-if="options.convert[column.dataIndex] != null">
           <div class="metrics-mini-chart">
-            <HorizontalProgress :color="['green','yellow','red']" :progress="100" type="linear-gradient"
-                                color-direction="to right" border-color="black"/>
-            <div class="vertical-battery-bar">
-              <div class="inner"></div>
-              <div class="items">
-                <div
-                    class="item"
-                    v-for="i in 9"
-                    :style="{ position: 'absolute', left: i * 2 + 'px' }"
-                ></div>
-              </div>
-            </div>
+            <!--            progress 、 battery
+            vertical 、 horizontal-->
 
-            <div class="horizontal-battery-bar">
-              <div class="inner"></div>
-            </div>
+            <HorizontalProgress
+                v-if="options.convert[column.dataIndex].iconType == 'progress' && options.convert[column.dataIndex].orient == 'horizontal' "
+                :color="options.convert[column.dataIndex].color"
+                :progress="caculatePercent(text,options.convert[column.dataIndex].max)"
+                :type="witchType(options.convert[column.dataIndex].stages,options.convert[column.dataIndex].linearGradient)"
+                :borderColor="options.convert[column.dataIndex].borderColor"
+                :colorDirection="options.convert[column.dataIndex].colorDirection"
+            />
+
+            <VerticalProgress
+                v-if="options.convert[column.dataIndex].iconType == 'progress' && options.convert[column.dataIndex].orient == 'vertical' "
+                :color="options.convert[column.dataIndex].color"
+                :progress="caculatePercent(text,options.convert[column.dataIndex].max)"
+                :type="witchType(options.convert[column.dataIndex].stages,options.convert[column.dataIndex].linearGradient)"
+                :borderColor="options.convert[column.dataIndex].borderColor"
+                :colorDirection="options.convert[column.dataIndex].colorDirection"
+            />
+
+            <VerticalBattery
+                v-if="options.convert[column.dataIndex].iconType == 'battery' && options.convert[column.dataIndex].orient == 'vertical' "
+                :color="options.convert[column.dataIndex].color"
+                :progress="caculatePercent(text,options.convert[column.dataIndex].max)"
+                :type="witchType(options.convert[column.dataIndex].stages,options.convert[column.dataIndex].linearGradient)"
+                :borderColor="options.convert[column.dataIndex].borderColor"
+                :colorDirection="options.convert[column.dataIndex].colorDirection"
+            />
+
+            <HorizontalBattery
+                v-if="options.convert[column.dataIndex].iconType == 'battery' && options.convert[column.dataIndex].orient == 'horizontal' "
+                :color="options.convert[column.dataIndex].color"
+                :progress="caculatePercent(text,options.convert[column.dataIndex].max)"
+                :type="witchType(options.convert[column.dataIndex].stages,options.convert[column.dataIndex].linearGradient)"
+                :borderColor="options.convert[column.dataIndex].borderColor"
+                :colorDirection="options.convert[column.dataIndex].colorDirection"
+            />
+
           </div>
         </template>
+        <template v-else>{{ text }}</template>
+
       </template>
     </a-table>
   </a-config-provider>

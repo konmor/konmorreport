@@ -36,6 +36,7 @@ import MetricsCard from "@/components/chart/metrics/MetricsCard.vue";
 import TagConfig from '@/components/chart/metrics/TagConfig.vue'
 import {findDefaultColor} from "@/echartsThem/registerThem.ts";
 import Table from "@/components/chart/table/Table.vue";
+import TableConfig from "@/components/chart/table/TableConfig.vue";
 
 
 const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number }[]>([
@@ -70,6 +71,8 @@ const addTest = (event: Event) => {
 // 仪表板内部的所有echarts的 实例
 let allChartsInstance: EChartsType[] = [];
 let allMetricsContainerId: Array<string> = [];
+
+let allTablesContainerId: Array<string> = [];
 // 仪表板内部的所有echarts的 容器大小变化的监听者
 let allResizeObserver: ResizeObserver[] = []
 
@@ -125,7 +128,7 @@ const change = function change(event: Event) {
     if (lastChartType.value == 'tag') {
       allMetricsContainerId.push(lastEchartsContainerID);
     } else if (lastChartType.value == 'table') {
-      // todo
+      allTablesContainerId.push(lastEchartsContainerID);
     } else {
       // 如果是标签则不参数echarts 渲染
       let newContainer = document.getElementById(lastEchartsContainerID)
@@ -154,7 +157,7 @@ let dimensions: Array<string> = []
 let tempChartOption = ref<ECBasicOption>({})
 
 let allFields = ref<SQLResultField[]>([])
-let allData = reactive<Array<Map<string, object>>>([])
+let allData = ref<Array<Map<string, object>>>([])
 
 const clearCurrentConfig = () => {
   metricsFields.length = 0
@@ -183,7 +186,19 @@ const tempChartModal = reactive<{ open: boolean; ok: (reject: any) => void; canc
         render(vNode, container);
       }
     } else if (lastChartType.value == 'table') {
-      //todo
+      let options = JSON.parse(JSON.stringify(tempChartOption.value));
+
+      let vNode = h(Table, {
+        rowSpan: 12, colSpan: 8, tableOptions: options, queryCondition: {
+          sqlId: lastSQLId,
+          sourceId: findSourceIdBySQLID(lastSQLId)
+        }
+      });
+
+      let container = document.getElementById(lastEchartsContainerID);
+      if (container) {
+        render(vNode, container);
+      }
     } else {
       // 配置好之后从 temChart 中获取数据，并渲染给最后一个 chartArray 中的chart
       allChartsInstance[allChartsInstance.length - 1].setOption(tempChart.getOption(), true)
@@ -203,6 +218,7 @@ function removeLastEchartsInstance() {
     allMetricsContainerId.pop();
   } else if (lastChartType.value == 'table') {
     // todo
+    allTablesContainerId.pop();
   } else {
     //删除刚刚创建的数据,删除echarts实例，删除draagabel的元素
     let lastEchartsInstance = allChartsInstance.pop()
@@ -314,7 +330,7 @@ const sqlSelectorModal = reactive<{
           // for (let i = 0; i < response.data.columns.length; i++) {
           //   allFields[i] = response.data.columns[i]
           // }
-          allData = response.data.data
+          allData.value = response.data.data
         }
       })
 
@@ -322,6 +338,9 @@ const sqlSelectorModal = reactive<{
       nextTick(() => {
         if (lastChartType.value == 'tag') {
           // todo tag 标签
+
+        } else if (lastChartType.value == 'table') {
+          // todo table 标签
 
         } else {
           // 开始渲染图表
@@ -456,6 +475,15 @@ onBeforeUnmount(() => {
     })
   }
 
+  if (allTablesContainerId != null && allTablesContainerId.length > 0) {
+    allTablesContainerId.forEach(item => {
+      let el = document.getElementById(item);
+      if (el) {
+        render(null, el);
+      }
+    })
+  }
+
   if (tempChart) {
     tempChart.dispose()
   }
@@ -551,7 +579,7 @@ function renderBarChart() {
     )
     return
   }
-  let source: Array<Array<object>> = allData.map((item) => getMapData(item, dimensions))
+  let source: Array<Array<object>> = allData.value.map((item) => getMapData(item, dimensions))
 
   option.dataset.dimensions = dimensions
   option.dataset.source = source
@@ -666,7 +694,7 @@ function renderPieChart() {
     )
     return
   }
-  let source: Array<Array<object>> = allData.map((item) => getMapData(item, dimensions))
+  let source: Array<Array<object>> = allData.value.map((item) => getMapData(item, dimensions))
 
   option.dataset.dimensions = dimensions
   option.dataset.source = source
@@ -749,7 +777,7 @@ function renderLineChart() {
     )
     return
   }
-  let source: Array<Array<object>> = allData.map((item) => getMapData(item, dimensions))
+  let source: Array<Array<object>> = allData.value.map((item) => getMapData(item, dimensions))
 
   option.dataset.dimensions = dimensions
   option.dataset.source = source
@@ -828,7 +856,7 @@ function renderScatter() {
     )
     return
   }
-  let source: Array<Array<object>> = allData.map((item) => getMapData(item, dimensions))
+  let source: Array<Array<object>> = allData.value.map((item) => getMapData(item, dimensions))
 
   option.dataset.dimensions = dimensions
   option.dataset.source = source
@@ -881,11 +909,11 @@ function getRadarData(dimensions: string[]): {
 
   let d = new Array(dimensions.length - 1) as Array<Array<object>>
   for (let i = 0; i < d.length; i++) {
-    d[i] = new Array(allData.length)
+    d[i] = new Array(allData.value.length)
   }
 
-  for (let i = 0; i < allData.length; i++) {
-    let item = allData[i]
+  for (let i = 0; i < allData.value.length; i++) {
+    let item = allData.value[i]
 
     // @ts-ignore
     result.indicator.push(item[dimensions[0]])
@@ -1006,7 +1034,7 @@ function getGaugeData(dimensions: Array<string>): Array<{ name: string; value: o
   // Array<Map<string, object>>
   for (let j = 0; j < dimensions.length; j++) {
     // @ts-ignore
-    let value = allData[0][dimensions[j]]
+    let value = allData.value[0][dimensions[j]]
 
     gauge[j] = {
       name: dimensions[j],
@@ -1097,7 +1125,7 @@ function getTagData(dimensions: Array<string>): Array<{ name: string; value: obj
   // Array<Map<string, object>>
   for (let j = 0; j < dimensions.length; j++) {
     // @ts-ignore
-    let value = allData[0][dimensions[j]]
+    let value = allData.value[0][dimensions[j]]
 
     tagData[j] = {
       name: dimensions[j],
@@ -1376,21 +1404,10 @@ watch(metricsFields, renderChart)
               gridRowStart: `span ${element.xSpan}`,
               gridColumnStart: `span ${element.ySpan}`,
               position: 'relative',
-              // resize:'none',
-              // overflow:'hidden',
-              /*cursor:'nw-resize',*/
-              /*backgroundColor: generateRandomBrightColor(),*/
             }"
-              class="chart"
-              @click="
-              () => {
-                /* element.xSpan++
-                element.ySpan++*/
-              }
-            "
-          >
+              class="chart">
             <div :id="element.id" style="height: 100%; width: 100%">
-              <Table :row-span="element.xSpan" :col-span="element.ySpan"></Table>
+                            <Table :row-span="element.xSpan" :col-span="element.ySpan"></Table>
             </div>
             <div class="drag-class">
               <fullscreen-outlined :rotate="45"></fullscreen-outlined>
@@ -1590,7 +1607,15 @@ watch(metricsFields, renderChart)
                   ref="tempChartContainer"
                   :style="{ height: '100%' }"
               >
+                <!--
+                tableOptions
+                rowSpan
+                colSpan
+                queryCondition-->
                 <MetricsCard v-if="lastChartType == 'tag'" :options="tempChartOption"/>
+
+                <Table v-else-if="lastChartType == 'table'" :tableOptions="tempChartOption"
+                       :queryCondition="{sqlId: lastSQLId, sourceId: findSourceIdBySQLID(lastSQLId)}"/>
               </div>
             </a-layout-content>
           </a-layout>
@@ -1676,6 +1701,16 @@ watch(metricsFields, renderChart)
                 :chartContainer="tempChartContainer"
             >
             </TagConfig>
+
+            <TableConfig
+                v-else-if="lastChartType == 'table'"
+                :getChartConfig="getTempChart"
+                :setChartConfig="setTempChart"
+                :clearCurrentConfig="clearCurrentConfig"
+                :chartOption="tempChartOption"
+                :chartContainer="tempChartContainer"
+            >
+            </TableConfig>
 
           </a-layout-sider>
         </a-layout>

@@ -32,6 +32,10 @@ import { getUuid } from 'ant-design-vue/es/vc-notification/HookNotification'
 const allDiagramIcon = reactive<Array<DiagramIconComponent>>(DiagramIconFactory.all)
 
 const cloneComponent = (original: DiagramIconComponent) => {
+  if(original.meta.type == 'table') {
+    return { value: original.meta.type,type: original.meta.type, id: getUuid(), xSpan: 12, ySpan: 8 }
+  }
+
   return { value: original.meta.type,type: original.meta.type, id: getUuid(), xSpan: 3, ySpan: 4 }
 }
 </script>
