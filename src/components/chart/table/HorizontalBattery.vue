@@ -96,6 +96,10 @@ let maskStyle = computed(() => {
 
 }
 
+.battery-bar:hover {
+  scale: calc(1.3);
+  z-index: 9;
+}
 .battery-bar .inner {
   height: 100%;
   width: 100%;

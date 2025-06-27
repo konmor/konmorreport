@@ -97,7 +97,10 @@ let maskStyle = computed(() => {
   display: flex;
   align-items: end;
 }
-
+.battery-bar:hover {
+  scale: calc(1.3);
+  z-index: 9;
+}
 .battery-bar .inner {
   height: 100%;
   width: 100%;
