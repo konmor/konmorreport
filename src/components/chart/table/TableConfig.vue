@@ -32,6 +32,9 @@ let chartConfigControl = reactive({
   allSeriesConfigShow: [] as Array<string>, // 数据系列：默认展开的内容
 
   pureColorChecked: {} as Record<string, boolean>,
+  // key 是字段
+  // value 1 2 3 4 分别代表 横向进度条 垂直进度条 横向电池条 垂直电池条
+  activeKeys: {} as  Record<string, number>,
 })
 
 const chartConfigFunction = {
@@ -196,20 +199,7 @@ onUnmounted(() => {
     <div class="chart-item" style="margin-bottom: 8px">
       <span class="label-left" style="width: 48px">数据系列</span>
       <div class="component-right">
-        <a-checkbox
-          v-model:checked="chartConfigControl.allSeriesEqual"
-          @change="
-            () => {
-              chartConfigControl.allSeriesConfigShow.length = 0
-              chartConfigControl.allSeriesConfigShow[0] = chartOption.series[0].id || '0'
-              if (chartConfigControl.allSeriesEqual) {
-              } else {
-                chartConfigControl.allSeriesConfigShow = []
-              }
-            }
-          "
-          ><span style="font-size: 12px">各系列一致</span>
-        </a-checkbox>
+
       </div>
     </div>
 
@@ -256,19 +246,28 @@ onUnmounted(() => {
           <div class="chart-item">
             <span class="label-left" style="width: 60px">转换</span>
             <div class="component-right">
-              <a-tooltip title="将数据转为为进度'图形'，如cpu使用率:80，最大值为100。进度条展示80%">
+              <a-tooltip title="将数据转为为进度'图形'，如cpu使用率:80，最大值为100。进度条展示80%，后续示例图以80%为例">
                 <a-checkbox v-model:checked="chartOption.convert[item.dataIndex].showIcon">
                 </a-checkbox>
               </a-tooltip>
             </div>
           </div>
 
+          <div v-show="chartOption.convert[item.dataIndex].showIcon">
           <!--  图形-->
           <div class="chart-item">
             <span class="label-left">图形</span>
             <div class="component-right">
               <a-tooltip title="横向进度条">
-                <div class="metrics-mini-chart">
+                <div class="metrics-mini-chart"
+                     :style="chartConfigControl.activeKeys[item.dataIndex] == 1 ?{border:'1px solid #000'}:{}"
+                     @click="()=>{
+                  console.log('item.dataIndex',item.dataIndex);
+                  chartConfigControl.activeKeys[item.dataIndex] = 1;
+                  chartOption.convert[item.dataIndex].colorDirection='to right'
+                  chartOption.convert[item.dataIndex].iconType='progress';
+                  chartOption.convert[item.dataIndex].orient='horizontal';
+                }">
                   <HorizontalProgress
                     :color="chartOption.convert[item.dataIndex].color"
                     :progress="caculatePercent(80, 100)"
@@ -284,7 +283,14 @@ onUnmounted(() => {
                 </div>
               </a-tooltip>
               <a-tooltip title="垂直进度条">
-                <div class="metrics-mini-chart">
+                <div class="metrics-mini-chart"
+                     :style="chartConfigControl.activeKeys[item.dataIndex] == 2 ?{border:'1px solid #000'}:{}"
+                     @click="()=>{
+                  chartConfigControl.activeKeys[item.dataIndex] = 2;
+                  chartOption.convert[item.dataIndex].colorDirection='to top'
+                  chartOption.convert[item.dataIndex].iconType='progress';
+                  chartOption.convert[item.dataIndex].orient='vertical';
+                }">
                   <VerticalProgress
                     :color="chartOption.convert[item.dataIndex].color"
                     :progress="caculatePercent(80, 100)"
@@ -299,9 +305,15 @@ onUnmounted(() => {
                   />
                 </div>
               </a-tooltip>
-              <a-tooltip title="水平电池条"
-                >>
-                <div class="metrics-mini-chart">
+              <a-tooltip title="水平电池条">
+                <div class="metrics-mini-chart"
+                     :style="chartConfigControl.activeKeys[item.dataIndex] == 3 ?{border:'1px solid #000'}:{}"
+                     @click="()=>{
+                  chartConfigControl.activeKeys[item.dataIndex] = 3;
+                  chartOption.convert[item.dataIndex].colorDirection='to right'
+                  chartOption.convert[item.dataIndex].iconType='battery';
+                  chartOption.convert[item.dataIndex].orient='horizontal';
+                }">
                   <HorizontalBattery
                     :color="chartOption.convert[item.dataIndex].color"
                     :progress="caculatePercent(80, 100)"
@@ -317,7 +329,14 @@ onUnmounted(() => {
                 </div>
               </a-tooltip>
               <a-tooltip title="垂直电池条">
-                <div class="metrics-mini-chart">
+                <div class="metrics-mini-chart"
+                     :style="chartConfigControl.activeKeys[item.dataIndex] == 4 ?{border:'1px solid #000'}:{}"
+                     @click="()=>{
+                  chartConfigControl.activeKeys[item.dataIndex] = 4
+                  chartOption.convert[item.dataIndex].colorDirection='to top'
+                  chartOption.convert[item.dataIndex].iconType='battery';
+                  chartOption.convert[item.dataIndex].orient='vertical';
+                }">
                   <VerticalBattery
                     :color="chartOption.convert[item.dataIndex].color"
                     :progress="caculatePercent(80, 100)"
@@ -439,7 +458,10 @@ onUnmounted(() => {
                 size="small"
                 :style="{ width: '100%', fontSize: '12px' }"
                 addon-after="%"
-                v-model:value="chartOption.convert[item.dataIndex].color[index][0]"
+                :value="100*chartOption.convert[item.dataIndex].color[index][0]"
+                @change="(v:any)=>{
+                chartOption.convert[item.dataIndex].color[index][0] = (v/100).toFixed(2);
+                }"
               ></a-input-number>
             </div>
           </div>
@@ -453,6 +475,7 @@ onUnmounted(() => {
                 v-model:color="chartOption.convert[item.dataIndex].color[index]"
               ></a-color-picker>
             </div>
+          </div>
           </div>
         </div>
       </a-collapse-panel>

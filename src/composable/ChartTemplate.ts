@@ -1150,9 +1150,51 @@ export const TABLE_TEMPLATE = {
     },
     profit: {
       showIcon: false,
+      // progress 、 battery
+      iconType: 'battery',
+      // vertical 、 horizontal
+      orient: 'horizontal',
+      max: 5000,
+      stages: false,
+      linearGradient: false,
+      borderColor: 'black',
+      // 纯色时使用 #fff \ 分阶段颜色 ： [[0.2,#fff],[0.5,red],[1,yellow]] , 颜色渐变： [yellow,blue]
+      color: 'red' as string | Array<[]> | Array<string>,
+      // 线性渐变的方向是从上到下 to bottom、 to top 、 to left、to right 、
+      // to top right 、 to top left 、 to bottom left 、 to bottom right
+      colorDirection: 'to right' as
+        | 'to bottom'
+        | 'to top'
+        | 'to left'
+        | 'to right'
+        | 'to top right'
+        | 'to top left'
+        | 'to bottom left'
+        | 'to bottom right',
     },
     quantity_sold: {
       showIcon: false,
+      // progress 、 battery
+      iconType: 'battery',
+      // vertical 、 horizontal
+      orient: 'horizontal',
+      max: 5000,
+      stages: false,
+      linearGradient: false,
+      borderColor: 'black',
+      // 纯色时使用 #fff \ 分阶段颜色 ： [[0.2,#fff],[0.5,red],[1,yellow]] , 颜色渐变： [yellow,blue]
+      color: 'red' as string | Array<[]> | Array<string>,
+      // 线性渐变的方向是从上到下 to bottom、 to top 、 to left、to right 、
+      // to top right 、 to top left 、 to bottom left 、 to bottom right
+      colorDirection: 'to right' as
+        | 'to bottom'
+        | 'to top'
+        | 'to left'
+        | 'to right'
+        | 'to top right'
+        | 'to top left'
+        | 'to bottom left'
+        | 'to bottom right',
     },
   } as Record<string, any>,
   series: [
@@ -1237,8 +1279,7 @@ export function chartTemplate(title: string, type: string): ECBasicOption {
 }
 
 function barTemplate(title: string): ECBasicOption {
-  let option: ECBasicOption = {}
-  Object.assign(option, BAR_TEMPLATE)
+  let option = JSON.parse(JSON.stringify(BAR_TEMPLATE))
   if (title) {
     // @ts-ignore
     option.title.text = title
@@ -1247,8 +1288,7 @@ function barTemplate(title: string): ECBasicOption {
 }
 
 function pieTemplate(title: string): ECBasicOption {
-  let option: ECBasicOption = {}
-  Object.assign(option, PIE_TEMPLATE)
+  let option = JSON.parse(JSON.stringify(PIE_TEMPLATE))
   if (title) {
     // @ts-ignore
     option.title.text = title
@@ -1257,8 +1297,7 @@ function pieTemplate(title: string): ECBasicOption {
 }
 
 function lineTemplate(title: string): ECBasicOption {
-  let option: ECBasicOption = {}
-  Object.assign(option, LINE_TEMPLATE)
+  let option = JSON.parse(JSON.stringify(LINE_TEMPLATE))
   if (title) {
     // @ts-ignore
     option.title.text = title
@@ -1267,8 +1306,7 @@ function lineTemplate(title: string): ECBasicOption {
 }
 
 function scatterTemplate(title: string): ECBasicOption {
-  let option: ECBasicOption = {}
-  Object.assign(option, SCATTER_TEMPLATE)
+  let option = JSON.parse(JSON.stringify(SCATTER_TEMPLATE))
   if (title) {
     // @ts-ignore
     option.title.text = title
@@ -1277,8 +1315,7 @@ function scatterTemplate(title: string): ECBasicOption {
 }
 
 function radarTemplate(title: string): ECBasicOption {
-  let option: ECBasicOption = {}
-  Object.assign(option, RADAR_TEMPLATE)
+  let option = JSON.parse(JSON.stringify(RADAR_TEMPLATE))
   if (title) {
     // @ts-ignore
     option.title.text = title
@@ -1287,8 +1324,7 @@ function radarTemplate(title: string): ECBasicOption {
 }
 
 function gaugeTemplate(title: string): ECBasicOption {
-  let option: ECBasicOption = {}
-  Object.assign(option, GAUGE_TEMPLATE)
+  let option = JSON.parse(JSON.stringify(GAUGE_TEMPLATE))
   if (title) {
     // @ts-ignore
     option.title.text = title
@@ -1297,8 +1333,7 @@ function gaugeTemplate(title: string): ECBasicOption {
 }
 
 function gaugeHalfTemplate(title: string): ECBasicOption {
-  let option: ECBasicOption = {}
-  Object.assign(option, GAUGE_HALF_TEMPLATE)
+  let option = JSON.parse(JSON.stringify(GAUGE_HALF_TEMPLATE))
   if (title) {
     // @ts-ignore
     option.title.text = title
@@ -1307,8 +1342,7 @@ function gaugeHalfTemplate(title: string): ECBasicOption {
 }
 
 function progressCircleTemplate(title: string): ECBasicOption {
-  let option: ECBasicOption = {}
-  Object.assign(option, PROGRESS_CIRCLE_TEMPLATE)
+  let option = JSON.parse(JSON.stringify(PROGRESS_CIRCLE_TEMPLATE))
   if (title) {
     // @ts-ignore
     option.title.text = title
@@ -1317,8 +1351,7 @@ function progressCircleTemplate(title: string): ECBasicOption {
 }
 
 function progressBottomTemplate(title: string): ECBasicOption {
-  let option: ECBasicOption = {}
-  Object.assign(option, PROGRESS_BOTTOM_TEMPLATE)
+  let option = JSON.parse(JSON.stringify(PROGRESS_BOTTOM_TEMPLATE))
   if (title) {
     // @ts-ignore
     option.title.text = title
@@ -1327,9 +1360,7 @@ function progressBottomTemplate(title: string): ECBasicOption {
 }
 
 function tagTemplate(title: string) {
-  let option = {}
-  Object.assign(option, MetricsCard)
-
+  let option = JSON.parse(JSON.stringify(MetricsCard))
   if (title) {
     // @ts-ignore
     option.title.text = title
@@ -1338,8 +1369,7 @@ function tagTemplate(title: string) {
 }
 
 function tableTemplate(title: string) {
-  let option = {}
-  Object.assign(option, TABLE_TEMPLATE)
+  let option = JSON.parse(JSON.stringify(TABLE_TEMPLATE))
 
   if (title) {
     // @ts-ignore
