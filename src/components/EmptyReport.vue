@@ -316,6 +316,11 @@ const sqlSelectorModal = reactive<{
       tempChartOption.value = chartTemplate('标题1', lastChartType.value)
       // Object.assign(tempChartOption,chartTemplate('标题1',lastChartType.value));
 
+      // 在
+      if(lastSQLId ==null || lastSQLId == ''){
+        lastSQLId = sqlSelectorModal.selected;
+      }
+
       // 查询数据拿到字段和数据
       let sqlQuery: SQLQuery = {
         sourceId: findSourceIdBySQLID(lastSQLId)!,
@@ -505,13 +510,6 @@ watch(sqlArray, (sqlItems) => {
           })
           : [{label: '测试选项-1', value: 'key1'}]
 })
-
-watch(
-    () => sqlSelectorModal.selected,
-    (value) => {
-      lastSQLId = value
-    },
-)
 
 function getMapData(data: Map<string, object>, keys: string[]): Array<object> {
   let arr = []

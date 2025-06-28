@@ -92,7 +92,7 @@ const witchType = (stages: boolean, linearGradient: boolean) => {
 
 onMounted(() => {
   nextTick(() => {
-    handleTableChange(props.options.page.current, props.options.page.pageSize)
+    handleTableChange({pageSize:props.options.page.pageSize,current:props.options.page.current })
   })
 })
 
