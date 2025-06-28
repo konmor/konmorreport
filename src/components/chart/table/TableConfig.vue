@@ -359,7 +359,7 @@ onUnmounted(() => {
             <div class="component-right">
               <a-input-number
                 size="small"
-                min="8"
+                min="0"
                 :style="{ width: '100%', fontSize: '12px' }"
                 :disabled="!chartOption.convert[item.dataIndex].showIcon"
                 v-model:value="chartOption.convert[item.dataIndex].max"

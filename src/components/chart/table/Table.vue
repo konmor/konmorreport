@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
-import { usePagination } from 'vue-request'
-import { sqlQueryData } from '@/api/sql.ts'
-import type { TableProps } from 'ant-design-vue'
+import {computed, nextTick, onMounted, onUnmounted, ref, watch} from 'vue'
+import {usePagination} from 'vue-request'
+import {sqlQueryData} from '@/api/sql.ts'
+import type {TableProps} from 'ant-design-vue'
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import HorizontalProgress from '@/components/chart/table/HorizontalProgress.vue'
 import VerticalProgress from '@/components/chart/table/VerticalProgress.vue'
 import VerticalBattery from '@/components/chart/table/VerticalBattery.vue'
 import HorizontalBattery from '@/components/chart/table/HorizontalBattery.vue'
 
-let props = defineProps(['rowSpan', 'colSpan', 'options', 'queryCondition'])
+let props = defineProps(['span', 'options', 'queryCondition'])
 
 // let fontSize = .style.fontSize
 let fontSize = window.getComputedStyle(document.getElementsByTagName('body')[0]).fontSize
@@ -20,18 +20,21 @@ if (fontSize.endsWith('px')) {
 // 一行高度 39px 页脚分页56px 高度
 
 let scrollY = computed(() => {
-  let actualHeight = props.rowSpan * 3 * 14
+  let actualHeight = props.span.rowSpan * 3 * 14;
+
   // 56 为页脚分页高度 39为title的高度
   let currentNeedSize =
-    ((props.options.page.show ? pagination.value.pageSize : props.options.page.pageSize) + 1) * 39 +
-    56 +
-    (props.options.title.show ? 39 : 0)
+      ((pagination.value.pageSize ? pagination.value.pageSize : props.options.page.pageSize) + 1) * 39 +
+      (props.options.page.show ? 56 : 0) +
+      (props.options.title.show ? 39 : 0);
+
+
   return actualHeight > currentNeedSize
-    ? null
-    : actualHeight - (props.options.title.show ? 135 : 96) + 'px'
+      ? null
+      : actualHeight - (props.options.title.show ? (props.options.page.show ? 135 : 85) : (props.options.page.show ? 96 : 46)) + 'px'
 })
 
-const { data, current, pageSize, loading, total, refresh, run } = usePagination(sqlQueryData, {
+const {data, current, pageSize, loading, total, refresh, run} = usePagination(sqlQueryData, {
   pagination: {
     currentKey: 'pageInfo.page',
     pageSizeKey: 'pageInfo.size',
@@ -42,7 +45,7 @@ const { data, current, pageSize, loading, total, refresh, run } = usePagination(
       sourceId: props.queryCondition.sourceId,
       sqlId: props.queryCondition.sqlId,
       queryBySQLContent: props.queryCondition.queryBySQLContent,
-      pageInfo: { page: props.options.page.current, size: props.options.page.pageSize, total: 0 },
+      pageInfo: {page: props.options.page.current, size: props.options.page.pageSize, total: 0},
     },
   ],
 })
@@ -92,7 +95,7 @@ const witchType = (stages: boolean, linearGradient: boolean) => {
 
 onMounted(() => {
   nextTick(() => {
-    handleTableChange({pageSize:props.options.page.pageSize,current:props.options.page.current })
+    handleTableChange({pageSize: props.options.page.pageSize, current: props.options.page.current})
   })
 })
 
@@ -105,8 +108,8 @@ onUnmounted(() => {
   <a-config-provider :locale="zhCN">
     <div class="titleContainer" v-if="options.title.show">
       <span
-        class="title"
-        :style="{
+          class="title"
+          :style="{
           height: options.title.textStyle.height + 'px',
           lineHeight: options.title.textStyle.height + 'px',
           color: options.title.textStyle.color,
@@ -114,28 +117,28 @@ onUnmounted(() => {
           fontWeight: options.title.textStyle.fontWeight,
           textAlign: options.title.position,
         }"
-        >{{ options.title.text }}</span
+      >{{ options.title.text }}</span
       >
     </div>
     <a-table
-      class="ant-table-striped verticalScrollBar"
-      :rowClassName="(_record: any, index: number) => (index % 2 === 1 ? 'table-striped' : null)"
-      :columns="options.series"
-      :data-source="data?.data.data"
-      :pagination="pagination"
-      :loading="loading"
-      :scroll="{
+        class="ant-table-striped verticalScrollBar"
+        :rowClassName="(_record: any, index: number) => (index % 2 === 1 ? 'table-striped' : null)"
+        :columns="options.series"
+        :data-source="data?.data.data"
+        :pagination="pagination"
+        :loading="loading"
+        :scroll="{
         scrollToFirstRowOnChange: true,
         x: true,
         y: scrollY,
       }"
-      bordered
-      size="small"
-      @change="handleTableChange"
+        bordered
+        size="small"
+        @change="handleTableChange"
     >
       <template #bodyCell="{ text, record, index, column }">
         <template
-          v-if="
+            v-if="
             options.convert[column.dataIndex] != null && options.convert[column.dataIndex].showIcon
           "
         >
@@ -144,71 +147,71 @@ onUnmounted(() => {
             vertical 、 horizontal-->
 
             <HorizontalProgress
-              v-if="
+                v-if="
                 options.convert[column.dataIndex].iconType == 'progress' &&
                 options.convert[column.dataIndex].orient == 'horizontal'
               "
-              :color="options.convert[column.dataIndex].color"
-              :progress="caculatePercent(text, options.convert[column.dataIndex].max)"
-              :type="
+                :color="options.convert[column.dataIndex].color"
+                :progress="caculatePercent(text, options.convert[column.dataIndex].max)"
+                :type="
                 witchType(
                   options.convert[column.dataIndex].stages,
                   options.convert[column.dataIndex].linearGradient,
                 )
               "
-              :borderColor="options.convert[column.dataIndex].borderColor"
-              :colorDirection="options.convert[column.dataIndex].colorDirection"
+                :borderColor="options.convert[column.dataIndex].borderColor"
+                :colorDirection="options.convert[column.dataIndex].colorDirection"
             />
 
             <VerticalProgress
-              v-if="
+                v-if="
                 options.convert[column.dataIndex].iconType == 'progress' &&
                 options.convert[column.dataIndex].orient == 'vertical'
               "
-              :color="options.convert[column.dataIndex].color"
-              :progress="caculatePercent(text, options.convert[column.dataIndex].max)"
-              :type="
+                :color="options.convert[column.dataIndex].color"
+                :progress="caculatePercent(text, options.convert[column.dataIndex].max)"
+                :type="
                 witchType(
                   options.convert[column.dataIndex].stages,
                   options.convert[column.dataIndex].linearGradient,
                 )
               "
-              :borderColor="options.convert[column.dataIndex].borderColor"
-              :colorDirection="options.convert[column.dataIndex].colorDirection"
+                :borderColor="options.convert[column.dataIndex].borderColor"
+                :colorDirection="options.convert[column.dataIndex].colorDirection"
             />
 
             <VerticalBattery
-              v-if="
+                v-if="
                 options.convert[column.dataIndex].iconType == 'battery' &&
                 options.convert[column.dataIndex].orient == 'vertical'
               "
-              :color="options.convert[column.dataIndex].color"
-              :progress="caculatePercent(text, options.convert[column.dataIndex].max)"
-              :type="
+                :color="options.convert[column.dataIndex].color"
+                :progress="caculatePercent(text, options.convert[column.dataIndex].max)"
+                :type="
                 witchType(
                   options.convert[column.dataIndex].stages,
                   options.convert[column.dataIndex].linearGradient,
                 )
               "
-              :borderColor="options.convert[column.dataIndex].borderColor"
-              :colorDirection="options.convert[column.dataIndex].colorDirection"
+                :borderColor="options.convert[column.dataIndex].borderColor"
+                :colorDirection="options.convert[column.dataIndex].colorDirection"
             />
 
             <HorizontalBattery
-              v-if="
+                v-if="
                 options.convert[column.dataIndex].iconType == 'battery' &&
                 options.convert[column.dataIndex].orient == 'horizontal'
               "
-              :color="options.convert[column.dataIndex].color"
-              :progress="caculatePercent(text, options.convert[column.dataIndex].max)"
-              :type="
+                :color="options.convert[column.dataIndex].color"
+                :progress="caculatePercent(text, options.convert[column.dataIndex].max)"
+                :type="
                 witchType(
                   options.convert[column.dataIndex].stages,
                   options.convert[column.dataIndex].linearGradient,
                 )
               "
-              :borderColor="options.convert[column.dataIndex].borderColor"
-              :colorDirection="options.convert[column.dataIndex].colorDirection"
+                :borderColor="options.convert[column.dataIndex].borderColor"
+                :colorDirection="options.convert[column.dataIndex].colorDirection"
             />
           </div>
         </template>

@@ -1086,7 +1086,7 @@ export const MetricsCard = {
 export const TABLE_TEMPLATE = {
   title: {
     text: '公司总库存',
-    show: true,
+    show: false,
     // 位置 left right center 均在顶部
     position: 'right',
     textStyle: {
@@ -1099,7 +1099,7 @@ export const TABLE_TEMPLATE = {
   // 显示边框线
   border: true,
   page: {
-    show: true,
+    show: false,
     pageSize: 10,
     current: 1,
     pageSizeOptions: [5, 10, 15],
