@@ -1361,8 +1361,25 @@ const chartResizeMouseDown = (id: string, event: Event) => {
 
     for (let i = 0; i < items.length; i++) {
       if (items[i].id == id) {
-        items[i].xSpan = rowSpan + currentRowSpan.value
-        items[i].ySpan = colSpan + currentColSpan.value
+        let xSpan = rowSpan + currentRowSpan.value
+        items[i].xSpan = xSpan;
+
+        let ySpan = colSpan + currentColSpan.value
+        items[i].ySpan = ySpan;
+
+        // 更新表格组件的rowSpan 和 colSpan
+        let exists = allTablesContainerId.find(i=>i==id);
+        if(exists && exists != ''){
+
+          let vNode = h(Table, {
+            rowSpan: xSpan, colSpan: ySpan
+          });
+
+          let container = document.getElementById(id);
+          if (container) {
+            render(vNode, container);
+          }
+        }
       }
     }
   }
