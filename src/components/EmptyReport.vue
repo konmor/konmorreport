@@ -196,7 +196,7 @@ const tempChartModal = reactive<{ open: boolean; ok: (reject: any) => void; canc
 
 
       let vNode = h(Table, {
-        span: allTablesContainerSpans[lastEchartsContainerID] ,
+        span: allTablesContainerSpans[lastEchartsContainerID],
         options: options, queryCondition: {
           sqlId: lastSQLId,
           sourceId: findSourceIdBySQLID(lastSQLId)
@@ -1498,7 +1498,7 @@ watch(metricsFields, renderChart)
               <!--              <Table :row-span="element.xSpan" :col-span="element.ySpan"></Table>-->
             </div>
             <div class="drag-class">
-              <fullscreen-outlined :rotate="45"></fullscreen-outlined>
+              <fullscreen-outlined :rotate="45" style="font-size: 12px"></fullscreen-outlined>
             </div>
 
             <div
@@ -1604,7 +1604,7 @@ watch(metricsFields, renderChart)
                       class="dimensionsContainer"
                       :list="dimensionsFields"
                       :order="false"
-                      :move="() => false"
+
                       :group="{ name: 'dimensionsContainer', pull: false, put: dimensionsPut }"
                       animation="100"
                       item-key="fieldId"
@@ -1862,17 +1862,21 @@ watch(metricsFields, renderChart)
 
 /*中间 各种图表渲染区域*/
 .allChartContainer .chart {
-  border: black 1px solid;
-  margin: 1px;
+  border: black solid 1px;
+  margin: 1px 1px 0 0;
 }
+
+.allChartContainer .chart:hover {
+  box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.3);
+}
+
 
 .allChartContainer .chart .chart-resize {
   position: absolute;
-  display: block;
-  border: 1px solid #a7e88e;
+  display: none;
   width: 14px;
   height: 14px;
-  bottom: 0;
+  bottom: 1px;
   right: 0;
 }
 
@@ -1887,9 +1891,10 @@ watch(metricsFields, renderChart)
 .allChartContainer .chart .drag-class {
   position: absolute;
   display: none;
-  border: 1px solid #a7e88e;
   top: 0;
-  right: 0;
+  right: 2px;
+  text-align: center;
+  vertical-align: middle;
 }
 
 .allChartContainer .chart:hover .drag-class {
@@ -1961,8 +1966,8 @@ watch(metricsFields, renderChart)
 .fieldsDimensionsAndMetrics {
   height: 100%;
   width: 100%;
-  background-color: #6fd845;
-  border: 1px solid black;
+  /*background-color: #6fd845;*/
+ /* border: 1px solid black;*/
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1980,12 +1985,12 @@ watch(metricsFields, renderChart)
 }
 
 .fieldsDimensionsAndMetrics .dimensions {
-  background-color: #1890ff;
+  /*background-color: #1890ff;*/
   border: 1px solid black;
 }
 
 .fieldsDimensionsAndMetrics .metrics {
-  background-color: #efb056;
+  /*background-color: #efb056;*/
   border: 1px solid black;
 }
 
@@ -1995,7 +2000,7 @@ watch(metricsFields, renderChart)
   border-radius: 4px;
   display: flex;
   justify-content: flex-start;
-  background-color: white;
+  background-color: transparent;
   width: calc(100% - 36px);
 }
 
@@ -2009,7 +2014,7 @@ watch(metricsFields, renderChart)
   position: relative;
 
   border: black 1px solid;
-  background-color: #ff4218;
+  /*background-color: #ff4218;*/
   border-radius: 4px 2px 4px 4px;
 }
 
@@ -2017,6 +2022,8 @@ watch(metricsFields, renderChart)
 .fieldsDimensionsAndMetrics .metrics .metricsContainer .field:hover {
   transition: transform 0.1s ease;
   transform: scale(1.2);
+  background-color: #6fd845;
+  color: white;
   z-index: 1;
 }
 
