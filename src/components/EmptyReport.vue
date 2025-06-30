@@ -18,6 +18,7 @@ import type {EChartsType} from 'echarts'
 import type {ECBasicOption} from 'echarts/types/dist/shared'
 import BarConfig from '@/components/chart/BarConfig.vue'
 import {sqlQueryData} from '@/api/sql.ts'
+import type { MenuProps } from 'ant-design-vue';
 import type {SQLQuery, SQLResultField} from '@/types/api.ts'
 import {
   FieldStringOutlined,
@@ -69,11 +70,12 @@ const addTest = (event: Event) => {
 }
 
 // 仪表板内部的所有echarts的 实例
-let allChartsInstance: EChartsType[] = [];
-let allMetricsContainerId: Array<string> = [];
-
-let allTablesContainerId: Array<string> = [];
-
+let allChartsInstance: Array<{ id: string, instance: EChartsType }> = [];
+// 指标卡数组
+let allMetricsContainerId: Array<{ id: string, options: any }> = [];
+// 表格数组
+let allTablesContainerId: Array<{ id: string, options: any }> = [];
+// 表格的列宽度和行高度
 let allTablesContainerSpans = reactive<Record<string, { rowSpan: number, colSpan: number }>>({});
 
 // 仪表板内部的所有echarts的 容器大小变化的监听者
@@ -129,9 +131,9 @@ const change = function change(event: Event) {
     lastEchartsContainerID = event['added'].element.id;
 
     if (lastChartType.value == 'tag') {
-      allMetricsContainerId.push(lastEchartsContainerID);
+      allMetricsContainerId.push({id: lastEchartsContainerID, options: {}});
     } else if (lastChartType.value == 'table') {
-      allTablesContainerId.push(lastEchartsContainerID);
+      allTablesContainerId.push({id: lastEchartsContainerID, options: {}});
     } else {
       // 如果是标签则不参数echarts 渲染
       let newContainer = document.getElementById(lastEchartsContainerID)
@@ -141,7 +143,7 @@ const change = function change(event: Event) {
       newEchartsInstance.setOption(chartTemplate('test2', lastChartType.value))
 
       // 放入allChartsInstance容器中
-      allChartsInstance.push(newEchartsInstance)
+      allChartsInstance.push({id: lastEchartsContainerID, instance: newEchartsInstance})
 
       let observer = new ResizeObserver((entries: any) => {
         if (newEchartsInstance) newEchartsInstance.resize()
@@ -209,7 +211,7 @@ const tempChartModal = reactive<{ open: boolean; ok: (reject: any) => void; canc
       }
     } else {
       // 配置好之后从 temChart 中获取数据，并渲染给最后一个 chartArray 中的chart
-      allChartsInstance[allChartsInstance.length - 1].setOption(tempChart.getOption(), true)
+      allChartsInstance[allChartsInstance.length - 1].instance.setOption(tempChart.getOption(), true)
     }
     clearCurrentConfig()
   },
@@ -231,8 +233,8 @@ function removeLastEchartsInstance() {
     //删除刚刚创建的数据,删除echarts实例，删除draagabel的元素
     let lastEchartsInstance = allChartsInstance.pop()
     if (lastEchartsInstance != undefined) {
-      lastEchartsInstance.dispose()
-      lastEchartsInstance.clear()
+      lastEchartsInstance.instance.dispose()
+      lastEchartsInstance.instance.clear()
     }
 
     for (let i = items.length - 1; i >= 0; i--) {
@@ -298,6 +300,10 @@ const removeMetricsById = (id: string) => {
     }
   }
 }
+
+const handleChartMenuClick: MenuProps['onClick'] = (e: any, id: string, type: string) => {
+  console.log('click id type', e,id,type);
+};
 
 const sqlSelectorModal = reactive<{
   open: boolean
@@ -440,7 +446,7 @@ onMounted(() => {
 
       myEcharts.setOption(ecBasicOption)
 
-      allChartsInstance.push(myEcharts)
+      allChartsInstance.push({id:items[i].id,instance:myEcharts})
       let observer = new ResizeObserver(() => {
         if (myEcharts) myEcharts.resize()
       })
@@ -480,13 +486,13 @@ onUnmounted(() => {
 onBeforeUnmount(() => {
   if (allChartsInstance != null && allChartsInstance.length > 0) {
     allChartsInstance.forEach((item) => {
-      if (item) item.dispose()
+      if (item) item.instance.dispose()
     })
   }
 
   if (allMetricsContainerId != null && allMetricsContainerId.length > 0) {
     allMetricsContainerId.forEach(item => {
-      let el = document.getElementById(item);
+      let el = document.getElementById(item.id);
       if (el) {
         render(null, el);
       }
@@ -495,7 +501,7 @@ onBeforeUnmount(() => {
 
   if (allTablesContainerId != null && allTablesContainerId.length > 0) {
     allTablesContainerId.forEach(item => {
-      let el = document.getElementById(item);
+      let el = document.getElementById(item.id);
       if (el) {
         render(null, el);
       }
@@ -1375,8 +1381,8 @@ const chartResizeMouseDown = (id: string, event: Event) => {
         items[i].ySpan = ySpan;
 
         // 更新表格组件的rowSpan 和 colSpan
-        let exists = allTablesContainerId.find(i => i == id);
-        if (exists && exists != '') {
+        let exists = allTablesContainerId.find(i => i.id == id);
+        if (exists && exists.id != '') {
           allTablesContainerSpans[id].rowSpan = xSpan;
           allTablesContainerSpans[id].colSpan = ySpan;
         }
@@ -1497,9 +1503,23 @@ watch(metricsFields, renderChart)
             <div :id="element.id" style="height: 100%; width: 100%">
               <!--              <Table :row-span="element.xSpan" :col-span="element.ySpan"></Table>-->
             </div>
-            <div class="drag-class">
-              <fullscreen-outlined :rotate="45" style="font-size: 12px"></fullscreen-outlined>
-            </div>
+            <a-dropdown-button :trigger="['click']" size="small">
+              <fullscreen-outlined :rotate="45" style="font-size: 12px" class="drag-class"></fullscreen-outlined>
+
+              <template #overlay>
+                <a-menu @click="handleChartMenuClick($event,element.id,element.value)">
+                  <a-menu-item key="edit">
+                    <span class="label-normal">编辑</span>
+                  </a-menu-item>
+                  <a-menu-item key="linkage" :disabled="true">
+                    <span class="label-normal">联动</span>
+                  </a-menu-item>
+                  <a-menu-item key="drillthrough" :disabled="true">
+                    <span class="label-normal">钻取</span>
+                  </a-menu-item>
+                </a-menu>
+              </template>
+            </a-dropdown-button>
 
             <div
                 class="chart-resize"
@@ -1888,16 +1908,27 @@ watch(metricsFields, renderChart)
   cursor: nw-resize;
 }
 
-.allChartContainer .chart .drag-class {
+/*.allChartContainer .chart .drag-class {
   position: absolute;
   display: none;
   top: 0;
   right: 2px;
   text-align: center;
   vertical-align: middle;
+}*/
+
+.allChartContainer .chart :deep(.ant-dropdown-button) {
+  position: absolute;
+  display: none;
+  top: 0;
+  right: 2px;
+  text-align: center;
+  vertical-align: middle;
+
 }
 
-.allChartContainer .chart:hover .drag-class {
+
+.allChartContainer .chart:hover :deep(.ant-dropdown-button) {
   display: inline-block;
 }
 
@@ -1967,7 +1998,7 @@ watch(metricsFields, renderChart)
   height: 100%;
   width: 100%;
   /*background-color: #6fd845;*/
- /* border: 1px solid black;*/
+  /* border: 1px solid black;*/
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -2057,5 +2088,11 @@ watch(metricsFields, renderChart)
   position: absolute;
   top: 0;
   right: 2px;
+}
+
+.label-normal {
+  font-size: 12px;
+  height: 14px;
+  line-height: 14px;
 }
 </style>
