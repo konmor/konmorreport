@@ -40,7 +40,7 @@ import Table from "@/components/chart/table/Table.vue";
 import TableConfig from "@/components/chart/table/TableConfig.vue";
 
 
-const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number }[]>([
+const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number ;sqlId?:string}[]>([
   {
     value: 'pieChart',
     id: getUuid(),
@@ -186,6 +186,13 @@ const tempChartModal = reactive<{ open: boolean; ok: (reject: any) => void; canc
     if (lastChartType.value == 'tag') {
       let options = JSON.parse(JSON.stringify(tempChartOption.value));
 
+      for (let i = 0; i < allMetricsContainerId.length; i++) {
+        if (allMetricsContainerId[i].id == lastEchartsContainerID) {
+          allMetricsContainerId[i].options = options;
+          break;
+        }
+      }
+
       let vNode = h(MetricsCard, {options: options});
       let container = document.getElementById(lastEchartsContainerID);
       if (container) {
@@ -194,8 +201,14 @@ const tempChartModal = reactive<{ open: boolean; ok: (reject: any) => void; canc
     } else if (lastChartType.value == 'table') {
       let options = JSON.parse(JSON.stringify(tempChartOption.value));
 
-      allTablesContainerSpans[lastEchartsContainerID] = {rowSpan: 12, colSpan: 8};
+      for (let i = 0; i < allTablesContainerId.length; i++) {
+        if (allTablesContainerId[i].id == lastEchartsContainerID) {
+         allTablesContainerId[i].options = options;
+         break;
+        }
+      }
 
+      allTablesContainerSpans[lastEchartsContainerID] = {rowSpan: 12, colSpan: 8};
 
       let vNode = h(Table, {
         span: allTablesContainerSpans[lastEchartsContainerID],
@@ -303,6 +316,52 @@ const removeMetricsById = (id: string) => {
 
 const handleChartMenuClick: MenuProps['onClick'] = (e: any, id: string, type: string) => {
   console.log('click id type', e,id,type);
+
+  tempChartModal.open = true;
+  lastChartType.value = type;
+
+  let sqlId = items.find(i=>i.id == id)?.sqlId
+  if(sqlId == null){
+    console.error('没找到sqlid')
+  }else {
+    lastSQLId = sqlId;
+  }
+
+  lastEchartsContainerID = id;
+
+
+
+    if(type == 'tag'){
+      let tagOptions = allMetricsContainerId.find(item=>item.id == id)?.options;
+      tempChartOption.value =   tagOptions;
+
+    } else if(type == 'table'){
+      let tableOptions = allTablesContainerId.find(item=>item.id == id)?.options;
+      tempChartOption.value =   tableOptions;
+
+    } else {
+      nextTick(()=>{
+        let echarstInstance = allChartsInstance.find(item=>item.id == id)?.instance;
+        // todo 需要处理
+        tempChartOption.value = echarstInstance?.getOption();
+
+        // 开始渲染图表
+        // let container = document.getElementById('chartContainer');
+        let container = tempChartContainer.value
+        // 2.初始化echarts 挂载的位置
+        let newEchartsInstance = echarts.init(container)
+        tempChart = newEchartsInstance // 交给外部临时变量
+        // 3. 设置数据,忘了设置宽高，echarts 默认是没有宽高的 他的宽高为 0 0
+        newEchartsInstance.setOption(tempChartOption.value)
+
+        let observer = new ResizeObserver(() => {
+          if (newEchartsInstance) newEchartsInstance.resize()
+        })
+        tempObserver = observer
+        observer.observe(container as Element)
+
+      })
+    }
 };
 
 const sqlSelectorModal = reactive<{
@@ -332,6 +391,15 @@ const sqlSelectorModal = reactive<{
       // 在
       if (lastSQLId == null || lastSQLId == '') {
         lastSQLId = sqlSelectorModal.selected;
+      }
+
+      // 放入到刚拖拽进来的元素中，放入sql的id
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].id == lastEchartsContainerID) {
+          items[i].sqlId = lastSQLId;
+          break;
+        }
       }
 
       // 查询数据拿到字段和数据
