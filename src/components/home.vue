@@ -63,9 +63,10 @@ function closeFolder() {
       <!--主体上面-->
       <a-layout-header
           class="header"
+
           :style="{
-          lineHeight: '64px',
-          height: 64,
+          lineHeight: '42px',
+          height: '42px',
           backgroundColor: '#fff',
           padding: 0,
           display:'flex',alignItems:'center', }">
@@ -83,8 +84,8 @@ function closeFolder() {
 
       <a-layout-content
           :style="{
-          height: '860px',
-          margin: '20px 10px 10px 10px',
+          height: '892px',
+          padding: '0 10px 0 10px',
         }">
         <div :style="{ height: '100%', backgroundColor: '#fff' }">
           <RouterView></RouterView>

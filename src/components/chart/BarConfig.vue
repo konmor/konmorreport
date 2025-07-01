@@ -460,11 +460,11 @@ watch(() => chartConfigControl.vertical, () => {
 })
 
 onMounted(()=>{
-  // 初始化堆叠配置
-  chartConfigFunction.initStackItems();
   // 在页面渲染完成之后设置数据，这样才能拿到父级中的该变量  getChartConfig();
   nextTick(()=>{
     // 初始化堆叠配置
+    chartConfigFunction.initStackItems();
+    console.log('12312范德萨范德萨范德萨发大水发')
     chartConfig = getChartConfig();
   })
 })

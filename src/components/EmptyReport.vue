@@ -18,7 +18,7 @@ import type {EChartsType} from 'echarts'
 import type {ECBasicOption} from 'echarts/types/dist/shared'
 import BarConfig from '@/components/chart/BarConfig.vue'
 import {sqlQueryData} from '@/api/sql.ts'
-import type { MenuProps } from 'ant-design-vue';
+import type {MenuProps} from 'ant-design-vue';
 import type {SQLQuery, SQLResultField} from '@/types/api.ts'
 import {
   FieldStringOutlined,
@@ -38,9 +38,12 @@ import TagConfig from '@/components/chart/metrics/TagConfig.vue'
 import {findDefaultColor} from "@/echartsThem/registerThem.ts";
 import Table from "@/components/chart/table/Table.vue";
 import TableConfig from "@/components/chart/table/TableConfig.vue";
+import Telephone from "@/assets/metrics/icon/Telephone.vue";
 
 
-const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number ;sqlId?:string}[]>([
+let reportEditChecked = ref(false);
+
+const items = reactive<{ value: number | any; id: string; xSpan?: number; ySpan?: number; sqlId?: string }[]>([
   {
     value: 'pieChart',
     id: getUuid(),
@@ -70,7 +73,7 @@ const addTest = (event: Event) => {
 }
 
 // 仪表板内部的所有echarts的 实例
-let allChartsInstance: Array<{ id: string, instance: EChartsType }> = [];
+let allChartsInstance: Array<{ id: string, instance: EChartsType, options?: any }> = [];
 // 指标卡数组
 let allMetricsContainerId: Array<{ id: string, options: any }> = [];
 // 表格数组
@@ -143,7 +146,7 @@ const change = function change(event: Event) {
       newEchartsInstance.setOption(chartTemplate('test2', lastChartType.value))
 
       // 放入allChartsInstance容器中
-      allChartsInstance.push({id: lastEchartsContainerID, instance: newEchartsInstance})
+      allChartsInstance.push({id: lastEchartsContainerID, instance: newEchartsInstance, options: {}})
 
       let observer = new ResizeObserver((entries: any) => {
         if (newEchartsInstance) newEchartsInstance.resize()
@@ -203,8 +206,8 @@ const tempChartModal = reactive<{ open: boolean; ok: (reject: any) => void; canc
 
       for (let i = 0; i < allTablesContainerId.length; i++) {
         if (allTablesContainerId[i].id == lastEchartsContainerID) {
-         allTablesContainerId[i].options = options;
-         break;
+          allTablesContainerId[i].options = options;
+          break;
         }
       }
 
@@ -223,6 +226,7 @@ const tempChartModal = reactive<{ open: boolean; ok: (reject: any) => void; canc
         render(vNode, container);
       }
     } else {
+      allChartsInstance[allChartsInstance.length - 1].options = JSON.parse(JSON.stringify(tempChartOption.value));
       // 配置好之后从 temChart 中获取数据，并渲染给最后一个 chartArray 中的chart
       allChartsInstance[allChartsInstance.length - 1].instance.setOption(tempChart.getOption(), true)
     }
@@ -315,36 +319,35 @@ const removeMetricsById = (id: string) => {
 }
 
 const handleChartMenuClick: MenuProps['onClick'] = (e: any, id: string, type: string) => {
-  console.log('click id type', e,id,type);
 
-  tempChartModal.open = true;
-  lastChartType.value = type;
+  // 目前仅处理编辑
+  // todo
+  if (e.key == 'edit') {
+    tempChartModal.open = true;
+    lastChartType.value = type;
 
-  let sqlId = items.find(i=>i.id == id)?.sqlId
-  if(sqlId == null){
-    console.error('没找到sqlid')
-  }else {
-    lastSQLId = sqlId;
-  }
+    let sqlId = items.find(i => i.id == id)?.sqlId
+    if (sqlId == null) {
+      console.error('没找到sqlid')
+    } else {
+      lastSQLId = sqlId;
+    }
 
-  lastEchartsContainerID = id;
+    lastEchartsContainerID = id;
 
+    if (type == 'tag') {
+      let tagOptions = allMetricsContainerId.find(item => item.id == id)?.options;
+      tempChartOption.value = tagOptions;
 
-
-    if(type == 'tag'){
-      let tagOptions = allMetricsContainerId.find(item=>item.id == id)?.options;
-      tempChartOption.value =   tagOptions;
-
-    } else if(type == 'table'){
-      let tableOptions = allTablesContainerId.find(item=>item.id == id)?.options;
-      tempChartOption.value =   tableOptions;
+    } else if (type == 'table') {
+      let tableOptions = allTablesContainerId.find(item => item.id == id)?.options;
+      tempChartOption.value = tableOptions;
 
     } else {
-      nextTick(()=>{
-        let echarstInstance = allChartsInstance.find(item=>item.id == id)?.instance;
-        // todo 需要处理
-        tempChartOption.value = echarstInstance?.getOption();
-
+      let echartsItem = allChartsInstance.find(item => item.id == id);
+      // todo 需要处理
+      tempChartOption.value = echartsItem?.options;
+      nextTick(() => {
         // 开始渲染图表
         // let container = document.getElementById('chartContainer');
         let container = tempChartContainer.value
@@ -362,6 +365,14 @@ const handleChartMenuClick: MenuProps['onClick'] = (e: any, id: string, type: st
 
       })
     }
+  }
+  // 联动
+  else if (e.key == 'linkage') {
+
+    // 钻取
+  } else if (e.key == 'drillthrough') {
+
+  }
 };
 
 const sqlSelectorModal = reactive<{
@@ -495,6 +506,10 @@ function changeThreeEmSize() {
   }
 
   threeEmSize.value = parseFloat((parseFloat(fontSize) * 3).toFixed(2))
+}
+
+function saveReports (){
+
 }
 
 onMounted(() => {
@@ -1525,8 +1540,37 @@ watch(metricsFields, renderChart)
       </a-modal>
     </a-layout-sider>
 
-    <a-layout-content
-        :style="{
+    <a-layout>
+      <a-layout-header
+          :style="{
+          marginLeft: '8px',
+          marginRight: '0',
+
+          height: '26px',
+          width:'100%',
+          backgroundColor: 'transparent',
+          padding: 0,
+          display:'flex',
+          justifyContent:'flex-end',
+          alignItems:'center'}">
+
+        <a-button size="small" @click="saveReports()" v-show="reportEditChecked" :style="{marginRight:'10px'}" type="dashed" >
+          <span class="label-normal">保存</span>
+        </a-button>
+
+        <!-- 开启编辑按钮、保存-->
+        <a-switch v-model:checked="reportEditChecked" size="small" :style="{marginRight:'2px'}">
+          <template #checkedChildren>
+            <span class="label-normal">E</span>
+          </template>
+          <template #unCheckedChildren>
+            <span class="label-normal">V</span>
+          </template>
+
+        </a-switch>
+      </a-layout-header>
+      <a-layout-content
+          :style="{
         border: '1px solid black',
         height: '100%',
         width: '100%',
@@ -1537,272 +1581,273 @@ watch(metricsFields, renderChart)
 
         /*alignContent:'center'*/
       }"
-        class="verticalScrollBar"
-    >
-      <draggable
-          :style="{
+          class="verticalScrollBar"
+      >
+        <draggable
+            :style="{
           display: 'grid',
           gridTemplateColumns: 'repeat(24,1fr)',
           gridAutoRows: '3em',
           justifyContent: 'center',
           gridAutoFlow: 'row dense',
         }"
-          class="allChartContainer"
-          handle=".drag-class"
-          :list="items"
-          :group="{ name: 'outerContainer', pull: false, put: true }"
-          animation="500"
-          @end="endTest"
-          @move="moveTest"
-          @add="addTest"
-          @change="change"
-          item-key="id"
-          tag="div"
-      >
-        <template #item="{ element }">
-          <div
-              :style="{
+            class="allChartContainer"
+            handle=".drag-class"
+            :list="items"
+            :group="{ name: 'outerContainer', pull: false, put: true }"
+            animation="500"
+            @end="endTest"
+            @move="moveTest"
+            @add="addTest"
+            @change="change"
+            item-key="id"
+            tag="div"
+        >
+          <template #item="{ element }">
+            <div
+                :style="{
               gridRowStart: `span ${element.xSpan}`,
               gridColumnStart: `span ${element.ySpan}`,
               position: 'relative',
             }"
-              class="chart"
-          >
-            <div :id="element.id" style="height: 100%; width: 100%">
-              <!--              <Table :row-span="element.xSpan" :col-span="element.ySpan"></Table>-->
-            </div>
-            <a-dropdown-button :trigger="['click']" size="small">
-              <fullscreen-outlined :rotate="45" style="font-size: 12px" class="drag-class"></fullscreen-outlined>
-
-              <template #overlay>
-                <a-menu @click="handleChartMenuClick($event,element.id,element.value)">
-                  <a-menu-item key="edit">
-                    <span class="label-normal">编辑</span>
-                  </a-menu-item>
-                  <a-menu-item key="linkage" :disabled="true">
-                    <span class="label-normal">联动</span>
-                  </a-menu-item>
-                  <a-menu-item key="drillthrough" :disabled="true">
-                    <span class="label-normal">钻取</span>
-                  </a-menu-item>
-                </a-menu>
-              </template>
-            </a-dropdown-button>
-
-            <div
-                class="chart-resize"
-                :data-resize-id="element.id"
-                @mousedown="chartResizeMouseDown(element.id, $event)"
+                class="chart"
             >
-              <Resize/>
-            </div>
-          </div>
-        </template>
-      </draggable>
-      <!-- 图形配置模态框-->
-      <!-- v-if 控制销毁模态框以及模态框中的组件-->
-      <a-modal
-          v-if="tempChartModal.open"
-          :open="tempChartModal.open"
-          @ok="tempChartModal.ok"
-          @cancel="tempChartModal.cancel"
-          ok-text="确认"
-          cancel-text="取消"
-          :style="{ backgroundColor: 'transparent' }"
-          width="100%"
-          wrap-class-name="full-modal"
-      >
-        <template #title><span>配置图表</span></template>
+              <div :id="element.id" style="height: 100%; width: 100%">
+                <!--              <Table :row-span="element.xSpan" :col-span="element.ySpan"></Table>-->
+              </div>
+              <a-dropdown-button :trigger="['click']" size="small" v-show="reportEditChecked">
+                <fullscreen-outlined :rotate="45" style="font-size: 12px" class="drag-class"></fullscreen-outlined>
 
-        <a-layout :style="{ height: '100%', width: '100%', backgroundColor: 'transparent' }">
-          <!-- 配置模态框 左侧字段选择区域-->
-          <a-layout-sider
-              :style="{
+                <template #overlay>
+                  <a-menu @click="handleChartMenuClick($event,element.id,element.value)">
+                    <a-menu-item key="edit">
+                      <span class="label-normal">编辑</span>
+                    </a-menu-item>
+                    <a-menu-item key="linkage" :disabled="true">
+                      <span class="label-normal">联动</span>
+                    </a-menu-item>
+                    <a-menu-item key="drillthrough" :disabled="true">
+                      <span class="label-normal">钻取</span>
+                    </a-menu-item>
+                  </a-menu>
+                </template>
+              </a-dropdown-button>
+
+              <div
+                  v-show="reportEditChecked"
+                  class="chart-resize"
+                  :data-resize-id="element.id"
+                  @mousedown="chartResizeMouseDown(element.id, $event)"
+              >
+                <Resize/>
+              </div>
+            </div>
+          </template>
+        </draggable>
+        <!-- 图形配置模态框-->
+        <!-- v-if 控制销毁模态框以及模态框中的组件-->
+        <a-modal
+            v-if="tempChartModal.open"
+            :open="tempChartModal.open"
+            @ok="tempChartModal.ok"
+            @cancel="tempChartModal.cancel"
+            ok-text="确认"
+            cancel-text="取消"
+            :style="{ backgroundColor: 'transparent' }"
+            width="100%"
+            wrap-class-name="full-modal"
+        >
+          <template #title><span>配置图表</span></template>
+
+          <a-layout :style="{ height: '100%', width: '100%', backgroundColor: 'transparent' }">
+            <!-- 配置模态框 左侧字段选择区域-->
+            <a-layout-sider
+                :style="{
               height: '100%',
               backgroundColor: 'transparent',
               borderTop: '1px solid black',
               borderBottom: '1px solid black',
             }"
-              width="240px"
-          >
-            <div class="chart-group">
-              <a-collapse
-                  v-model:activeKey="fieldContainerActiveKey"
-                  expand-icon-position="end"
-                  :style="{
+                width="240px"
+            >
+              <div class="chart-group">
+                <a-collapse
+                    v-model:activeKey="fieldContainerActiveKey"
+                    expand-icon-position="end"
+                    :style="{
                   border: 'none',
                   backgroundColor: 'transparent',
                   margin: '0',
                   padding: '0',
                 }"
-              >
-                <a-collapse-panel
-                    key="fieldContainer"
-                    header="字段"
-                    :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
                 >
-                  <draggable
-                      class="fieldsContainer"
-                      :list="allFields"
-                      :sort="false"
-                      :group="{ name: 'fieldsContainer', pull: 'clone', put: false }"
-                      animation="100"
-                      item-key="fieldId"
-                      tag="div"
+                  <a-collapse-panel
+                      key="fieldContainer"
+                      header="字段"
+                      :style="{ border: 'none', margin: '0', padding: '0', fontSize: '12px' }"
                   >
-                    <template #item="{ element }">
-                      <div :id="element.fieldId" class="field">
+                    <draggable
+                        class="fieldsContainer"
+                        :list="allFields"
+                        :sort="false"
+                        :group="{ name: 'fieldsContainer', pull: 'clone', put: false }"
+                        animation="100"
+                        item-key="fieldId"
+                        tag="div"
+                    >
+                      <template #item="{ element }">
+                        <div :id="element.fieldId" class="field">
                         <span v-if="element.fieldType2 == 'Number'" class="field-label">
                           <FieldNumberOutlined :style="{ color: '#6fd845' }"/>
                           {{ element.fieldAlias }}
                         </span>
-                        <span v-else-if="element.fieldType2 == 'Time'" class="field-label">
+                          <span v-else-if="element.fieldType2 == 'Time'" class="field-label">
                           <FieldTimeOutlined :style="{ color: '#1890ff' }"/>
                           {{ element.fieldAlias }}
                         </span>
-                        <span v-else class="field-label">
+                          <span v-else class="field-label">
                           <FieldStringOutlined :style="{ color: '#efb056' }"/>
                           {{ element.fieldAlias }}
                         </span>
-                      </div>
-                    </template>
-                  </draggable>
-                </a-collapse-panel>
-              </a-collapse>
-            </div>
-          </a-layout-sider>
-          <!-- 配置模态框 中间-->
-          <a-layout>
-            <!-- 配置模态框 中间 维度配置区域-->
-            <a-layout-header
-                :style="{
+                        </div>
+                      </template>
+                    </draggable>
+                  </a-collapse-panel>
+                </a-collapse>
+              </div>
+            </a-layout-sider>
+            <!-- 配置模态框 中间-->
+            <a-layout>
+              <!-- 配置模态框 中间 维度配置区域-->
+              <a-layout-header
+                  :style="{
                 backgroundColor: 'transparent',
                 border: '1px solid black',
                 height: '15%',
                 maxHeight: '124px',
                 padding: '8px 16px',
               }"
-            >
-              <div class="fieldsDimensionsAndMetrics">
-                <div class="dimensions">
+              >
+                <div class="fieldsDimensionsAndMetrics">
+                  <div class="dimensions">
                   <span style="font-size: 12px; padding: 0 6px; height: 28px; line-height: 28px"
                   >维度</span
                   >
-                  <draggable
-                      class="dimensionsContainer"
-                      :list="dimensionsFields"
-                      :order="false"
+                    <draggable
+                        class="dimensionsContainer"
+                        :list="dimensionsFields"
+                        :order="false"
 
-                      :group="{ name: 'dimensionsContainer', pull: false, put: dimensionsPut }"
-                      animation="100"
-                      item-key="fieldId"
-                      tag="div"
-                  >
-                    <template #item="{ element }">
-                      <div class="field" :id="element.fieldId">
+                        :group="{ name: 'dimensionsContainer', pull: false, put: dimensionsPut }"
+                        animation="100"
+                        item-key="fieldId"
+                        tag="div"
+                    >
+                      <template #item="{ element }">
+                        <div class="field" :id="element.fieldId">
                         <span class="field-label" v-if="element.fieldType2 == 'Number'">
                           <FieldNumberOutlined :style="{ color: '#6fd845' }"/>
                           {{ element.fieldAlias }}
                         </span>
-                        <span class="field-label" v-else-if="element.fieldType2 == 'Time'">
+                          <span class="field-label" v-else-if="element.fieldType2 == 'Time'">
                           <FieldTimeOutlined :style="{ color: '#1890ff' }"/>
                           {{ element.fieldAlias }}
                         </span>
-                        <span class="field-label" v-else>
+                          <span class="field-label" v-else>
                           <FieldStringOutlined :style="{ color: '#efb056' }"/>
                           {{ element.fieldAlias }}
                         </span>
-                        <a-button
-                            @click="removeDimensionsById(element.fieldId)"
-                            size="small"
-                            class="close-btn"
-                        >
-                          <template #icon>
-                            <CloseOutlined/>
-                          </template>
-                        </a-button>
-                      </div>
-                    </template>
-                  </draggable>
-                </div>
+                          <a-button
+                              @click="removeDimensionsById(element.fieldId)"
+                              size="small"
+                              class="close-btn"
+                          >
+                            <template #icon>
+                              <CloseOutlined/>
+                            </template>
+                          </a-button>
+                        </div>
+                      </template>
+                    </draggable>
+                  </div>
 
-                <div class="metrics">
+                  <div class="metrics">
                   <span style="font-size: 12px; padding: 0 6px; height: 28px; line-height: 28px"
                   >指标</span
                   >
-                  <draggable
-                      class="metricsContainer"
-                      :list="metricsFields"
-                      :order="false"
-                      :group="{ name: 'metricsContainer', pull: false, put: metricsPut }"
-                      animation="100"
-                      item-key="fieldId"
-                      tag="div"
-                  >
-                    <template #item="{ element }">
-                      <div class="field" :id="element.fieldId">
+                    <draggable
+                        class="metricsContainer"
+                        :list="metricsFields"
+                        :order="false"
+                        :group="{ name: 'metricsContainer', pull: false, put: metricsPut }"
+                        animation="100"
+                        item-key="fieldId"
+                        tag="div"
+                    >
+                      <template #item="{ element }">
+                        <div class="field" :id="element.fieldId">
                         <span class="field-label" v-if="element.fieldType2 == 'Number'">
                           <FieldNumberOutlined :style="{ color: '#6fd845' }"/>
                           {{ element.fieldAlias }}
                         </span>
-                        <span class="field-label" v-else-if="element.fieldType2 == 'Time'">
+                          <span class="field-label" v-else-if="element.fieldType2 == 'Time'">
                           <FieldTimeOutlined :style="{ color: '#1890ff' }"/>
                           {{ element.fieldAlias }}
                         </span>
-                        <span class="field-label" v-else>
+                          <span class="field-label" v-else>
                           <FieldStringOutlined :style="{ color: '#efb056' }"/>
                           {{ element.fieldAlias }}
                         </span>
-                        <a-button
-                            @click="removeMetricsById(element.fieldId)"
-                            size="small"
-                            class="close-btn"
-                        >
-                          <template #icon>
-                            <CloseOutlined/>
-                          </template>
-                        </a-button>
-                      </div>
-                    </template>
-                  </draggable>
+                          <a-button
+                              @click="removeMetricsById(element.fieldId)"
+                              size="small"
+                              class="close-btn"
+                          >
+                            <template #icon>
+                              <CloseOutlined/>
+                            </template>
+                          </a-button>
+                        </div>
+                      </template>
+                    </draggable>
+                  </div>
                 </div>
-              </div>
-            </a-layout-header>
+              </a-layout-header>
 
-            <!-- 配置模态框 中间 图表渲染区域-->
-            <a-layout-content
-                :style="{
+              <!-- 配置模态框 中间 图表渲染区域-->
+              <a-layout-content
+                  :style="{
                 height: '100%',
                 width: '100%',
                 backgroundColor: 'transparent',
                 border: '1px solid black',
               }"
-            >
-              <div id="tempChartContainer" ref="tempChartContainer" :style="{ height: '100%',overflowY:'auto' }">
-                <!--
-                tableOptions
-                rowSpan
-                colSpan
-                queryCondition-->
-                <MetricsCard v-if="lastChartType == 'tag'" :options="tempChartOption"/>
+              >
+                <div id="tempChartContainer" ref="tempChartContainer" :style="{ height: '100%',overflowY:'auto' }">
+                  <!--
+                  tableOptions
+                  rowSpan
+                  colSpan
+                  queryCondition-->
+                  <MetricsCard v-if="lastChartType == 'tag'" :options="tempChartOption"/>
 
-                <!--                临时模态框 （配置图表页面）中的渲染-->
-                <Table
-                    v-else-if="lastChartType == 'table'"
-                    :options="tempChartOption"
-                    :queryCondition="{
+                  <!--                临时模态框 （配置图表页面）中的渲染-->
+                  <Table
+                      v-else-if="lastChartType == 'table'"
+                      :options="tempChartOption"
+                      :queryCondition="{
                     sqlId: lastSQLId,
                     sourceId: findSourceIdBySQLID(lastSQLId),
                     queryBySQLContent: false,
                   }"
-                />
-              </div>
-            </a-layout-content>
-          </a-layout>
+                  />
+                </div>
+              </a-layout-content>
+            </a-layout>
 
-          <!-- 配置模态框 右侧 图表各类配置区域-->
-          <a-layout-sider
-              :style="{
+            <!-- 配置模态框 右侧 图表各类配置区域-->
+            <a-layout-sider
+                :style="{
               height: '100%',
               maxHeight: '100%',
               backgroundColor: 'transparent',
@@ -1810,91 +1855,92 @@ watch(metricsFields, renderChart)
               borderTop: '1px solid black',
               overflowY: 'auto', // abc todo
             }"
-              width="240px"
-              class="viewConfig verticalScrollBar"
-          >
-            <BarConfig
-                v-if="lastChartType == 'barChart'"
-                :getChartConfig="getTempChart"
-                :setChartConfig="setTempChart"
-                :clearCurrentConfig="clearCurrentConfig"
-                :chartOption="tempChartOption"
-                :chartContainer="tempChartContainer"
-            ></BarConfig>
-
-            <PieConfig
-                v-else-if="lastChartType == 'pieChart'"
-                :getChartConfig="getTempChart"
-                :setChartConfig="setTempChart"
-                :clearCurrentConfig="clearCurrentConfig"
-                :chartOption="tempChartOption"
-                :chartContainer="tempChartContainer"
+                width="240px"
+                class="viewConfig verticalScrollBar"
             >
-            </PieConfig>
+              <BarConfig
+                  v-if="lastChartType == 'barChart'"
+                  :getChartConfig="getTempChart"
+                  :setChartConfig="setTempChart"
+                  :clearCurrentConfig="clearCurrentConfig"
+                  :chartOption="tempChartOption"
+                  :chartContainer="tempChartContainer"
+              ></BarConfig>
 
-            <LineConfig
-                v-else-if="lastChartType == 'lineChart'"
-                :getChartConfig="getTempChart"
-                :setChartConfig="setTempChart"
-                :clearCurrentConfig="clearCurrentConfig"
-                :chartOption="tempChartOption"
-                :chartContainer="tempChartContainer"
-            >
-            </LineConfig>
+              <PieConfig
+                  v-else-if="lastChartType == 'pieChart'"
+                  :getChartConfig="getTempChart"
+                  :setChartConfig="setTempChart"
+                  :clearCurrentConfig="clearCurrentConfig"
+                  :chartOption="tempChartOption"
+                  :chartContainer="tempChartContainer"
+              >
+              </PieConfig>
 
-            <ScatterConfig
-                v-else-if="lastChartType == 'scatter'"
-                :getChartConfig="getTempChart"
-                :setChartConfig="setTempChart"
-                :clearCurrentConfig="clearCurrentConfig"
-                :chartOption="tempChartOption"
-                :chartContainer="tempChartContainer"
-            >
-            </ScatterConfig>
+              <LineConfig
+                  v-else-if="lastChartType == 'lineChart'"
+                  :getChartConfig="getTempChart"
+                  :setChartConfig="setTempChart"
+                  :clearCurrentConfig="clearCurrentConfig"
+                  :chartOption="tempChartOption"
+                  :chartContainer="tempChartContainer"
+              >
+              </LineConfig>
 
-            <RadarConfig
-                v-else-if="lastChartType == 'radar'"
-                :getChartConfig="getTempChart"
-                :setChartConfig="setTempChart"
-                :clearCurrentConfig="clearCurrentConfig"
-                :chartOption="tempChartOption"
-                :chartContainer="tempChartContainer"
-            >
-            </RadarConfig>
+              <ScatterConfig
+                  v-else-if="lastChartType == 'scatter'"
+                  :getChartConfig="getTempChart"
+                  :setChartConfig="setTempChart"
+                  :clearCurrentConfig="clearCurrentConfig"
+                  :chartOption="tempChartOption"
+                  :chartContainer="tempChartContainer"
+              >
+              </ScatterConfig>
 
-            <GaugeConfig
-                v-else-if="lastChartType == 'gauge'"
-                :getChartConfig="getTempChart"
-                :setChartConfig="setTempChart"
-                :clearCurrentConfig="clearCurrentConfig"
-                :chartOption="tempChartOption"
-                :chartContainer="tempChartContainer"
-            >
-            </GaugeConfig>
+              <RadarConfig
+                  v-else-if="lastChartType == 'radar'"
+                  :getChartConfig="getTempChart"
+                  :setChartConfig="setTempChart"
+                  :clearCurrentConfig="clearCurrentConfig"
+                  :chartOption="tempChartOption"
+                  :chartContainer="tempChartContainer"
+              >
+              </RadarConfig>
 
-            <TagConfig
-                v-else-if="lastChartType == 'tag'"
-                :getChartConfig="getTempChart"
-                :setChartConfig="setTempChart"
-                :clearCurrentConfig="clearCurrentConfig"
-                :chartOption="tempChartOption"
-                :chartContainer="tempChartContainer"
-            >
-            </TagConfig>
+              <GaugeConfig
+                  v-else-if="lastChartType == 'gauge'"
+                  :getChartConfig="getTempChart"
+                  :setChartConfig="setTempChart"
+                  :clearCurrentConfig="clearCurrentConfig"
+                  :chartOption="tempChartOption"
+                  :chartContainer="tempChartContainer"
+              >
+              </GaugeConfig>
 
-            <TableConfig
-                v-else-if="lastChartType == 'table'"
-                :getChartConfig="getTempChart"
-                :setChartConfig="setTempChart"
-                :clearCurrentConfig="clearCurrentConfig"
-                :chartOption="tempChartOption"
-                :chartContainer="tempChartContainer"
-            >
-            </TableConfig>
-          </a-layout-sider>
-        </a-layout>
-      </a-modal>
-    </a-layout-content>
+              <TagConfig
+                  v-else-if="lastChartType == 'tag'"
+                  :getChartConfig="getTempChart"
+                  :setChartConfig="setTempChart"
+                  :clearCurrentConfig="clearCurrentConfig"
+                  :chartOption="tempChartOption"
+                  :chartContainer="tempChartContainer"
+              >
+              </TagConfig>
+
+              <TableConfig
+                  v-else-if="lastChartType == 'table'"
+                  :getChartConfig="getTempChart"
+                  :setChartConfig="setTempChart"
+                  :clearCurrentConfig="clearCurrentConfig"
+                  :chartOption="tempChartOption"
+                  :chartContainer="tempChartContainer"
+              >
+              </TableConfig>
+            </a-layout-sider>
+          </a-layout>
+        </a-modal>
+      </a-layout-content>
+    </a-layout>
   </a-layout>
 </template>
 
