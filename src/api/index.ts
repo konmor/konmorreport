@@ -7,7 +7,9 @@ import axios, {
 
 // 创建 axios 实例
 const instance: AxiosInstance = axios.create({
-  baseURL: 'api/',
+    // 注意地址以 /api 开头
+    // 而不是 api/ 后者是相对路径，前者是绝对路径，前者可以匹配vite.config.ts 的proxy代理
+  baseURL: '/api',
   timeout: 5000,
 })
 
