@@ -17,7 +17,6 @@ import TopRight from "@/assets/icon/legend/TopRight.vue";
 import {nextTick, onMounted, onUnmounted, reactive, ref, toRaw, watch} from "vue";
 import * as echarts from "echarts";
 import draggable from 'vuedraggable'
-import {getColor} from "echarts/types/src/chart/candlestick/candlestickVisual";
 
 interface GridPosition {
   [key: string]: { top: number; left: number; right: number; bottom: number }

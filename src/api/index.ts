@@ -7,7 +7,7 @@ import axios, {
 
 // 创建 axios 实例
 const instance: AxiosInstance = axios.create({
-  baseURL: 'http://localhost:8080/',
+  baseURL: 'api/',
   timeout: 5000,
 })
 
