@@ -8,8 +8,6 @@ let visible = ref<boolean>(false)
 let props = defineProps(['icon'])
 let emits = defineEmits(['update:icon'])
 
-let query = ref('abc');
-
 let defaultData = AllMetrics.find((item) => item.type == 'icon' || item.type == '标签')!.items;
 let icons = shallowRef(defaultData);
 

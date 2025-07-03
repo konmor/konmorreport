@@ -15,7 +15,7 @@ const basePath = '/easy-report'
 const routes = ref<Route[]>([
   {
     path: '/',
-    breadcrumbName: 'Easy Report',
+    breadcrumbName: 'Konmor Report',
   },
   {
     path: '/datasource',

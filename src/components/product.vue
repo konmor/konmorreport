@@ -4,8 +4,8 @@ let {logo} = defineProps(['logo']);
 </script>
 
 <template>
-  <div class="product"><span v-if="!logo">Easy Reports</span>
-    <img v-if="logo" src="../assets/svg/logo.svg" alt="Easy Reports LOGO" class="logo"/></div>
+  <div class="product"><span v-if="!logo">KonmorReport</span>
+    <img v-if="logo" src="../assets/svg/logo.svg" alt="Konmor Report LOGO" class="logo"/></div>
 </template>
 
 <style scoped>

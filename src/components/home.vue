@@ -92,7 +92,7 @@ function closeFolder() {
         </div>
       </a-layout-content>
       <a-layout-footer :style="{ margin: '0 10px 0 10px', textAlign: 'center' }"
-      >EasyReports
+      >KonmorReport
       </a-layout-footer>
     </a-layout>
   </a-layout>
