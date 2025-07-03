@@ -53,7 +53,7 @@ import Telephone from '@/assets/metrics/icon/Telephone.vue'
 import { type ReportsOptions, type ReportsSave, type ReportsSource, saveReports } from '@/api/reports.ts'
 
 let reportEditChecked = ref(false)
-
+let reportName = ref('');
 const items = reactive<
   { value: number | any; id: string; xSpan?: number; ySpan?: number; sqlId?: string }[]
 >([
@@ -524,7 +524,7 @@ function save() {
   let reportsSave: ReportsSave = {
     // 新增时没有id
     reportsId: reportsId,
-    reportsName: '',
+    reportsName: reportName.value,
     reportsOptionsList: [] as Array<ReportsOptions>,
     sourceList: [] as Array<ReportsSource>,
   }
@@ -1629,6 +1629,16 @@ watch(metricsFields, renderChart)
           alignItems: 'center',
         }"
       >
+
+        <a-input
+          size="small"
+          v-show="reportEditChecked"
+          :style="{ marginRight: '10px',width:'108px' }"
+          v-model:value="reportName"
+        >
+
+        </a-input>
+
         <a-button
           size="small"
           @click="save()"
