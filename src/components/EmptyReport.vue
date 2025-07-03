@@ -1629,7 +1629,7 @@ watch(metricsFields, renderChart)
           alignItems: 'center',
         }"
       >
-
+        <span class="label-normal"  v-show="reportEditChecked">名称：</span>
         <a-input
           size="small"
           v-show="reportEditChecked"
