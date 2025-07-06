@@ -30,6 +30,7 @@
 - 可通过拖拽的方式自由布局和放大图表
 - 总览
   ![img_4.png](imag/img_4.png)
+  ![img_15.png](imag2/img_15.png)
 
 #### 柱状图
 
@@ -41,7 +42,49 @@
   ![img_7.png](imag/img_7.png)
   ![img_8.png](imag/img_8.png)
 - 调整标题、标题位置、标题内容
+- 柱状图+折线图
+  ![img_5.png](imag2/img_5.png)
 - 内容过多不举例了
+
+### 折线图
+- 折线图 + 柱状图
+![img_6.png](imag2/img_6.png)
+
+### 雷达图
+
+![img_7.png](imag2/img_7.png)
+
+### 表格
+
+![img_1.png](imag2/img_1.png)
+
+### 仪表
+
+- 基础仪表 一
+  ![img_8.png](imag2/img_8.png)
+- 按照颜色分段
+  ![img_9.png](imag2/img_9.png)
+- 可自定义配置细节
+  ![img_10.png](imag2/img_10.png)
+- 基础仪表 二
+  ![img_11.png](imag2/img_11.png)
+- 进度条 一
+  ![img_12.png](imag2/img_12.png)
+- 进度条 二
+  ![img_13.png](imag2/img_13.png)
+
+### 指标卡
+
+![img_14.png](imag2/img_14.png)
+
+### 饼图
+
+- 南丁格尔 + 空心圆环
+  ![img_2.png](imag2/img_2.png)
+- 空心圆环
+  ![img_3.png](imag2/img_3.png)
+- 基础饼图
+  ![img_4.png](imag2/img_4.png)
 
 ### 散点图
 
@@ -53,7 +96,7 @@
 ### 调整好后端地址即可
 
 - 代码位置 [vite.config.ts](vite.config.ts)
-- ![img.png](img.png)
+- ![img.png](imag2/img.png)
 
 ```sh
 npm install
