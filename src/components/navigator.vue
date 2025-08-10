@@ -718,14 +718,6 @@ onUnmounted(() => {
               </template>
             </a-button>
           </a-tooltip>
-
-          <a-tooltip title="查看SQL数据">
-            <a-button size="small" @click="checkSQLData(subItem?.key as string, $event)">
-              <template #icon>
-                <TableOutlined/>
-              </template>
-            </a-button>
-          </a-tooltip>
         </a-button-group>
       </a-menu-item>
     </a-sub-menu>
