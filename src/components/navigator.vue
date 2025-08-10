@@ -374,7 +374,6 @@ let choiceDatasource = ref('')
 // 数据源的选择出错是否显示错误提示
 let choiceDatasourceShow = ref(false)
 let datasourceSelectOption = ref<SelectProps['options']>([])
-let checkAndSaveFunctionArray = reactive<CheckAndSaveFunction<any>[]>([])
 
 interface CheckAndSaveFunction<T> {
   name: string
@@ -384,92 +383,6 @@ interface CheckAndSaveFunction<T> {
   isMe: (name: string, behaviour: string) => boolean
 }
 
-//
-async function checkAndSaveData(dataName?: string, behaviour?: string) {
-  let crtDataName = dataName != null ? dataName : currentDataName.value
-  let crtBehaviour = behaviour != null ? behaviour : currentBehaviour.value
-
-  function findCheckAndSaveFun(): CheckAndSaveFunction<any> | undefined {
-    for (let i = 0; i < checkAndSaveFunctionArray.length; i++) {
-      let checkAndSaveFunction = checkAndSaveFunctionArray[i]
-      if (checkAndSaveFunction.isMe(crtDataName as string, crtBehaviour as string)) {
-        return checkAndSaveFunction
-      }
-    }
-    return undefined
-  }
-
-  // 寻找到处理函数
-  let checkAndSaveFun
-  let error
-  if ((checkAndSaveFun = findCheckAndSaveFun())) {
-    try {
-      // 保存前
-      checkAndSaveFun.beforeSave()
-      // 保存
-      let res = await checkAndSaveFun.save()
-
-      if (res != null && res.code == 0) {
-        // 执行成功
-      } else {
-        // 否则失败
-        if (res != null) {
-          error = new ReportsError(res.error, 'save')
-        } else {
-          error = new ReportsError('发生错误，请联系管理员！', 'save')
-        }
-      }
-    } catch (ex) {
-      console.log(ex)
-      error = new ReportsError('发生错误，请联系管理员！', 'save')
-    }
-  } else if (
-      (crtDataName != undefined || crtBehaviour != undefined) &&
-      checkAndSaveFun == undefined
-  ) {
-    console.log('未找到保存前检查函数和保存函数')
-    // 未找到处理函数
-    error = new ReportsError('发生错误，请联系管理员！', 'save')
-  } else {
-    console.log('没有当前状态，无需执行')
-  }
-  if (error) {
-    throw error
-  }
-}
-
-function initCheckAndSaveFunction() {
-  // 初始化 数据源保存事件
-  let datasourceSave: CheckAndSaveFunction<Promise<Result<any>>> = {
-    name: '数据源',
-    behaviour: '新增',
-    beforeSave: () => true,
-    save: () => {
-      // 触发 保存事件
-      return request<Result<any>>('datasource:save')
-    },
-    isMe: (name: string, behaviour: string) => {
-      return datasourceSave.name == name && datasourceSave.behaviour == behaviour
-    },
-  }
-  checkAndSaveFunctionArray.push(datasourceSave)
-
-  // 初始化 sql保存函数
-
-  const sqlSave: CheckAndSaveFunction<Promise<Result<any>>> = {
-    name: 'SQL',
-    behaviour: '新增',
-    beforeSave: () => true,
-    save: () => {
-      // 触发 保存事件
-      return request<Result<any>>('sql:save')
-    },
-    isMe: (name: string, behaviour: string) => {
-      return datasourceSave.name == name && datasourceSave.behaviour == behaviour
-    },
-  }
-  checkAndSaveFunctionArray.push(sqlSave)
-}
 
 const addReport = (event: Event) => {
   console.log('新建仪表板')
@@ -561,7 +474,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   createDatasource.value = false
-  checkAndSaveFunctionArray.length = 0
 
   emitter.off('Datasource:sourceName:change')
   emitter.off('SQL:sqlName:change')
