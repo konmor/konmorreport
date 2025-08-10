@@ -37,6 +37,7 @@ import SQLDataViewer from "@/components/sqlDataViewer.vue";
 import type {TableOrSQLResult} from "@/types/DBData.ts";
 import {queryTableData} from "@/api/datasoure.ts";
 import {ReportsError} from "@/utils/errorHandler/ReportsError.ts";
+import {useHasNotSave} from "@/stores/useHasNotSave.ts";
 
 let router = inject<Router>('router')
 // 获取父组件传递过来的值，父组件中 sourceId 是 ref对象
@@ -62,6 +63,7 @@ const zoomIn = () => {
   if (sqlConfig.fontSize! < 25) {
     sqlConfig.fontSize = sqlConfig.fontSize! + 1 // 字体放大
   }
+  hasNotSave.change(true);
 }
 
 const zoomOut = () => {
@@ -69,10 +71,12 @@ const zoomOut = () => {
     // 设置最小字体限制
     sqlConfig.fontSize = sqlConfig.fontSize! - 1 // 字体缩小
   }
+  hasNotSave.change(true);
 }
 
 const resetFontSize = () => {
   sqlConfig.fontSize = 14 // 字体缩小
+  hasNotSave.change(true);
 }
 
 function formatSQL() {
@@ -106,7 +110,7 @@ function sqlExplain(event: Event) {
     })
   }
 }
-
+let hasNotSave = useHasNotSave();
 // 是否存入数仓
 let cache = ref(true)
 
@@ -167,6 +171,7 @@ function saveSQLConfig() {
         message.error('保存sql失败！')
         console.log(ex)
       })
+    hasNotSave.change(false);
 }
 
 // cord-mirror 编辑器对象
@@ -252,6 +257,7 @@ const saveParam = (key: string) => {
       return
     }
   }
+  hasNotSave.change(true);
 }
 
 const editParam = (key: string) => {
@@ -259,6 +265,7 @@ const editParam = (key: string) => {
     value: sqlConfig.sqlParamList.filter((item) => key == item.paramName)[0].defaultValue as string,
     isEdit: true,
   }
+  hasNotSave.change(true);
 }
 
 function extractParams(sql: string) {
@@ -596,7 +603,7 @@ onUnmounted(() => {
               disabled
               show-search
               :filter-option="filterOption"
-              @change="handleChange"
+              @change="()=>{handleChange;hasNotSave.change(true);}"
           >
           </a-select>
           <a-input
@@ -604,7 +611,7 @@ onUnmounted(() => {
               show-count
               :maxlength="20"
               allow-clear
-              @change="changeSQLName"
+              @change="()=>{changeSQLName;hasNotSave.change(true)}"
               v-model:value="sqlConfig.sqlName"
           ></a-input>
 

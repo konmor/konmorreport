@@ -10,6 +10,7 @@ import registerCustomIcon from '@/assets/Register.ts'
 import * as DiagramIconFactory from '@/assets/diagram-icon/factory.ts'
 import * as FilterFactory from '@/assets/filter-icon/factory.ts'
 import registerThem from "@/echartsThem/registerThem.ts";
+import initHasNotSaveStatus from "@/router/init.ts";
 let app = createApp(App)
 let pinia = createPinia()
 app.use(router)
@@ -27,4 +28,7 @@ registerThem();
 DiagramIconFactory.initDiagrams()
 // 初始化所有的报表选择器
 FilterFactory.initFilter();
+// 初始化 router的全局过滤
+initHasNotSaveStatus();
+
 app.mount('#app')

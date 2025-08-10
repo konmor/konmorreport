@@ -6,7 +6,7 @@ export default {
 
 <script setup lang="ts">
 import {onMounted, onUnmounted, reactive, ref, watch} from 'vue'
-import type {FormInstance} from 'ant-design-vue'
+import {type FormInstance, message} from 'ant-design-vue'
 import {saveDatasource, checkConnection} from '@/api/datasoure.ts'
 import type {DatasourceDetail, Result} from '@/types/api.ts'
 import {
@@ -18,7 +18,9 @@ import {
 } from '@ant-design/icons-vue'
 import {onRequest, removeRequestHandler} from '@/utils/RequestBus.ts'
 import emitter from '@/utils/EventBus.ts'
+import {useHasNotSave} from "@/stores/useHasNotSave.ts";
 
+let hasNotSave = useHasNotSave();
 
 let {disabledAll, datasourceDetail} = defineProps(['disabledAll', 'datasourceDetail']);
 let disabled = ref(true)
@@ -54,11 +56,12 @@ async function save() {
 const submitForm = () => {
   save().then((response) => {
     if (response != null && response.code == 0) {
-      window.alert('保存成功')
+      message.info("保存成功！")
     } else {
-      window.alert('保存失败，请检查配置')
+      message.warn("保存失败，请检查配置是否正确！")
     }
   })
+  hasNotSave.change(false);
 }
 
 const changDatasourceName = (change: string) => {
@@ -118,6 +121,11 @@ const checkSSL = (event: Event) => {
   }
 }
 
+
+// watch(()=>datasourceDetail,()=>{
+//   hasNotSave.change(true);
+// },{deep:true});
+
 onUnmounted(() => {
   removeRequestHandler('datasource:save')
 })
@@ -159,7 +167,7 @@ onMounted(() => {
                 <a-select
                     v-model:value="datasourceDetail.dataSourceType"
                     @focus="focus"
-                    @change="handleChange"
+                    @change="()=>{handleChange;hasNotSave.change(true);}"
                     placeholder="请选择数据源类型"
                     allowClear
                 >
@@ -181,7 +189,7 @@ onMounted(() => {
                     v-model:value="datasourceDetail.dataSourceName"
                     placeholder="请输入数据源名称"
                     allowClear
-                    @change="changDatasourceName"
+                    @change="()=>{changDatasourceName;hasNotSave.change(true);}"
                 ></a-input>
               </a-form-item>
             </a-col>
@@ -190,6 +198,7 @@ onMounted(() => {
               <a-form-item label="备注" :style="{ lineHeight: '50px' }" name="description">
                 <a-input
                     v-model:value="datasourceDetail.description"
+                    @change="hasNotSave.change(true);"
                     placeholder="备注"
                     allowClear
                 ></a-input>
@@ -226,6 +235,7 @@ onMounted(() => {
               <a-form-item label="IP地址" required name="host">
                 <a-input
                     v-model:value="datasourceDetail.host"
+                    @change="hasNotSave.change(true);"
                     placeholder="请输入ip地址"
                     allow-clear
                 ></a-input>
@@ -235,6 +245,7 @@ onMounted(() => {
               <a-form-item label="端口号" required name="port">
                 <a-input-number
                     v-model:value="datasourceDetail.port"
+                    @change="hasNotSave.change(true);"
                     placeholder="请输入端口号"
                     allow-clear
                 ></a-input-number>
@@ -246,6 +257,7 @@ onMounted(() => {
               <a-form-item label="用户名" required name="username">
                 <a-input
                     v-model:value="datasourceDetail.username"
+                    @change="hasNotSave.change(true);"
                     placeholder="请输入用户名"
                     allow-clear
                 ></a-input>
@@ -255,6 +267,7 @@ onMounted(() => {
               <a-form-item label="密码" required name="password">
                 <a-input-password
                     v-model:value="datasourceDetail.password"
+                    @change="hasNotSave.change(true);"
                     placeholder="请输入密码"
                     allow-clear
                 ></a-input-password>
@@ -264,6 +277,7 @@ onMounted(() => {
               <a-form-item label="数据库名称" name="databaseName">
                 <a-input
                     v-model:value="datasourceDetail.databaseName"
+                    @change="hasNotSave.change(true);"
                     placeholder="请输入数据库名称"
                     allow-clear
                 ></a-input>
@@ -275,6 +289,7 @@ onMounted(() => {
               <a-form-item label="驱动选择" required name="driverClass">
                 <a-select
                     v-model:value="datasourceDetail.driverClass"
+                    @change="hasNotSave.change(true);"
                     placeholder="请选择驱动"
                     allow-clear
                 >
@@ -289,6 +304,7 @@ onMounted(() => {
               <a-form-item label="时区" required name="timezone">
                 <a-select
                     v-model:value="datasourceDetail.timezone"
+                    @change="hasNotSave.change(true);"
                     placeholder="请选择时区"
                     allow-clear
                 >
@@ -303,6 +319,7 @@ onMounted(() => {
               <a-form-item label="字符集" required name="charset">
                 <a-select
                     v-model:value="datasourceDetail.charset"
+                    @change="hasNotSave.change(true);"
                     placeholder="请选择编码"
                     allow-clear
                 >
@@ -326,6 +343,7 @@ onMounted(() => {
               >
                 <a-input
                     v-model:value="datasourceDetail.connectionUrl"
+                    @change="hasNotSave.change(true);"
                     placeholder="url"
                     allow-clear
                 ></a-input>

@@ -19,29 +19,21 @@ import {
 import {reactive, ref, watch, h, onMounted, inject, onUnmounted, VueElement, type Ref} from 'vue'
 import {type MenuProps, type ItemType, Modal, type SelectProps, message} from 'ant-design-vue'
 import {
-  type NavigationGuard,
-  type NavigationGuardNext,
-  onBeforeRouteLeave,
-  type RouteLocationNormalized,
-  type RouteLocationNormalizedLoaded,
-  type Router,
+  type Router, isNavigationFailure, ErrorTypes, NavigationFailureType
 } from 'vue-router'
 import useNavigator, {SOURCE_ID_PREFIX} from '@/composable/useNavigator.ts'
-import addDatasourceIcon from '@/components/button/addDatasource.vue'
 import {useCreateStore} from '@/stores/useCreateStore.ts'
 import {storeToRefs} from 'pinia'
 import type {Result} from '@/types/api.ts'
 import emitter from '@/utils/EventBus.ts'
 import {request} from '@/utils/RequestBus.ts'
-import type {VueNode} from 'ant-design-vue/es/_util/type'
-import type {Handler} from 'mitt'
-import {sql} from '@codemirror/lang-sql'
 import {SOURCE_EMPTY_ID_PREFIX, SQL_EMPTY_ID_PREFIX} from '@/composable/useNavigator.ts'
 import {ReportsError} from '@/utils/errorHandler/ReportsError.ts'
 import AddDatasource from '@/assets/icon/AddDatasource.vue'
-import SQLSmall from '@/assets/icon/SQLSmall.vue'
 import SQLBiger from '@/assets/icon/SQLBiger.vue'
 import {deleteDatasource} from '@/api/datasoure.ts'
+import {useHasNotSave} from "@/stores/useHasNotSave.ts";
+import Message from "@/assets/metrics/icon/Message.vue";
 
 let {refreshDatasourceList, data, sqlArray} = useNavigator()
 // 导航栏宽度 从home主页来
@@ -68,80 +60,54 @@ let newLabel = ref('数据源')
 let createDatasourceFlag = ref(1)
 
 let createStore = useCreateStore()
+
 let {createDatasource, createSQL, createReports} = storeToRefs(createStore)
 
 // 当前的数据名称
 let currentDataName = ref<string | undefined>(undefined)
 // 当前的行为
 let currentBehaviour = ref<string | undefined>(undefined)
-
+let hasNotSave = useHasNotSave();
 // 添加数据源
 async function addDataSource(event: Event) {
-  event.stopPropagation()
-  // 当前的数据名称
-  let dataName = '数据源'
-  // 当前的行为
-  let behaviour = '新增'
-
-  // 暂存一下，避免该值在下面函数执行中被修改
-  let crtDataName = currentDataName.value
-  let crtBehaviour = currentBehaviour.value
-
-  function jumpSavePage() {
+  event.stopPropagation();
     // 执行完 保存之前的函数 和 保存 之后再跳转页面
     let label = newLabel.value + '(' + createDatasourceFlag.value + ')'
-    let key = SOURCE_EMPTY_ID_PREFIX + createDatasourceFlag.value
-    if (router != null) {
-      router.push({
-        name: 'toDataSourceCreator',
-        query: {
-          key: key,
-          label: label,
-        },
-      })
-    }
-    // 导航菜单中添加内容
-    items.push({
-      label: label,
-      key: key,
-    })
-    // 调整命中项
-    selectedKeys.value = [key]
-    // 调整open的导航栏
-    openKeys.value = [DATASOURCE_CONFIG_MENU]
-    // 调整数据源新增的flag
-    createDatasourceFlag.value += 1
-  }
+    let key = SOURCE_EMPTY_ID_PREFIX + createDatasourceFlag.value;
 
-  if (crtDataName != null || crtBehaviour != null) {
-    Modal.confirm({
-      title: '确认' + behaviour + dataName + '吗？',
-      content:
-          '点击确认将保存' + crtDataName + '数据。取消则返回继续' + crtBehaviour + crtDataName + '。',
-      okText: '确认',
-      cancelText: '取消',
-      onOk: async (reject) => {
-        try {
-          await checkAndSaveData()
-        } catch (error) {
-          // 发生报错 调用 onOk的第一个参数，表示拒绝，可以关闭模态框
-          reject()
-          throw error
-        }
-        currentBehaviour.value = behaviour
-        currentDataName.value = dataName
-        jumpSavePage()
-      },
-      onCancel: () => {
-        currentBehaviour.value = crtBehaviour
-        currentDataName.value = crtDataName
-      },
-    })
-  } else {
-    jumpSavePage()
-    currentBehaviour.value = behaviour
-    currentDataName.value = dataName
-  }
+    if(hasNotSave.getHasNotSaveStatus()){
+      message.warn("存在未保存数据！")
+    } else {
+      // 跳转
+      if (router != null) {
+        router.push({
+          name: 'toDataSourceCreator',
+          query: {
+            key: key,
+            label: label,
+          },
+        }).then((failure)=>{
+          // 如果导航没有终止，则执行下面面的代码
+          if (!isNavigationFailure(failure,NavigationFailureType.aborted)) {
+            // 导航菜单中添加内容
+            items.push({
+              label: label,
+              key: key,
+            })
+            // 调整命中项
+            selectedKeys.value = [key]
+            // 调整open的导航栏
+            openKeys.value = [DATASOURCE_CONFIG_MENU]
+            // 调整数据源新增的flag
+            createDatasourceFlag.value += 1;
+
+            // hasNotSave.change(true);
+            hasNotSave.change(true);
+          }
+        })
+      }
+    }
+
 }
 
 function showDatasourceViewer(item: ItemType, event: Event) {
@@ -182,23 +148,14 @@ function showSQLDetail(key: string, event: Event) {
   selectedKeys.value = [String(key)]
 }
 
-let createSQLFlag = ref(1)
+let createSQLFlag = ref(1);
 
 async function addSQL(key: string | undefined, event?: Event) {
   if (event != null) {
     event.stopPropagation()
   }
 
-  // 当前的数据名称
-  let dataName = 'SQL'
-  // 当前的行为
-  let behaviour = '新增'
-
-  // 暂存一下，避免该值在下面函数执行中被修改
-  let crtDataName = currentDataName.value
-  let crtBehaviour = currentBehaviour.value
-
-  function jumpSavePage() {
+  function jump() {
     // 执行完 保存之前的函数 和 保存 之后再跳转页面
     let label = '查询(' + createSQLFlag.value + ')'
     let sqlKey = SQL_EMPTY_ID_PREFIX + createSQLFlag.value
@@ -218,68 +175,35 @@ async function addSQL(key: string | undefined, event?: Event) {
               dbId: dbId,
             },
           })
-          .then(() => {
-            // 添加树形下拉数据 sql字段中
-            createSQL.value = true
-            createSQLFlag.value += 1
-            // 添加下这个数据
-            sqlArray.push({key: sqlKey, label: label})
-            selectedKeys.value = [sqlKey]
-            openKeys.value = [SQL_MENU]
+          .then((failure) => {
+            if (!isNavigationFailure(failure, NavigationFailureType.aborted)) {
+              // 添加树形下拉数据 sql字段中
+              createSQL.value = true
+              createSQLFlag.value += 1
+              // 添加下这个数据
+              sqlArray.push({key: sqlKey, label: label})
+              selectedKeys.value = [sqlKey];
+              openKeys.value = [SQL_MENU];
+              // 设置标记
+              hasNotSave.change(true);
+            }
           })
     }
   }
 
-  if (crtDataName != undefined || crtBehaviour != undefined || key == undefined || key == '') {
-    // 模态框内容
-    let modalContent: any
-    // 模态框宽度，一般是undefined。当需要选择下拉时是 600px宽度
-    let modalWidth: string | undefined = undefined
+  // 如果没有key，则弹框选择后，进入后续逻辑
+    if (key == undefined || key == '' ) {
 
-    if (key != undefined && key != '') {
-      // (crtDataName != null || crtBehaviour != null) && key 不为空
-      // 这里表示原本有数据（由crtDataName、crtBehaviour 当前的数据 和行为确定）正在新增或者编辑，同时点击新增或者编辑 SQL。并且选中了要添加sql的数据源的key
+      if(hasNotSave.getHasNotSaveStatus()) {
+        message.warn("存在未保存数据！")
+        // 阻断后续操作
+        throw new Error('存在未保存数据')
+      }
 
-      modalContent =
-          '点击确认将保存' + crtDataName + '数据。取消则返回继续' + crtBehaviour + crtDataName + '。'
-    } else if (crtDataName != undefined || crtBehaviour != undefined) {
-      // 上面的 else if == crtDataName crtBehaviour 不为空 并且 key 为空
-      // 这里表示原本有数据（由crtDataName、crtBehaviour 当前的数据 和行为确定）正在新增或者编辑，同时点击新增或者编辑 SQL。没有选中数据源
-      modalWidth = '600px'
-      modalContent = () => (
-          <>
-            <p>{'请选择数据源！'}</p>
-            <p>
-              {'点击确认将保存' +
-                  crtDataName +
-                  '数据。取消则返回继续' +
-                  crtBehaviour +
-                  crtDataName +
-                  '。'}
-            </p>
-            <a-select
-                options={datasourceSelectOption.value}
-                style={{width: '300px'}}
-                v-model={[choiceDatasource.value, 'value']}
-                placeholder="选择数据源"
-            ></a-select>
-
-            {choiceDatasourceShow.value ? (
-                <span style={{marginLeft: '10px'}}>
-              {' '}
-                  <CloseCircleOutlined style={{color: 'red'}}/>
-              请选择正确的数据源！
-            </span>
-            ) : (
-                <span></span>
-            )}
-          </>
-      )
-    } else {
-      // else 只剩下： (crtDataName == undefined && crtBehaviour == undefined) && ( key == undefined || key == ''))
-      // 这里表示没有数据正在新增或者编辑，，同时点击新增或者编辑 SQL。没有选中数据源
-      modalWidth = '600px'
-      modalContent = () => (
+      // 模态框宽度，一般是undefined。当需要选择下拉时是 600px宽度
+      let modalWidth = '600px'
+      // 模态框内容
+      let modalContent = () => (
           <>
             <p>{'请选择数据源，点击取消则返回。'}</p>
             <a-select
@@ -292,57 +216,40 @@ async function addSQL(key: string | undefined, event?: Event) {
                 <span style={{marginLeft: '10px'}}>
               {' '}
                   <CloseCircleOutlined style={{color: 'red'}}/>
-              请选择正确的数据源！
+              请选择数据源！
             </span>
             ) : (
                 <span></span>
             )}
           </>
       )
+
+      Modal.confirm({
+        title: '确认新增SQL吗？',
+        content: modalContent,
+        okText: '确认',
+        width: modalWidth,
+        cancelText: '取消',
+        onOk: async (reject) => {
+            // 数据源是否选择的处理
+            if (!choiceDatasource.value || choiceDatasource.value.length === 0) {
+              choiceDatasourceShow.value = true
+              // 阻断后续操作
+              throw new Error('没有选择数据源，或者选择了错误的数据源')
+            } else {
+              // 这时候给 key赋值即可
+              key = choiceDatasource.value
+              choiceDatasourceShow.value = false
+            }
+
+          jump();
+        },
+        onCancel: () => {
+        },
+      })
+    }else {
+      jump();
     }
-
-    Modal.confirm({
-      title: '确认' + behaviour + dataName + '吗？',
-      content: modalContent,
-      okText: '确认',
-      width: modalWidth,
-      cancelText: '取消',
-      onOk: async (reject) => {
-        // key == null 表示没有选择数据源，需要选则数据源才可以
-        if (key == undefined || key == '') {
-          // 数据源是否选择的处理
-          if (!choiceDatasource.value || choiceDatasource.value.length === 0) {
-            choiceDatasourceShow.value = true
-            // 阻断后续操作
-            throw new Error('没有选择数据源，或者选择了错误的数据源')
-          } else {
-            // 这时候给 key赋值即可
-            key = choiceDatasource.value
-            choiceDatasourceShow.value = false
-          }
-        }
-
-        try {
-          await checkAndSaveData()
-        } catch (error) {
-          // 发生报错 调用 onOk的第一个参数，表示拒绝，可以关闭模态框
-          reject()
-          throw error
-        }
-        currentBehaviour.value = behaviour
-        currentDataName.value = dataName
-        jumpSavePage()
-      },
-      onCancel: () => {
-        currentBehaviour.value = crtBehaviour
-        currentDataName.value = crtDataName
-      },
-    })
-  } else {
-    jumpSavePage()
-    currentBehaviour.value = behaviour
-    currentDataName.value = dataName
-  }
 }
 
 function removeDatasource(key: string, event: Event) {
@@ -410,9 +317,13 @@ function checkDatasourceConfig(key: string, event?: Event) {
       query: {
         key: key,
       },
+    }).then((failure)=>{
+      if (!isNavigationFailure(failure, NavigationFailureType.aborted)) {
+        selectedKeys.value = [key]
+      }
     })
   }
-  selectedKeys.value = [key]
+
 }
 
 function checkDatasourceData(key: string, event: Event) {
@@ -423,9 +334,12 @@ function checkDatasourceData(key: string, event: Event) {
       query: {
         key: key,
       },
+    }).then((failure)=>{
+      if (!isNavigationFailure(failure, NavigationFailureType.aborted)) {
+        selectedKeys.value = [key]
+      }
     })
   }
-  selectedKeys.value = [key]
 }
 
 function removeSQL(key: string, event: Event) {
@@ -441,11 +355,14 @@ function checkSQLConfig(key: string, event: Event) {
       query: {
         sqlId: key,
       }
+    }).then((failure)=>{
+      if (!isNavigationFailure(failure,NavigationFailureType.aborted)) {
+        // 命中当前的下拉树
+        selectedKeys.value = [key]
+        openKeys.value = [SQL_MENU]
+      }
     })
   }
-  // 命中当前的下拉树
-  selectedKeys.value = [key]
-  openKeys.value = [SQL_MENU]
 }
 
 function checkSQLData(key: string, event: Event) {
